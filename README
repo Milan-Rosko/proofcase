@@ -1,0 +1,36 @@
+(* README *)
+
+    ┏━┓┏━┓┏━┓┏━┓┏━╸┏━╸┏━┓┏━┓┏━╸
+    ┣━┛┣┳┛┃ ┃┃ ┃┣╸ ┃  ┣━┫┗━┓┣╸ 
+    ╹  ╹┗╸┗━┛┗━┛╹  ┗━╸╹ ╹┗━┛┗━╸
+
+1 - Repo
+    ----
+
+    Proofcase collects small, self-sufficient Rocq proofs, mostly as
+    accompanying formulations to papers and notes.
+
+
+2 - Style
+    -----
+
+    Formalizations are written with an emphasis on clarity, adhering
+    to standard Rocq best practices and modern conventions.
+
+
+3 - Files
+    -----
+
+    ./theories/                 The primary .v file directory.
+
+    ./builders/                 Automation tools.
+
+    ./builders/_CoqProject      Logical paths for compilation.
+
+
+4 - Contact
+    -------
+
+    www.milanrosko.com
+
+    hi "at" milanrosko "dot" com

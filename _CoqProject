@@ -1,0 +1,9 @@
+# root
+-docroot proofcase
+
+# Carryless Pairing Function
+-Q theories/T001 T001
+theories/T001/R01__Carryless_Pairing_Definitions.v
+theories/T001/R02__Carryless_Pairing_Correctness.v
+theories/T001/R03__Carryless_Pairing_Examples.v
+theories/T001/RX__Carryless_Pairing_Export.v

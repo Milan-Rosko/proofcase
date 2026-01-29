@@ -1,0 +1,10 @@
+COQDEP VFILES
+COQC theories/T001/R01__Carryless_Pairing_Definitions.v
+COQC theories/T001/R02__Carryless_Pairing_Correctness.v
+COQC theories/T001/R03__Carryless_Pairing_Examples.v
+COQC theories/T001/RX__Carryless_Pairing_Export.v
+Closed under the global context
+Closed under the global context
+
+Build process finished.
+Certificate written to: /Users/wuksh/Library/Mobile Documents/com~apple~CloudDocs/_Github/Proofcase/builders/success.txt

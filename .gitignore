@@ -1,0 +1,67 @@
+# --- Coq / Rocq build artifacts ---
+*.vo
+*.vos
+*.vok
+*.glob
+*.vio
+*.cmxs
+*.cma
+*.cmxa
+*.cmi
+*.cmo
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+
+# Coq IDE / tool metadata
+.coq-native
+.coqdeps.d
+.lia.cache
+.dune-cache/
+
+# --- Build systems / editors ---
+_Makefile
+Makefile.coq
+Makefile.coq.conf
+.coq-workspace
+.coq-project.local
+
+# OCaml / dune
+_build/
+*.opam
+.opam/
+.merlin
+
+# --- Proof General / Emacs ---
+*.aux
+*.log
+*~
+\#*\#
+.\#*
+*.elc
+
+# --- VS Code ---
+.vscode/
+.history/
+
+# --- JetBrains ---
+.idea/
+
+# --- macOS ---
+.DS_Store
+
+# --- Windows ---
+Thumbs.db
+Desktop.ini
+
+# --- Misc ---
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# --- Scratch (keep folder, ignore contents) ---
+scratch/*
+!scratch/.gitkeep
