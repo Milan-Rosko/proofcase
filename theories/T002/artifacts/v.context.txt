@@ -1,0 +1,5938 @@
+(* Note. This is a concatenation for establishing context. *)
+(* Source: _TextslectFLT *)
+(* Generated (UTC): 2026-02-21T00:02:17Z *)
+
+(* ---- BEGIN _TextslectFLT ---- *)
+(* theories/T002/R_SigmaReduction/R00__Degree_Framework.v *)
+(* theories/T002/R_SigmaReduction/R01__Foundation_Fibonacci.v *)
+(* theories/T002/R_SigmaReduction/R02__Foundation_Zeckendorf.v *)
+(* theories/T002/R_SigmaReduction/R03__Encoding_Beta.v *)
+(* theories/T002/R_SigmaReduction/R04__Verification_Hilbert_Syntax.v *)
+(* theories/T002/R_SigmaReduction/R05__Verification_Hilbert_Checker.v *)
+(* theories/T002/R_SigmaReduction/R06__Encoding_Formula_Coding.v *)
+(* theories/T002/R_SigmaReduction/R07__Encoding_Sequence_Coding.v *)
+(* theories/T002/R_SigmaReduction/R08__Constraints_Axiom.v *)
+(* theories/T002/R_SigmaReduction/R09__Constraints_MP.v *)
+(* theories/T002/R_SigmaReduction/R10__Constraints_Target.v *)
+(* theories/T002/R_SigmaReduction/R11__Constraints_Assembly.v *)
+(* theories/T002/R_SigmaReduction/R12__Aggregation_Sum_of_Squares.v *)
+(* theories/T002/R_SigmaReduction/R13__Kernel_API.v *)
+(* theories/T002/R_SigmaReduction/R14__Reduction_Core.v *)
+(* theories/T002/R_SigmaReduction/R15__Code_Bridge.v *)
+(* theories/T002/R_SigmaReduction/R16__Sigma_Reduction.v *)
+(* theories/T002/R_SigmaReduction/R17__Extraction_Interface.v *)
+(* theories/T002/R_SigmaReduction/R18__Sigma_Reduction_API.v *)
+(* theories/T002/R_SigmaReduction/R19__Sigma_Reduction_Minimal_API.v *)
+(*  *)
+(* theories/T002/P__ProofTheory/P00__Concrete_Provability.v *)
+(* theories/T002/P__ProofTheory/P00__Provability_Interface.v *)
+(* theories/T002/P__ProofTheory/P01__HBL.v *)
+(* theories/T002/P__ProofTheory/P02__Diagonal.v *)
+(* theories/T002/P__ProofTheory/P05__Toggle_Contradiction.v *)
+(* theories/T002/P__ProofTheory/P06__SourceToggle_Generator.v *)
+(* theories/T002/P__ProofTheory/P03__Undecidability.v *)
+(* theories/T002/P__ProofTheory/P04__RA_Certification.v *)
+(* ---- END _TextslectFLT ---- *)
+
+
+
+(* ---- theories/T002/R_SigmaReduction/R00__Degree_Framework.v ---- *)
+
+(* R00__Degree_Framework.v *)
+
+From Coq Require Import Arith Lia.
+
+Inductive Expr : Type :=
+  | Const : nat -> Expr
+  | Var : nat -> Expr
+  | Add : Expr -> Expr -> Expr
+  | Sub : Expr -> Expr -> Expr
+  | Mul : Expr -> Expr -> Expr.
+
+Fixpoint degree (e : Expr) : nat :=
+  match e with
+  | Const _ => 0
+  | Var _ => 1
+  | Add a b => Nat.max (degree a) (degree b)
+  | Sub a b => Nat.max (degree a) (degree b)
+  | Mul a b => degree a + degree b
+  end.
+
+Lemma degree_add :
+  forall a b,
+    degree (Add a b) <= Nat.max (degree a) (degree b).
+Proof.
+  intros a b.
+  simpl.
+  lia.
+Qed.
+
+Lemma degree_sub :
+  forall a b,
+    degree (Sub a b) <= Nat.max (degree a) (degree b).
+Proof.
+  intros a b.
+  simpl.
+  lia.
+Qed.
+
+Lemma degree_mul :
+  forall a b,
+    degree (Mul a b) = degree a + degree b.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma degree_square :
+  forall a,
+    degree (Mul a a) = 2 * degree a.
+Proof.
+  intro a.
+  rewrite degree_mul.
+  lia.
+Qed.
+
+Lemma degree_le_mul :
+  forall a b k l,
+    degree a <= k ->
+    degree b <= l ->
+    degree (Mul a b) <= k + l.
+Proof.
+  intros a b k l Ha Hb.
+  rewrite degree_mul.
+  lia.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R01__Foundation_Fibonacci.v ---- *)
+
+(* R01__Fibonacci.v *)
+
+From Coq Require Import Arith List Bool PeanoNat.
+Import ListNotations.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Carryless Pairing — Definitions                                      *)
+(*                                                                       *)
+(*************************************************************************)
+
+(*
+   Fibonacci sequence (structural recursion via pairs).
+   This avoids non-structural calls to F (S k).
+*)
+
+Fixpoint fib_pair (n : nat) : nat * nat :=
+  match n with
+  | 0 => (0, 1)
+  | S n' =>
+      match fib_pair n' with
+      | (a, b) => (b, a + b)
+      end
+  end.
+
+Definition F (n : nat) : nat := fst (fib_pair n).
+
+(*
+   Sum of Fibonacci values over a list of indices.
+*)
+
+Fixpoint sumF (xs : list nat) : nat :=
+  match xs with
+  | [] => 0
+  | k :: xs' => F k + sumF xs'
+  end.
+
+(*
+   Basic arithmetic helpers.
+*)
+
+Definition two (n : nat) : nat := n + n.
+
+Definition two_j_minus1 (j : nat) : nat := Nat.pred (two j). 
+
+Fixpoint is_even (n : nat) : bool :=
+  match n with
+  | 0 => true
+  | 1 => false
+  | S (S k) => is_even k
+  end.
+
+Definition is_odd (n : nat) : bool := negb (is_even n).
+
+Fixpoint div2 (n : nat) : nat :=
+  match n with
+  | 0 => 0
+  | 1 => 0
+  | S (S k) => S (div2 k)
+  end.
+
+(*
+   Settings of the device:
+   (i) Z : Zeckendorf support extractor
+   (ii) r : rank (first Fibonacci index strictly above x)
+*)
+
+Record Params : Type :=
+  {
+    Z : nat -> list nat;
+    r : nat -> nat
+  }.
+
+(*
+   Band offset: B(x) = 2 * r(x).
+*)
+
+Definition B (P : Params) (x : nat) : nat := 2 * r P x.
+
+(*
+   Even/Odd band encodings.
+*)
+
+Definition even_band (P : Params) (x : nat) : list nat :=
+  map (fun e => two e) (Z P x).
+
+Definition odd_band (P : Params) (x y : nat) : list nat :=
+  map (fun j => B P x + two_j_minus1 j) (Z P y).
+
+(*
+   Carryless pairing:
+   pair x y := sumF (even_band x ++ odd_band x y).
+*)
+
+Definition pair (P : Params) (x y : nat) : nat :=
+  sumF (even_band P x ++ odd_band P x y).
+
+(*
+   Unpairing infrastructure.
+*)
+
+Definition half_even_indices (zn : list nat) : list nat :=
+  map div2 (filter is_even zn).
+
+Definition odd_ge_B1 (Bx k : nat) : bool :=
+  match is_odd k with
+  | false => false
+  | true => Nat.leb (S Bx) k
+  end.
+
+Definition decode_odd_index (Bx k : nat) : nat :=
+  div2 (S (k - Bx)).
+
+Definition y_indices (Bx : nat) (zn : list nat) : list nat :=
+  map (decode_odd_index Bx) (filter (odd_ge_B1 Bx) zn).
+
+(*
+   Carryless unpairing.
+*)
+
+Definition unpair (P : Params) (n : nat) : nat * nat :=
+  let zn := Z P n in
+  let x := sumF (half_even_indices zn) in
+  let Bx := B P x in
+  let y := sumF (y_indices Bx zn) in
+  (x, y).
+
+
+(* ---- theories/T002/R_SigmaReduction/R02__Foundation_Zeckendorf.v ---- *)
+
+(* R02__Zeckendorf.v *)
+
+From Coq Require Import Arith List Bool PeanoNat Lia.
+Import ListNotations.
+From T002 Require Import R01__Foundation_Fibonacci.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Zeckendorf Support Lists — Definitions                               *)
+(*                                                                       *)
+(*************************************************************************)
+
+Fixpoint strictly_decreasing (xs : list nat) : Prop :=
+  match xs with
+  | [] => True
+  | a :: xs' =>
+      match xs' with
+      | [] => True
+      | b :: xs'' => a > b /\ strictly_decreasing xs'
+      end
+  end.
+
+Fixpoint no_adjacent (xs : list nat) : Prop :=
+  match xs with
+  | [] => True
+  | a :: xs' =>
+      match xs' with
+      | [] => True
+      | b :: xs'' => a >= b + 2 /\ no_adjacent xs'
+      end
+  end.
+
+Fixpoint all_ge_2 (xs : list nat) : Prop :=
+  match xs with
+  | [] => True
+  | a :: xs' => 2 <= a /\ all_ge_2 xs'
+  end.
+
+Definition zeck_valid (xs : list nat) : Prop :=
+  strictly_decreasing xs /\ no_adjacent xs /\ all_ge_2 xs.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Greedy Support Constructor                                           *)
+(*                                                                       *)
+(*************************************************************************)
+
+Fixpoint find_r_aux (x k fuel : nat) : nat :=
+  match fuel with
+  | 0 => k
+  | S fuel' =>
+      if Nat.ltb x (F k)
+      then k
+      else find_r_aux x (S k) fuel'
+  end.
+
+Definition r0 (x : nat) : nat := find_r_aux x 0 (S (S x)).
+
+Fixpoint zeck_greedy_down (k rem : nat) (prev_taken : bool)
+  : list nat * nat :=
+  match k with
+  | 0 => ([], rem)
+  | S k' =>
+      match k' with
+      | 0 => ([], rem)
+
+      (*
+         exclude index 1 for canonicality
+      *)
+
+      | S k'' =>
+          if prev_taken then
+            zeck_greedy_down k' rem false
+          else
+            if Nat.leb (F k) rem then
+              let pr := zeck_greedy_down k' (rem - F k) true in
+              (k :: fst pr, snd pr)
+            else
+              zeck_greedy_down k' rem false
+      end
+  end.
+
+Definition Z0 (x : nat) : list nat :=
+  fst (zeck_greedy_down (r0 x) x false).
+
+Definition P0 : Params :=
+  {| Z := Z0; r := r0 |}.
+
+
+
+
+(*
+   R02__Uniqueness.v
+*)
+(*
+   T002 / C002__Zeckendorf
+*)
+
+From Coq Require Import Arith PeanoNat Lia List.
+Import ListNotations.
+From T002 Require Import R01__Foundation_Fibonacci.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Fibonacci Infrastructure                                             *)
+(*                                                                       *)
+(*************************************************************************)
+
+Lemma fib_pair_S : forall n a b,
+  fib_pair n = (a, b) -> fib_pair (S n) = (b, a + b).
+Proof.
+  intros n a b H.
+  simpl. rewrite H. reflexivity.
+Qed.
+
+Lemma F_S : forall n, F (S n) = snd (fib_pair n).
+Proof.
+  intro n. unfold F. simpl. destruct (fib_pair n) as [a b]. reflexivity.
+Qed.
+
+Lemma F_step : forall n, F (S (S n)) = F (S n) + F n.
+Proof.
+  intro n.
+  rewrite F_S.
+  destruct (fib_pair n) as [a b] eqn:Hn.
+  assert (Hs : fib_pair (S n) = (b, a + b)).
+  { simpl. rewrite Hn. reflexivity. }
+  rewrite Hs.
+  unfold F. rewrite Hs. rewrite Hn. simpl.
+  rewrite Nat.add_comm. reflexivity.
+Qed.
+
+Lemma F_S_ge : forall n, F (S n) >= F n.
+Proof.
+  induction n as [|n IH].
+  - unfold F. simpl. lia.
+  - rewrite F_step. lia.
+Qed.
+
+Lemma F_pos_S : forall n, F (S n) >= 1.
+Proof.
+  induction n as [|n IH].
+  - unfold F. simpl. lia.
+  - rewrite F_step. lia.
+Qed.
+
+Lemma F_pos : forall n, n >= 1 -> F n >= 1.
+Proof.
+  intros n H.
+  destruct n as [|n].
+  - lia.
+  - apply F_pos_S.
+Qed.
+
+Lemma F_monotone_le : forall a b, a < b -> F a <= F b.
+Proof.
+  intros a b Hlt.
+  induction b as [|b IH]; [lia|].
+  destruct (Nat.eq_dec a b) as [Heq|Hne].
+  - subst. apply F_S_ge.
+  - assert (a < b) by lia.
+    specialize (IH H).
+    apply Nat.le_trans with (m:=F b); [exact IH |].
+    apply F_S_ge.
+Qed.
+
+Lemma F_gap2_gt : forall a, F a < F (S (S a)).
+Proof.
+  intro a.
+  rewrite F_step.
+  assert (Hpos : F (S a) >= 1) by apply F_pos_S.
+  lia.
+Qed.
+
+Lemma F_monotone_gap2 : forall a b, a + 1 < b -> F a < F b.
+Proof.
+  intros a b Hlt.
+  assert (Hle : S (S a) <= b) by lia.
+  apply Nat.lt_le_trans with (m:=F (S (S a))).
+  - apply F_gap2_gt.
+  - destruct (Nat.eq_dec (S (S a)) b) as [Heq|Hne].
+    + subst. apply Nat.le_refl.
+    + apply F_monotone_le. lia.
+Qed.
+
+Lemma add_sub_cancel_r : forall a b, a <= b -> a + (b - a) = b.
+Proof.
+  intros a b Hle. lia.
+Qed.
+
+Lemma add_assoc_l : forall a b c, a + b + c = a + (b + c).
+Proof.
+  intros a b c. lia.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Search Properties for r0                                             *)
+(*                                                                       *)
+(*************************************************************************)
+
+Lemma F_ge_Sn : forall n, F (S (S n)) >= S n.
+Proof.
+  induction n as [|n IH].
+  - vm_compute. lia.
+  - rewrite F_step.
+    assert (Hpos : F (S n) >= 1) by apply F_pos_S.
+    lia.
+Qed.
+
+Lemma find_r_aux_upper_from_witness :
+  forall x k fuel,
+    x < F (k + fuel) ->
+    x < F (find_r_aux x k fuel).
+Proof.
+  intros x k fuel.
+  revert k.
+  induction fuel as [|fuel IH]; intros k Hlt.
+  - simpl in *. replace (k + 0) with k in Hlt by lia. simpl. exact Hlt.
+  - simpl in *.
+    destruct (Nat.ltb x (F k)) eqn:Hk.
+    + apply Nat.ltb_lt. exact Hk.
+    + apply IH.
+      replace (S k + fuel) with (k + S fuel) by lia.
+      exact Hlt.
+Qed.
+
+Lemma find_r_aux_before_false :
+  forall x k fuel j,
+    k <= j ->
+    j < find_r_aux x k fuel ->
+    Nat.ltb x (F j) = false.
+Proof.
+  intros x k fuel.
+  revert x k.
+  induction fuel as [|fuel IH]; intros x k j Hkj Hlt.
+  - simpl in Hlt. lia.
+  - simpl in Hlt.
+    destruct (Nat.ltb x (F k)) eqn:Hk.
+    + lia.
+    + destruct (Nat.eq_dec j k) as [->|Hneq].
+      * exact Hk.
+      * assert (Hskj : S k <= j) by lia.
+        eapply IH; eauto.
+Qed.
+
+Lemma r0_upper :
+  forall n, n < F (r0 n).
+Proof.
+  intro n.
+  unfold r0.
+  apply find_r_aux_upper_from_witness.
+  replace (0 + S (S n)) with (S (S n)) by lia.
+  assert (Hge : F (S (S n)) >= S n) by apply F_ge_Sn.
+  lia.
+Qed.
+
+Corollary r0_upper_S :
+  forall n, n < F (S (r0 n)).
+Proof.
+  intro n.
+  assert (Hup : n < F (r0 n)) by apply r0_upper.
+  assert (Hmono : F (r0 n) <= F (S (r0 n))) by apply F_S_ge.
+  lia.
+Qed.
+
+Lemma r0_minimal :
+  forall n k, k < r0 n -> F k <= n.
+Proof.
+  intros n k Hlt.
+  unfold r0 in Hlt.
+  pose proof (find_r_aux_before_false n 0 (S (S n)) k (Nat.le_0_l k) Hlt) as Hfalse.
+  apply Nat.ltb_ge in Hfalse.
+  exact Hfalse.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Greedy Invariant — Structural Components                             *)
+(*                                                                       *)
+(*************************************************************************)
+
+Fixpoint all_le (m : nat) (xs : list nat) : Prop :=
+  match xs with
+  | [] => True
+  | x :: xs' => x <= m /\ all_le m xs'
+  end.
+
+Definition bound (k : nat) (prev_taken : bool) : nat :=
+  if prev_taken then Nat.pred k else k.
+
+Lemma all_le_weaken : forall m n xs,
+  all_le m xs -> m <= n -> all_le n xs.
+Proof.
+  induction xs as [|x xs IH]; intros Hle Hmn; simpl in *; auto.
+  destruct Hle as [Hx Hxs].
+  split; [lia | exact (IH Hxs Hmn)].
+Qed.
+
+Lemma zeck_valid_cons_ge2 :
+  forall m xs,
+    zeck_valid xs ->
+    all_le m xs ->
+    zeck_valid (S (S m) :: xs).
+Proof.
+  intros m xs [Hdec [Hadj Hge]] Hall.
+  split; [|split].
+  - destruct xs as [|x xs']; simpl; auto.
+    destruct Hall as [Hx Hall'].
+    split; [lia | exact Hdec].
+  - destruct xs as [|x xs']; simpl; auto.
+    destruct Hall as [Hx Hall'].
+    split; [lia | exact Hadj].
+  - simpl. split; [lia | exact Hge].
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Greedy Invariant                                                     *)
+(*                                                                       *)
+(*************************************************************************)
+
+Definition greedy_inv k rem prev_taken xs rem' :=
+  sumF xs + rem' = rem /\
+  zeck_valid xs /\
+  all_le (bound k prev_taken) xs /\
+  (k <= 1 -> xs = [] /\ rem' = rem) /\
+  (rem < F (S (bound k prev_taken)) -> rem' < F (S (bound k prev_taken))).
+
+Lemma greedy_take_step_sum :
+  forall k rem xs rem',
+    F k <= rem ->
+    sumF xs + rem' = rem - F k ->
+    sumF (k :: xs) + rem' = rem.
+Proof.
+  intros k rem xs rem' Hle Hsum.
+  simpl.
+  rewrite <- Nat.add_assoc.
+  rewrite Hsum.
+  apply add_sub_cancel_r.
+  exact Hle.
+Qed.
+
+Lemma zeck_greedy_down_correct_core :
+  forall k rem prev_taken xs rem',
+    zeck_greedy_down k rem prev_taken = (xs, rem') ->
+    greedy_inv k rem prev_taken xs rem'.
+Proof.
+  induction k as [|k IH]; intros rem prev xs rem' H.
+  - simpl in H. inversion H; subst.
+    assert (Hsum : sumF [] + rem' = rem') by (simpl; lia).
+    assert (Hz : zeck_valid []) by (simpl; split; [exact I|]; split; exact I).
+    assert (Hall : all_le (bound 0 prev) []) by (simpl; exact I).
+    assert (Hlow : 0 <= 1 -> ([] : list nat) = [] /\ rem' = rem')
+      by (intros _; split; reflexivity).
+    assert (Hbd : rem' < F (S (bound 0 prev)) -> rem' < F (S (bound 0 prev)))
+      by (intro Hrem; exact Hrem).
+    exact (conj Hsum (conj Hz (conj Hall (conj Hlow Hbd)))).
+  - destruct k as [|k']; simpl in H.
+    + inversion H; subst.
+      assert (Hsum : sumF [] + rem' = rem') by (simpl; lia).
+      assert (Hz : zeck_valid []) by (simpl; split; [exact I|]; split; exact I).
+      assert (Hall : all_le (bound 1 prev) []) by (simpl; exact I).
+      assert (Hlow : 1 <= 1 -> ([] : list nat) = [] /\ rem' = rem')
+        by (intros _; split; reflexivity).
+      assert (Hbd : rem' < F (S (bound 1 prev)) -> rem' < F (S (bound 1 prev)))
+        by (intro Hrem; exact Hrem).
+      exact (conj Hsum (conj Hz (conj Hall (conj Hlow Hbd)))).
+    + destruct prev eqn:Hprev.
+
+      (*
+         prev_taken = true: skip this index
+      *)
+
+      * specialize (IH rem false xs rem' H) as [Hsum [Hz [Hall [Hlow Hbd]]]].
+        refine (conj Hsum (conj Hz (conj _ (conj _ _))));
+          [simpl; exact Hall | intros Hk; lia | intros Hrem; lia].
+
+        (*
+           prev_taken = false: decide to take or skip
+        *)
+
+      * destruct (Nat.leb (F (S (S k'))) rem) eqn:Hle.
+        -- (*
+              take k
+            *)
+           destruct (zeck_greedy_down (S k') (rem - F (S (S k'))) true)
+             as [xs' rem''] eqn:Hpr.
+           change
+             ((S (S k')
+               :: fst (zeck_greedy_down (S k') (rem - F (S (S k'))) true),
+               snd (zeck_greedy_down (S k') (rem - F (S (S k'))) true))
+              = (xs, rem')) in H.
+           rewrite Hpr in H.
+           inversion H; subst xs rem'. clear H.
+           specialize (IH (rem - F (S (S k'))) true xs' rem'' Hpr)
+             as [Hsum [Hz [Hall [Hlow Hbd]]]].
+           refine (conj _ (conj _ (conj _ (conj _ _))));
+             [ apply Nat.leb_le in Hle;
+               eapply greedy_take_step_sum; [exact Hle | exact Hsum]
+             | simpl in Hall; apply (zeck_valid_cons_ge2 k' xs'); assumption
+
+             (*
+                zeck_valid for cons
+             *)
+
+             | simpl; split; [lia|]; apply all_le_weaken with (m:=k'); [exact Hall| lia]
+
+             (*
+                all_le bound k false
+             *)
+
+             | intros Hk; lia
+             | intros Hrem;
+               apply Nat.leb_le in Hle;
+               simpl in Hrem;
+               assert (Hinner : rem - F (S (S k')) < F (S k')) by
+                 (rewrite F_step in Hrem; lia);
+               assert (Hrem'' : rem'' < F (S k')) by (apply Hbd; exact Hinner);
+               apply Nat.lt_le_trans with (m:=F (S k')); [exact Hrem''|];
+               simpl; apply F_monotone_le; lia ].
+        -- specialize (IH rem false xs rem' H) as [Hsum [Hz [Hall [Hlow Hbd]]]].
+        
+            (*
+               skip k
+            *)
+
+           refine (conj Hsum (conj Hz (conj _ (conj _ _))));
+             [ simpl; apply all_le_weaken with (m:=S k'); [exact Hall| lia]
+             | intros Hk; lia
+             | intros Hrem;
+               apply Nat.leb_gt in Hle;
+               assert (Hinner : rem < F (S (S k'))) by lia;
+               assert (Hrem' : rem' < F (S (S k'))) by (apply Hbd; exact Hinner);
+               apply Nat.lt_le_trans with (m:=F (S (S k'))); [exact Hrem'|];
+               simpl; apply F_monotone_le; lia ].
+Qed.
+
+Lemma zeck_greedy_down_inv_k0 :
+  forall rem prev,
+    greedy_inv 0 rem prev
+      (fst (zeck_greedy_down 0 rem prev))
+      (snd (zeck_greedy_down 0 rem prev)).
+Proof.
+  intros rem prev.
+  apply zeck_greedy_down_correct_core.
+  reflexivity.
+Qed.
+
+Lemma zeck_greedy_down_inv_k1 :
+  forall rem prev,
+    greedy_inv 1 rem prev
+      (fst (zeck_greedy_down 1 rem prev))
+      (snd (zeck_greedy_down 1 rem prev)).
+Proof.
+  intros rem prev.
+  apply zeck_greedy_down_correct_core.
+  reflexivity.
+Qed.
+
+Lemma zeck_greedy_down_inv_skip_prev :
+  forall k rem xs rem',
+    zeck_greedy_down (S (S k)) rem true = (xs, rem') ->
+    greedy_inv (S (S k)) rem true xs rem'.
+Proof.
+  intros k rem xs rem' H.
+  apply zeck_greedy_down_correct_core.
+  exact H.
+Qed.
+
+Lemma zeck_greedy_down_inv_skip_lt :
+  forall k rem xs rem',
+    F (S (S k)) > rem ->
+    zeck_greedy_down (S (S k)) rem false = (xs, rem') ->
+    greedy_inv (S (S k)) rem false xs rem'.
+Proof.
+  intros k rem xs rem' _ H.
+  apply zeck_greedy_down_correct_core.
+  exact H.
+Qed.
+
+Lemma zeck_greedy_down_inv_take :
+  forall k rem xs rem',
+    F (S (S k)) <= rem ->
+    zeck_greedy_down (S (S k)) rem false = (xs, rem') ->
+    greedy_inv (S (S k)) rem false xs rem'.
+Proof.
+  intros k rem xs rem' _ H.
+  apply zeck_greedy_down_correct_core.
+  exact H.
+Qed.
+
+Theorem zeck_greedy_down_correct :
+  forall k rem prev xs rem',
+    zeck_greedy_down k rem prev = (xs, rem') ->
+    greedy_inv k rem prev xs rem'.
+Proof.
+  intros k rem prev xs rem' H.
+  destruct k as [|k'].
+  - apply zeck_greedy_down_correct_core. exact H.
+  - destruct k' as [|k''].
+    + apply zeck_greedy_down_correct_core. exact H.
+    + destruct prev.
+      * apply zeck_greedy_down_inv_skip_prev. exact H.
+      * destruct (Nat.leb (F (S (S k''))) rem) eqn:Hleb.
+        -- apply zeck_greedy_down_inv_take.
+           ++ apply Nat.leb_le. exact Hleb.
+           ++ exact H.
+        -- apply zeck_greedy_down_inv_skip_lt.
+           ++ apply Nat.leb_gt. exact Hleb.
+           ++ exact H.
+Qed.
+
+Lemma greedy_top_bound :
+  forall n xs rem',
+    zeck_greedy_down (r0 n) n false = (xs, rem') ->
+    rem' < F (S (r0 n)).
+Proof.
+  intros n xs rem' H.
+  pose proof (zeck_greedy_down_correct (r0 n) n false xs rem' H)
+    as [_ [_ [_ [_ Hbd]]]].
+  simpl in Hbd.
+  apply Hbd.
+  apply r0_upper_S.
+Qed.
+
+Lemma sumF_prefix_lt_next :
+  forall k rem xs rem',
+    greedy_inv (S (S k)) rem false (S (S k) :: xs) rem' ->
+    rem < F (S (S (S k))) ->
+    sumF (S (S k) :: xs) < F (S (S (S k))).
+Proof.
+  intros k rem xs rem' Hinv Hrem.
+  destruct Hinv as [Hsum [_ [_ [_ _]]]].
+  assert (sumF (S (S k) :: xs) <= rem) by lia.
+  lia.
+Qed.
+
+Lemma rem_lt_1_is_0 : forall r, r < 1 -> r = 0.
+Proof.
+  intros r Hr. lia.
+Qed.
+
+Lemma bound_k1_le_1 : forall prev, bound 1 prev <= 1.
+Proof.
+  intro prev. destruct prev; simpl; lia.
+Qed.
+
+Lemma F_2_eq_1 : F 2 = 1.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Lemma F_1_eq_1 : F 1 = 1.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Lemma rem_lt_1_from_inv_k1 :
+  forall rem prev xs rem',
+    zeck_greedy_down 1 rem prev = (xs, rem') ->
+    greedy_inv 1 rem prev xs rem' ->
+    rem < F (S (bound 1 prev)) ->
+    rem' < 1.
+Proof.
+  intros rem prev xs rem' Hcall Hinv Hpre.
+  destruct Hinv as [_ [_ [_ [_ Hbd]]]].
+  specialize (Hbd Hpre).
+  destruct prev.
+  - simpl in Hbd. rewrite F_1_eq_1 in Hbd. lia.
+  - simpl in Hbd. rewrite F_2_eq_1 in Hbd. lia.
+Qed.
+
+Lemma greedy_rem_lt_1_false :
+  forall k rem xs rem',
+    rem < F (S k) ->
+    zeck_greedy_down k rem false = (xs, rem') ->
+    rem' < 1.
+Proof.
+  refine (well_founded_induction
+            lt_wf
+            (fun k =>
+               forall rem xs rem',
+                 rem < F (S k) ->
+                 zeck_greedy_down k rem false = (xs, rem') ->
+                 rem' < 1) _).
+  intros k IH rem xs rem' Hbound Hcall.
+  destruct k as [|k1].
+  - simpl in Hcall. inversion Hcall; subst. exact Hbound.
+  - destruct k1 as [|k2].
+    + simpl in Hcall. inversion Hcall; subst.
+      rewrite F_2_eq_1 in Hbound. exact Hbound.
+    + simpl in Hcall.
+      destruct (Nat.leb (F (S (S k2))) rem) eqn:Hle.
+      * destruct (zeck_greedy_down (S k2) (rem - F (S (S k2))) true)
+          as [xs1 rem1] eqn:Hrec.
+        change
+          ((S (S k2)
+            :: fst (zeck_greedy_down (S k2) (rem - F (S (S k2))) true),
+            snd (zeck_greedy_down (S k2) (rem - F (S (S k2))) true))
+           = (xs, rem')) in Hcall.
+        rewrite Hrec in Hcall.
+        inversion Hcall; subst xs rem'. clear Hcall.
+        apply Nat.leb_le in Hle.
+        assert (Hrem1 : rem - F (S (S k2)) < F (S k2)).
+        { rewrite F_step in Hbound. lia. }
+        destruct k2 as [|k3].
+        -- simpl in Hrec. inversion Hrec; subst.
+           rewrite F_1_eq_1 in Hrem1. exact Hrem1.
+        -- simpl in Hrec.
+           pose proof (IH (S k3) ltac:(lia)) as IHk.
+           exact (IHk (rem - F (S (S (S k3)))) xs1 rem1 Hrem1 Hrec).
+      * apply Nat.leb_gt in Hle.
+        pose proof (IH (S k2) ltac:(lia)) as IHk.
+        exact (IHk rem xs rem' Hle Hcall).
+Qed.
+
+Lemma Z0_rem_lt_1 :
+  forall n xs rem',
+    zeck_greedy_down (r0 n) n false = (xs, rem') ->
+    rem' < 1.
+Proof.
+  intros n xs rem' H.
+  eapply greedy_rem_lt_1_false; eauto.
+  apply r0_upper_S.
+Qed.
+
+Theorem Z0_sound : forall n, sumF (Z0 n) = n.
+Proof.
+  intro n.
+  unfold Z0.
+  destruct (zeck_greedy_down (r0 n) n false) as [xs rem'] eqn:Hgd.
+  pose proof (zeck_greedy_down_correct (r0 n) n false xs rem' Hgd)
+    as [Hsum _].
+  assert (Hrem1 : rem' < 1) by (eapply Z0_rem_lt_1; exact Hgd).
+  assert (Hrem0 : rem' = 0) by (apply rem_lt_1_is_0; exact Hrem1).
+  rewrite Hrem0 in Hsum.
+  rewrite Nat.add_0_r in Hsum.
+  exact Hsum.
+Qed.
+
+Theorem Z0_valid : forall n, zeck_valid (Z0 n).
+Proof.
+  intro n.
+  unfold Z0.
+  destruct (zeck_greedy_down (r0 n) n false) as [xs rem'] eqn:Hgd.
+  pose proof (zeck_greedy_down_correct (r0 n) n false xs rem' Hgd)
+    as [_ [Hvalid _]].
+  exact Hvalid.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Canonical Inversion: Basic Bounds                                    *)
+(*                                                                       *)
+(*************************************************************************)
+
+Lemma sumF_ge_head :
+  forall k xs, sumF (k :: xs) >= F k.
+Proof.
+  intros k xs. simpl. lia.
+Qed.
+
+Lemma zeck_valid_tail :
+  forall k xs,
+    zeck_valid (k :: xs) ->
+    zeck_valid xs.
+Proof.
+  intros k xs [Hdec [Hadj Hge]].
+  destruct xs as [|a xs'].
+  - simpl. split; [trivial|]. split; trivial.
+  - simpl in Hdec, Hadj, Hge.
+    destruct Hdec as [_ Hdec'].
+    destruct Hadj as [_ Hadj'].
+    destruct Hge as [_ Hge'].
+    split; [exact Hdec'|]. split; assumption.
+Qed.
+
+Lemma zeck_valid_head_ge_2 :
+  forall k xs,
+    zeck_valid (k :: xs) ->
+    2 <= k.
+Proof.
+  intros k xs [_ [_ Hge]].
+  simpl in Hge.
+  tauto.
+Qed.
+
+Lemma F_le_of_le : forall a b, a <= b -> F a <= F b.
+Proof.
+  intros a b Hle.
+  destruct (Nat.eq_dec a b) as [Heq|Hneq].
+  - subst. apply Nat.le_refl.
+  - apply F_monotone_le. lia.
+Qed.
+
+Lemma F_lt_succ_of_ge2 : forall k, 2 <= k -> F k < F (S k).
+Proof.
+  intros k Hk.
+  destruct k as [|[|k']]; try lia.
+  replace (F (S (S (S k')))) with (F (S (S k')) + F (S k')) by
+      (symmetry; apply F_step).
+  assert (Hpos : F (S k') >= 1) by apply F_pos_S.
+  lia.
+Qed.
+
+Lemma F_step_pred : forall k, 1 <= k -> F (S k) = F k + F (Nat.pred k).
+Proof.
+  intros k Hk.
+  destruct k as [|k']; [lia|].
+  destruct k' as [|k''].
+  - vm_compute. reflexivity.
+  - simpl. apply F_step.
+Qed.
+
+Lemma sumF_lt_next_of_valid :
+  forall k xs,
+    zeck_valid (k :: xs) ->
+    sumF (k :: xs) < F (S k).
+Proof.
+  intros k xs Hvalid.
+  revert k Hvalid.
+  induction xs as [|x xs' IH]; intros k Hvalid; simpl.
+  - apply zeck_valid_head_ge_2 in Hvalid.
+    rewrite Nat.add_0_r.
+    apply F_lt_succ_of_ge2.
+    exact Hvalid.
+  - pose proof (zeck_valid_tail k (x :: xs') Hvalid) as Htail_valid.
+    pose proof (IH x Htail_valid) as Htail.
+    destruct Hvalid as [_ [Hadj _]].
+    simpl in Hadj.
+    destruct Hadj as [Hgap _].
+    assert (Hsx : S x <= Nat.pred k) by lia.
+    assert (Hsx_le : F (S x) <= F (Nat.pred k)).
+    { apply F_le_of_le. exact Hsx. }
+    assert (Hk1 : 1 <= k) by lia.
+    assert (Hstep : F (S k) = F k + F (Nat.pred k)).
+    { apply F_step_pred. exact Hk1. }
+    rewrite Hstep.
+    assert (Hlt_pred : F x + sumF xs' < F (Nat.pred k)).
+    { eapply Nat.lt_le_trans; [exact Htail | exact Hsx_le]. }
+    lia.
+Qed.
+
+Lemma sumF_cons_pos_valid :
+  forall k xs,
+    zeck_valid (k :: xs) ->
+    0 < sumF (k :: xs).
+Proof.
+  intros k xs Hvalid.
+  simpl.
+  assert (Hk2 : 2 <= k) by (apply zeck_valid_head_ge_2 with (xs:=xs); exact Hvalid).
+  assert (Hf : F k >= 1) by (apply F_pos; lia).
+  lia.
+Qed.
+
+Lemma F_succ_le_of_lt_ge2 :
+  forall a b,
+    2 <= a ->
+    a < b ->
+    F (S a) <= F b.
+Proof.
+  intros a b Ha Hlt.
+  destruct (Nat.eq_dec (S a) b) as [Heq|Hneq].
+  - subst. apply Nat.le_refl.
+  - apply F_monotone_le. lia.
+Qed.
+
+Lemma Zeckendorf_unique_core :
+  forall xs ys,
+    zeck_valid xs ->
+    zeck_valid ys ->
+    sumF xs = sumF ys ->
+    xs = ys.
+Proof.
+  induction xs as [|k xs IH]; intros ys Hx Hy Heq.
+  - destruct ys as [|l ys].
+    + reflexivity.
+    + exfalso.
+      pose proof (sumF_cons_pos_valid l ys Hy) as Hpos.
+      rewrite <- Heq in Hpos. simpl in Hpos. lia.
+  - destruct ys as [|l ys].
+    + exfalso.
+      pose proof (sumF_cons_pos_valid k xs Hx) as Hpos.
+      rewrite Heq in Hpos. simpl in Hpos. lia.
+    + assert (Hk : k = l).
+      {
+        destruct (Nat.lt_ge_cases k l) as [Hkl|Hkge].
+        - pose proof (sumF_lt_next_of_valid k xs Hx) as Hup.
+          pose proof (sumF_ge_head l ys) as Hlow.
+          rewrite Heq in Hup.
+          assert (Hf : F (S k) <= F l).
+          {
+            apply F_succ_le_of_lt_ge2.
+            - apply zeck_valid_head_ge_2 with (xs:=xs). exact Hx.
+            - exact Hkl.
+          }
+          lia.
+        - destruct (Nat.lt_ge_cases l k) as [Hlk|Hlge].
+          + pose proof (sumF_lt_next_of_valid l ys Hy) as Hup.
+            pose proof (sumF_ge_head k xs) as Hlow.
+            rewrite <- Heq in Hup.
+            assert (Hf : F (S l) <= F k).
+            {
+              apply F_succ_le_of_lt_ge2.
+              - apply zeck_valid_head_ge_2 with (xs:=ys). exact Hy.
+              - exact Hlk.
+            }
+            lia.
+          + lia.
+      }
+      subst l.
+      apply f_equal.
+      apply IH.
+      * apply zeck_valid_tail with (k:=k). exact Hx.
+      * apply zeck_valid_tail with (k:=k). exact Hy.
+      * simpl in Heq. lia.
+Qed.
+
+Theorem Z0_of_sumF :
+  forall xs, zeck_valid xs -> Z0 (sumF xs) = xs.
+Proof.
+  intros xs Hvalid.
+  apply Zeckendorf_unique_core.
+  - apply Z0_valid.
+  - exact Hvalid.
+  - apply Z0_sound.
+Qed.
+
+Theorem Zeckendorf_unique :
+  forall xs ys,
+    zeck_valid xs ->
+    zeck_valid ys ->
+    sumF xs = sumF ys ->
+    xs = ys.
+Proof.
+  intros xs ys Hx Hy Heq.
+  rewrite <- (Z0_of_sumF xs Hx).
+  rewrite <- (Z0_of_sumF ys Hy).
+  f_equal.
+  exact Heq.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Bridge to Carryless Pairing (P0)                                     *)
+(*                                                                       *)
+(*************************************************************************)
+
+Lemma sumF_app : forall xs ys, sumF (xs ++ ys) = sumF xs + sumF ys.
+Proof.
+  induction xs as [|a xs IH]; intro ys; simpl.
+  - lia.
+  - rewrite IH. lia.
+Qed.
+
+Lemma all_ge_2_in :
+  forall xs k, all_ge_2 xs -> In k xs -> 2 <= k.
+Proof.
+  induction xs as [|a xs IH]; intros k Hge Hin; simpl in *.
+  - contradiction.
+  - destruct Hge as [Ha Hxs].
+    destruct Hin as [<-|Hin].
+    + exact Ha.
+    + apply (IH k Hxs Hin).
+Qed.
+
+Lemma all_le_in :
+  forall m xs k, all_le m xs -> In k xs -> k <= m.
+Proof.
+  induction xs as [|a xs IH]; intros k Hle Hin; simpl in *.
+  - contradiction.
+  - destruct Hle as [Ha Hxs].
+    destruct Hin as [<-|Hin].
+    + exact Ha.
+    + apply (IH k Hxs Hin).
+Qed.
+
+Lemma sumF_in_ge :
+  forall xs k, In k xs -> F k <= sumF xs.
+Proof.
+  induction xs as [|a xs IH]; intros k Hin; simpl in *.
+  - contradiction.
+  - destruct Hin as [<-|Hin].
+    + lia.
+    + specialize (IH k Hin). lia.
+Qed.
+
+Lemma Z0_indices_below_r0 :
+  forall x e,
+    In e (Z0 x) ->
+    e < r0 x.
+Proof.
+  intros x e Hin.
+  unfold Z0 in Hin.
+  destruct (zeck_greedy_down (r0 x) x false) as [xs rem'] eqn:Hgd.
+  simpl in Hin.
+  pose proof (zeck_greedy_down_correct (r0 x) x false xs rem' Hgd)
+    as [Hsum [_ [Hall _]]].
+  assert (Hele : e <= r0 x).
+  { apply (all_le_in (r0 x) xs e Hall Hin). }
+  destruct (Nat.eq_dec e (r0 x)) as [Heq|Hneq].
+  - subst e.
+    assert (Hf_le : F (r0 x) <= sumF xs).
+    { apply sumF_in_ge. exact Hin. }
+    assert (Hf_le_x : F (r0 x) <= x) by lia.
+    pose proof (r0_upper x) as Hru.
+    lia.
+  - lia.
+Qed.
+
+Lemma two_S : forall n, two (S n) = S (S (two n)).
+Proof.
+  intro n.
+  unfold two.
+  simpl.
+  rewrite Nat.add_succ_r.
+  reflexivity.
+Qed.
+
+Lemma is_even_two : forall n, is_even (two n) = true.
+Proof.
+  induction n as [|n IH].
+  - reflexivity.
+  - rewrite two_S. simpl. exact IH.
+Qed.
+
+Lemma is_even_S_two_false : forall n, is_even (S (two n)) = false.
+Proof.
+  induction n as [|n IH].
+  - reflexivity.
+  - rewrite two_S. simpl. exact IH.
+Qed.
+
+Lemma two_j_minus1_formula :
+  forall j, two_j_minus1 j = 2 * j - 1.
+Proof.
+  intro j.
+  unfold two_j_minus1.
+  rewrite <- Nat.sub_1_r.
+  unfold two.
+  lia.
+Qed.
+
+Lemma two_j_minus1_lt :
+  forall a b, b < a -> two_j_minus1 b < two_j_minus1 a.
+Proof.
+  intros a b Hlt.
+  repeat rewrite two_j_minus1_formula.
+  lia.
+Qed.
+
+Lemma two_j_minus1_gap2 :
+  forall a b, a >= b + 2 -> two_j_minus1 a >= two_j_minus1 b + 2.
+Proof.
+  intros a b Hgap.
+  repeat rewrite two_j_minus1_formula.
+  lia.
+Qed.
+
+Lemma two_j_minus1_ge_1 :
+  forall j, 1 <= j -> 1 <= two_j_minus1 j.
+Proof.
+  intros j Hj.
+  rewrite two_j_minus1_formula.
+  lia.
+Qed.
+
+Lemma is_even_two_plus :
+  forall a n, is_even (two a + n) = is_even n.
+Proof.
+  induction a as [|a IH]; intro n.
+  - simpl. reflexivity.
+  - rewrite two_S. simpl. apply IH.
+Qed.
+
+Lemma is_even_double_plus :
+  forall a n, is_even (2 * a + n) = is_even n.
+Proof.
+  induction a as [|a IH]; intro n.
+  - simpl. reflexivity.
+  - replace (2 * S a + n) with (S (S (2 * a + n))) by lia.
+    simpl.
+    apply IH.
+Qed.
+
+Lemma is_even_two_j_minus1_false :
+  forall j, 1 <= j -> is_even (two_j_minus1 j) = false.
+Proof.
+  intros j Hj.
+  destruct j as [|j']; [lia|].
+  unfold two_j_minus1.
+  rewrite two_S.
+  apply is_even_S_two_false.
+Qed.
+
+Lemma strictly_decreasing_map_two :
+  forall xs, strictly_decreasing xs -> strictly_decreasing (map two xs).
+Proof.
+  induction xs as [|a xs IH]; intro Hdec; simpl; auto.
+  destruct xs as [|b xs']; simpl in *; auto.
+  destruct Hdec as [Hab Htail].
+  split.
+  - unfold two. lia.
+  - apply IH. exact Htail.
+Qed.
+
+Lemma no_adjacent_map_two :
+  forall xs, no_adjacent xs -> no_adjacent (map two xs).
+Proof.
+  induction xs as [|a xs IH]; intro Hadj; simpl; auto.
+  destruct xs as [|b xs']; simpl in *; auto.
+  destruct Hadj as [Hab Htail].
+  split.
+  - unfold two. lia.
+  - apply IH. exact Htail.
+Qed.
+
+Lemma all_ge_2_map_two :
+  forall xs, all_ge_2 xs -> all_ge_2 (map two xs).
+Proof.
+  induction xs as [|a xs IH]; intro Hge; simpl; auto.
+  destruct Hge as [Ha Htail].
+  split.
+  - unfold two. lia.
+  - apply IH. exact Htail.
+Qed.
+
+Lemma strictly_decreasing_map_odd :
+  forall Bx xs,
+    strictly_decreasing xs ->
+    strictly_decreasing (map (fun j => Bx + two_j_minus1 j) xs).
+Proof.
+  intros Bx xs Hdec.
+  revert Bx Hdec.
+  induction xs as [|a xs IH]; intros Bx Hdec; simpl; auto.
+  destruct xs as [|b xs']; simpl in *; auto.
+  destruct Hdec as [Hab Htail].
+  split.
+  - apply Nat.add_lt_mono_l. apply two_j_minus1_lt. exact Hab.
+  - apply IH. exact Htail.
+Qed.
+
+Lemma no_adjacent_map_odd :
+  forall Bx xs,
+    no_adjacent xs ->
+    no_adjacent (map (fun j => Bx + two_j_minus1 j) xs).
+Proof.
+  intros Bx xs Hadj.
+  revert Bx Hadj.
+  induction xs as [|a xs IH]; intros Bx Hadj; simpl; auto.
+  destruct xs as [|b xs']; simpl in *; auto.
+  destruct Hadj as [Hab Htail].
+  split.
+  - assert (Hgap : two_j_minus1 a >= two_j_minus1 b + 2).
+    { apply two_j_minus1_gap2. exact Hab. }
+    lia.
+  - apply IH. exact Htail.
+Qed.
+
+Lemma all_ge_2_map_odd :
+  forall Bx xs,
+    all_ge_2 xs ->
+    all_ge_2 (map (fun j => Bx + two_j_minus1 j) xs).
+Proof.
+  intros Bx xs Hge.
+  revert Bx Hge.
+  induction xs as [|a xs IH]; intros Bx Hge; simpl; auto.
+  destruct Hge as [Ha Htail].
+  split.
+  - rewrite two_j_minus1_formula.
+    lia.
+  - apply IH. exact Htail.
+Qed.
+
+Lemma even_band_valid :
+  forall x, zeck_valid (even_band P0 x).
+Proof.
+  intro x.
+  unfold even_band, P0.
+  pose proof (Z0_valid x) as [Hdec [Hadj Hge]].
+  split.
+  - apply strictly_decreasing_map_two. exact Hdec.
+  - split.
+    + apply no_adjacent_map_two. exact Hadj.
+    + apply all_ge_2_map_two. exact Hge.
+Qed.
+
+Lemma odd_band_valid :
+  forall x y, zeck_valid (odd_band P0 x y).
+Proof.
+  intros x y.
+  unfold odd_band, P0.
+  pose proof (Z0_valid y) as [Hdec [Hadj Hge]].
+  split.
+  - apply strictly_decreasing_map_odd. exact Hdec.
+  - split.
+    + apply no_adjacent_map_odd. exact Hadj.
+    + apply all_ge_2_map_odd. exact Hge.
+Qed.
+
+Lemma even_band_lt_B :
+  forall x e, In e (even_band P0 x) -> e < B P0 x.
+Proof.
+  intros x e Hin.
+  unfold even_band, P0 in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [j [He Hj]].
+  subst e.
+  assert (Hjlt : j < r0 x).
+  { apply Z0_indices_below_r0. exact Hj. }
+  unfold P0.
+  unfold B.
+  unfold two.
+  simpl.
+  replace (2 * r0 x) with (r0 x + r0 x) by lia.
+  lia.
+Qed.
+
+Lemma odd_band_ge_B1 :
+  forall x y o, In o (odd_band P0 x y) -> S (B P0 x) <= o.
+Proof.
+  intros x y o Hin.
+  unfold odd_band, P0 in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [j [Ho Hj]].
+  subst o.
+  assert (Hj2 : 2 <= j).
+  { apply all_ge_2_in with (xs:=Z0 y); [|exact Hj]. 
+    destruct (Z0_valid y) as [_ [_ Hge]]; exact Hge. }
+  assert (Hj1 : 1 <= j) by lia.
+  assert (Hodd1 : 1 <= two_j_minus1 j) by (apply two_j_minus1_ge_1; exact Hj1).
+  unfold B.
+  unfold P0.
+  simpl.
+  lia.
+Qed.
+
+Lemma odd_band_gt_even_band :
+  forall x y o e,
+    In o (odd_band P0 x y) ->
+    In e (even_band P0 x) ->
+    o > e.
+Proof.
+  intros x y o e Ho He.
+  pose proof (odd_band_ge_B1 x y o Ho) as Hob.
+  pose proof (even_band_lt_B x e He) as Heb.
+  lia.
+Qed.
+
+Lemma odd_band_gap_even_band :
+  forall x y o e,
+    In o (odd_band P0 x y) ->
+    In e (even_band P0 x) ->
+    o >= e + 2.
+Proof.
+  intros x y o e Ho He.
+  pose proof (odd_band_ge_B1 x y o Ho) as Hob.
+  pose proof (even_band_lt_B x e He) as Heb.
+  lia.
+Qed.
+
+Lemma all_ge_2_app :
+  forall xs ys, all_ge_2 xs -> all_ge_2 ys -> all_ge_2 (xs ++ ys).
+Proof.
+  induction xs as [|a xs IH]; intros ys Hx Hy; simpl.
+  - exact Hy.
+  - destruct Hx as [Ha Hxs]. split; [exact Ha|]. apply IH; assumption.
+Qed.
+
+Lemma strictly_decreasing_app :
+  forall xs ys,
+    strictly_decreasing xs ->
+    strictly_decreasing ys ->
+    (forall x y, In x xs -> In y ys -> x > y) ->
+    strictly_decreasing (xs ++ ys).
+Proof.
+  induction xs as [|a xs IH]; intros ys Hx Hy Hcross; simpl.
+  - exact Hy.
+  - destruct xs as [|b xs'].
+    + simpl.
+      destruct ys as [|y ys'].
+      * simpl. exact I.
+      * simpl. split.
+        -- apply Hcross; simpl; auto.
+        -- exact Hy.
+    + simpl in Hx.
+      destruct Hx as [Hab Htail].
+      simpl.
+      split; [exact Hab|].
+      apply IH; try assumption.
+      intros x y Hinx Hiny.
+      apply Hcross; simpl; auto.
+Qed.
+
+Lemma no_adjacent_app :
+  forall xs ys,
+    no_adjacent xs ->
+    no_adjacent ys ->
+    (forall x y, In x xs -> In y ys -> x >= y + 2) ->
+    no_adjacent (xs ++ ys).
+Proof.
+  induction xs as [|a xs IH]; intros ys Hx Hy Hcross; simpl.
+  - exact Hy.
+  - destruct xs as [|b xs'].
+    + simpl.
+      destruct ys as [|y ys'].
+      * simpl. exact I.
+      * simpl. split.
+        -- apply Hcross; simpl; auto.
+        -- exact Hy.
+    + simpl in Hx.
+      destruct Hx as [Hab Htail].
+      simpl.
+      split; [exact Hab|].
+      apply IH; try assumption.
+      intros x y Hinx Hiny.
+      apply Hcross; simpl; auto.
+Qed.
+
+Lemma odd_even_concat_valid :
+  forall x y,
+    zeck_valid (odd_band P0 x y ++ even_band P0 x).
+Proof.
+  intros x y.
+  pose proof (odd_band_valid x y) as [Hdec_o [Hadj_o Hge_o]].
+  pose proof (even_band_valid x) as [Hdec_e [Hadj_e Hge_e]].
+  split.
+  - eapply strictly_decreasing_app; eauto.
+    intros o e Ho He.
+    apply odd_band_gt_even_band with (x:=x) (y:=y); assumption.
+  - split.
+    + eapply no_adjacent_app; eauto.
+      intros o e Ho He.
+      apply odd_band_gap_even_band with (x:=x) (y:=y); assumption.
+    + apply all_ge_2_app; assumption.
+Qed.
+
+Lemma pair_P0_as_odd_even_sum :
+  forall x y,
+    pair P0 x y = sumF (odd_band P0 x y ++ even_band P0 x).
+Proof.
+  intros x y.
+  unfold pair.
+  rewrite !sumF_app.
+  lia.
+Qed.
+
+Theorem Z0_pair_is_concat :
+  forall x y,
+    Z0 (pair P0 x y) = odd_band P0 x y ++ even_band P0 x.
+Proof.
+  intros x y.
+  rewrite pair_P0_as_odd_even_sum.
+  apply Z0_of_sumF.
+  apply odd_even_concat_valid.
+Qed.
+
+Lemma even_band_even :
+  forall x k,
+    In k (even_band P0 x) ->
+    is_even k = true.
+Proof.
+  intros x k Hin.
+  unfold even_band, P0 in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [e [He _]].
+  subst k.
+  apply is_even_two.
+Qed.
+
+Lemma odd_band_even_false :
+  forall x y k,
+    In k (odd_band P0 x y) ->
+    is_even k = false.
+Proof.
+  intros x y k Hin.
+  unfold odd_band, P0 in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [j [Hk Hj]].
+  subst k.
+  assert (Hj2 : 2 <= j).
+  { apply all_ge_2_in with (xs:=Z0 y); [|exact Hj].
+    destruct (Z0_valid y) as [_ [_ Hge]]; exact Hge. }
+  assert (Hj1 : 1 <= j) by lia.
+  unfold B.
+  rewrite is_even_double_plus.
+  apply is_even_two_j_minus1_false.
+  exact Hj1.
+Qed.
+
+Lemma odd_band_odd_ge_B1_true :
+  forall x y k,
+    In k (odd_band P0 x y) ->
+    odd_ge_B1 (B P0 x) k = true.
+Proof.
+  intros x y k Hin.
+  unfold odd_ge_B1.
+  unfold is_odd.
+  rewrite (odd_band_even_false x y k Hin).
+  apply Nat.leb_le.
+  apply (odd_band_ge_B1 x y k).
+  exact Hin.
+Qed.
+
+Lemma even_band_odd_ge_B1_false :
+  forall x k,
+    In k (even_band P0 x) ->
+    odd_ge_B1 (B P0 x) k = false.
+Proof.
+  intros x k Hin.
+  unfold odd_ge_B1.
+  unfold is_odd.
+  rewrite (even_band_even x k Hin).
+  reflexivity.
+Qed.
+
+Lemma filter_false_nil :
+  forall (A : Type) (p : A -> bool) (xs : list A),
+    (forall a, In a xs -> p a = false) ->
+    filter p xs = [].
+Proof.
+  intros A p xs Hp.
+  induction xs as [|a xs IH]; simpl.
+  - reflexivity.
+  - assert (Ha : p a = false) by (apply Hp; simpl; auto).
+    rewrite Ha.
+    apply IH.
+    intros b Hb.
+    apply Hp.
+    simpl; auto.
+Qed.
+
+Lemma filter_true_id :
+  forall (A : Type) (p : A -> bool) (xs : list A),
+    (forall a, In a xs -> p a = true) ->
+    filter p xs = xs.
+Proof.
+  intros A p xs Hp.
+  induction xs as [|a xs IH]; simpl.
+  - reflexivity.
+  - assert (Ha : p a = true) by (apply Hp; simpl; auto).
+    rewrite Ha.
+    simpl.
+    f_equal.
+    apply IH.
+    intros b Hb.
+    apply Hp.
+    simpl; auto.
+Qed.
+
+Corollary Z0_even_split :
+  forall x y,
+    filter is_even (Z0 (pair P0 x y)) = even_band P0 x.
+Proof.
+  intros x y.
+  rewrite Z0_pair_is_concat.
+  rewrite filter_app.
+  assert (Hodd_nil : filter is_even (odd_band P0 x y) = []).
+  { apply filter_false_nil. intros a Ha. apply (odd_band_even_false x y a); exact Ha. }
+  assert (Heven_id : filter is_even (even_band P0 x) = even_band P0 x).
+  { apply filter_true_id. intros a Ha. apply (even_band_even x a); exact Ha. }
+  rewrite Hodd_nil, Heven_id. reflexivity.
+Qed.
+
+Corollary Z0_odd_split :
+  forall x y,
+    filter (odd_ge_B1 (B P0 x)) (Z0 (pair P0 x y)) = odd_band P0 x y.
+Proof.
+  intros x y.
+  rewrite Z0_pair_is_concat.
+  rewrite filter_app.
+  assert (Hodd_id :
+    filter (odd_ge_B1 (B P0 x)) (odd_band P0 x y) = odd_band P0 x y).
+  { apply filter_true_id. intros a Ha. apply (odd_band_odd_ge_B1_true x y a); exact Ha. }
+  assert (Heven_nil :
+    filter (odd_ge_B1 (B P0 x)) (even_band P0 x) = []).
+  { apply filter_false_nil. intros a Ha. apply (even_band_odd_ge_B1_false x a); exact Ha. }
+  rewrite Hodd_id, Heven_nil.
+  rewrite app_nil_r.
+  reflexivity.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Fibonacci-Banded Support Window (R12 helper)                         *)
+(*                                                                       *)
+(*************************************************************************)
+
+Definition fib_band (b x : nat) : list nat :=
+  map (fun j => b + j) (Z0 x).
+
+Lemma r0_le_of_lt_F :
+  forall x K,
+    x < F K ->
+    r0 x <= K.
+Proof.
+  intros x K Hx.
+  destruct (le_gt_dec (r0 x) K) as [Hle | Hgt].
+  - exact Hle.
+  - exfalso.
+    assert (HK : K < r0 x) by lia.
+    pose proof (r0_minimal x K HK) as HKmin.
+    lia.
+Qed.
+
+Lemma Z0_index_lt_of_lt_F :
+  forall x K i,
+    x < F K ->
+    In i (Z0 x) ->
+    i < K.
+Proof.
+  intros x K i Hx Hin.
+  pose proof (Z0_indices_below_r0 x i Hin) as Hir0.
+  pose proof (r0_le_of_lt_F x K Hx) as Hr0.
+  lia.
+Qed.
+
+Lemma Z0_index_ge_2 :
+  forall x i,
+    In i (Z0 x) ->
+    2 <= i.
+Proof.
+  intros x i Hin.
+  apply all_ge_2_in with (xs := Z0 x).
+  - destruct (Z0_valid x) as [_ [_ Hge]].
+    exact Hge.
+  - exact Hin.
+Qed.
+
+Lemma fib_band_support_window :
+  forall b K x i,
+    x < F K ->
+    In i (fib_band b x) ->
+    b + 2 <= i /\ i < b + K.
+Proof.
+  intros b K x i Hx Hin.
+  unfold fib_band in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [j [Hij Hj]].
+  subst i.
+  split.
+  - pose proof (Z0_index_ge_2 x j Hj) as Hj2.
+    lia.
+  - pose proof (Z0_index_lt_of_lt_F x K j Hx Hj) as HjK.
+    lia.
+Qed.
+
+Lemma fib_band_no_overlap :
+  forall b1 b2 K x y i1 i2,
+    x < F K ->
+    y < F K ->
+    b1 + K <= b2 ->
+    In i1 (fib_band b1 x) ->
+    In i2 (fib_band b2 y) ->
+    i1 + 1 < i2.
+Proof.
+  intros b1 b2 K x y i1 i2 Hx Hy Hsep Hin1 Hin2.
+  pose proof (fib_band_support_window b1 K x i1 Hx Hin1) as [_ Hi1].
+  pose proof (fib_band_support_window b2 K y i2 Hy Hin2) as [Hi2 _].
+  lia.
+Qed.
+
+
+(* ---- theories/T002/R_SigmaReduction/R03__Encoding_Beta.v ---- *)
+
+(* R03__Beta.v *)
+
+From Coq Require Import Arith List PeanoNat Lia ZArith Znumtheory.
+Import ListNotations.
+Local Open Scope nat_scope.
+
+Definition beta (c d i : nat) : nat :=
+  c mod (1 + (i + 1) * d).
+
+Definition modulus (i d : nat) : nat :=
+  1 + (i + 1) * d.
+
+Lemma beta_eq : forall c d i, beta c d i = c mod (modulus i d).
+Proof.
+  reflexivity.
+Qed.
+
+Definition max_list (xs : list nat) : nat :=
+  fold_right Nat.max 0 xs.
+
+Definition beta_bound (a : list nat) : nat :=
+  S (Nat.max (length a) (max_list a)).
+
+Definition beta_d (a : list nat) : nat :=
+  fact (beta_bound a).
+
+Definition beta_mod (a : list nat) (i : nat) : nat :=
+  modulus i (beta_d a).
+
+Local Open Scope nat_scope.
+
+Definition beta_correct (c d : nat) (a : list nat) : Prop :=
+  forall i : nat,
+    i < length a ->
+    beta c d i = nth i a 0.
+
+Lemma modulus_pos : forall i d, modulus i d >= 1.
+Proof.
+  intros i d. unfold modulus. lia.
+Qed.
+
+Lemma beta_d_pos : forall a, beta_d a > 0.
+Proof.
+  intro a.
+  unfold beta_d.
+  apply lt_O_fact.
+Qed.
+
+Lemma beta_lt_modulus : forall c d i, d > 0 -> beta c d i < modulus i d.
+Proof.
+  intros c d i Hd.
+  unfold beta, modulus.
+  apply Nat.mod_upper_bound.
+  lia.
+Qed.
+
+Lemma fact_divides : forall k m, 1 <= k <= m -> Nat.divide k (fact m).
+Proof.
+  intros k m Hkm.
+  induction m as [|m IH].
+  - lia.
+  - simpl.
+    destruct (Nat.eq_dec k (S m)) as [Heq|Hneq].
+    + subst k.
+      change (Nat.divide (S m) (S m * fact m)).
+      apply Nat.divide_factor_l.
+    + assert (Hkm' : 1 <= k <= m) by lia.
+      specialize (IH Hkm').
+      apply Nat.divide_trans with (m := fact m).
+      * exact IH.
+      * change (Nat.divide (fact m) (S m * fact m)).
+        apply Nat.divide_factor_r.
+Qed.
+
+Lemma beta_d_divisible :
+  forall a k, 1 <= k <= beta_bound a -> Nat.divide k (beta_d a).
+Proof.
+  intros a k Hk.
+  unfold beta_d.
+  apply fact_divides.
+  exact Hk.
+Qed.
+
+Lemma nth_le_max_list :
+  forall a i, i < length a -> nth i a 0 <= max_list a.
+Proof.
+  induction a as [|x xs IH]; intros i Hi; simpl in *.
+  - lia.
+  - destruct i as [|i'].
+    + simpl. apply Nat.le_max_l.
+    + apply Nat.le_trans with (m := nth i' xs 0).
+      * apply Nat.le_refl.
+      * apply Nat.le_trans with (m := max_list xs).
+        -- apply IH. lia.
+        -- apply Nat.le_max_r.
+Qed.
+
+Lemma fact_ge_self :
+  forall n, 1 <= n -> n <= fact n.
+Proof.
+  intros n Hn.
+  destruct n as [|n']; [lia|].
+  replace (fact (S n')) with (S n' * fact n') by reflexivity.
+  assert (Hf : 1 <= fact n') by (apply lt_O_fact).
+  nia.
+Qed.
+
+Lemma beta_mod_gt_value :
+  forall a i, i < length a -> nth i a 0 < beta_mod a i.
+Proof.
+  intros a i Hi.
+  unfold beta_mod, modulus.
+  assert (Hnth_max : nth i a 0 <= max_list a).
+  { apply nth_le_max_list. exact Hi. }
+  assert (Hbound_gt : max_list a < beta_bound a).
+  { unfold beta_bound. lia. }
+  assert (Hfact : beta_bound a <= beta_d a).
+  {
+    unfold beta_d.
+    apply fact_ge_self.
+    unfold beta_bound. lia.
+  }
+  assert (Hmul : 1 + beta_d a <= 1 + (i + 1) * beta_d a).
+  {
+    assert (Hpos : 1 <= i + 1) by lia.
+    nia.
+  }
+  lia.
+Qed.
+
+Lemma gcd_divisor_coprime :
+  forall a b q,
+    Nat.divide q a ->
+    Nat.gcd a b = 1 ->
+    Nat.gcd q b = 1.
+Proof.
+  intros a b q Hqa Hg.
+  assert (Hdiv : Nat.divide (Nat.gcd q b) 1).
+  {
+    apply Nat.divide_trans with (m := Nat.gcd a b).
+    - apply Nat.gcd_greatest.
+      + apply Nat.divide_trans with (m := q).
+        * apply Nat.gcd_divide_l.
+        * exact Hqa.
+      + apply Nat.gcd_divide_r.
+    - rewrite Hg. apply Nat.divide_refl.
+  }
+  apply Nat.divide_1_r in Hdiv.
+  exact Hdiv.
+Qed.
+
+Lemma modulus_coprime_of_divisibility_lt :
+  forall n d i j,
+    (forall k, 1 <= k <= n -> Nat.divide k d) ->
+    i < n ->
+    j < n ->
+    i < j ->
+    Nat.gcd (modulus i d) (modulus j d) = 1.
+Proof.
+  intros n d i j Hdiv Hi Hj Hij.
+  set (mi := modulus i d).
+    set (mj := modulus j d).
+    set (g := Nat.gcd mi mj).
+    assert (Hgmi : Nat.divide g mi) by (unfold g; apply Nat.gcd_divide_l).
+    assert (Hgmj : Nat.divide g mj) by (unfold g; apply Nat.gcd_divide_r).
+    assert (Hgdiff : Nat.divide g (mj - mi)).
+    { apply Nat.divide_sub_r; assumption. }
+    assert (Hdiff : mj - mi = (j - i) * d).
+    {
+      unfold mi, mj, modulus.
+      replace (1 + (j + 1) * d - (1 + (i + 1) * d))
+        with ((j + 1) * d - (i + 1) * d) by lia.
+      rewrite Nat.mul_sub_distr_r.
+      lia.
+    }
+    rewrite Hdiff in Hgdiff.
+    assert (Hgcdgd1 : Nat.gcd g d = 1).
+    {
+      apply Nat.gcd_unique.
+      - apply Nat.divide_1_l.
+      - apply Nat.divide_1_l.
+      - intros q Hqg Hqd.
+        assert (Hqmi : Nat.divide q mi).
+        { apply Nat.divide_trans with (m := g); assumption. }
+        assert (Hqterm : Nat.divide q ((i + 1) * d)).
+        { apply Nat.divide_mul_r. exact Hqd. }
+        assert (Hq1 : Nat.divide q (mi - (i + 1) * d)).
+        { apply Nat.divide_sub_r; assumption. }
+        replace (mi - (i + 1) * d) with 1 in Hq1 by (unfold mi, modulus; lia).
+        exact Hq1.
+    }
+    assert (Hgji : Nat.divide g (j - i)).
+    {
+      apply Nat.gauss with (m := d).
+      - rewrite Nat.mul_comm. exact Hgdiff.
+      - exact Hgcdgd1.
+    }
+    assert (Hjid : Nat.divide (j - i) d).
+    { apply Hdiv. lia. }
+    assert (Hgd : Nat.divide g d).
+    { apply Nat.divide_trans with (m := j - i); assumption. }
+    assert (Hg1 : g = 1).
+    {
+      apply (proj1 (Nat.divide_gcd_iff g d)) in Hgd.
+      rewrite Hgcdgd1 in Hgd.
+      exact (eq_sym Hgd).
+    }
+    unfold g, mi, mj in Hg1.
+    exact Hg1.
+Qed.
+
+Lemma modulus_coprime_of_divisibility :
+  forall n d i j,
+    (forall k, 1 <= k <= n -> Nat.divide k d) ->
+    i < n ->
+    j < n ->
+    i <> j ->
+    Nat.gcd (modulus i d) (modulus j d) = 1.
+Proof.
+  intros n d i j Hdiv Hi Hj Hneq.
+  destruct (Nat.lt_total i j) as [Hij|Hcase].
+  - apply (modulus_coprime_of_divisibility_lt n d i j Hdiv Hi Hj Hij).
+  - assert (Hji : j < i) by lia.
+    rewrite Nat.gcd_comm.
+    apply (modulus_coprime_of_divisibility_lt n d j i Hdiv Hj Hi Hji).
+Qed.
+
+Lemma beta_mod_coprime :
+  forall a i j,
+    i < length a -> j < length a -> i <> j ->
+    Nat.gcd (beta_mod a i) (beta_mod a j) = 1.
+Proof.
+  intros a i j Hi Hj Hneq.
+  unfold beta_mod.
+  apply modulus_coprime_of_divisibility with (n := beta_bound a).
+  - intros k Hk. apply beta_d_divisible. exact Hk.
+  - unfold beta_bound. lia.
+  - unfold beta_bound. lia.
+  - exact Hneq.
+Qed.
+
+Lemma crt_two :
+  forall m1 m2 r1 r2 : nat,
+    m1 > 0 -> m2 > 0 ->
+    Nat.gcd m1 m2 = 1 ->
+    exists c, c mod m1 = r1 mod m1 /\ c mod m2 = r2 mod m2.
+Proof.
+  intros m1 m2 r1 r2 Hm1 Hm2 Hg.
+  pose proof (Nat.gcd_bezout_pos_pos m1 Hm1 m2 Hm2) as [Hb12 Hb21].
+  rewrite Hg in Hb12, Hb21.
+  destruct Hb12 as [u1 [v1 Hu1]].
+  destruct Hb21 as [u2 [v2 Hu2]].
+  exists (r1 * u2 * m2 + r2 * u1 * m1).
+  split.
+  - rewrite Nat.Div0.add_mod by lia.
+    assert (Hleft : (r1 * u2 * m2) mod m1 = r1 mod m1).
+    {
+      rewrite <- Nat.mul_assoc.
+      rewrite Hu2.
+      rewrite Nat.mul_add_distr_l.
+      rewrite Nat.Div0.add_mod by lia.
+      rewrite Nat.mul_assoc.
+      rewrite Nat.Div0.mod_mul by lia.
+      rewrite Nat.add_0_r.
+      rewrite Nat.mul_1_r.
+      rewrite Nat.Div0.mod_mod by lia.
+      reflexivity.
+    }
+    assert (Hright : (r2 * u1 * m1) mod m1 = 0).
+    {
+      replace (r2 * u1 * m1) with ((r2 * u1) * m1) by lia.
+      rewrite Nat.Div0.mod_mul by lia.
+      reflexivity.
+    }
+    rewrite Hleft, Hright.
+    rewrite Nat.add_0_r.
+    rewrite Nat.Div0.mod_mod by lia.
+    reflexivity.
+  - rewrite Nat.Div0.add_mod by lia.
+    assert (Hleft : (r2 * u1 * m1) mod m2 = r2 mod m2).
+    {
+      rewrite <- Nat.mul_assoc.
+      rewrite Hu1.
+      rewrite Nat.mul_add_distr_l.
+      rewrite Nat.Div0.add_mod by lia.
+      rewrite Nat.mul_assoc.
+      rewrite Nat.Div0.mod_mul by lia.
+      rewrite Nat.add_0_r.
+      rewrite Nat.mul_1_r.
+      rewrite Nat.Div0.mod_mod by lia.
+      reflexivity.
+    }
+    assert (Hright : (r1 * u2 * m2) mod m2 = 0).
+    {
+      replace (r1 * u2 * m2) with ((r1 * u2) * m2) by lia.
+      rewrite Nat.Div0.mod_mul by lia.
+      reflexivity.
+    }
+    rewrite Hright, Hleft.
+    rewrite Nat.add_0_l.
+    rewrite Nat.Div0.mod_mod by lia.
+    reflexivity.
+Qed.
+
+Lemma nth_default_irrel :
+  forall (A : Type) (l : list A) i d1 d2,
+    i < length l ->
+    nth i l d1 = nth i l d2.
+Proof.
+  intros A l.
+  induction l as [|x xs IH]; intros i d1 d2 Hi; simpl in *.
+  - lia.
+  - destruct i as [|i'].
+    + reflexivity.
+    + apply IH. lia.
+Qed.
+
+Lemma fold_mul_pos :
+  forall ms,
+    (forall i, i < length ms -> nth i ms 0 > 0) ->
+    fold_right Nat.mul 1 ms > 0.
+Proof.
+  induction ms as [|m ms IH]; intros Hpos; simpl.
+  - lia.
+  - assert (Hm : m > 0) by (apply (Hpos 0); simpl; lia).
+    assert (Hrest : fold_right Nat.mul 1 ms > 0).
+    {
+      apply IH.
+      intros i Hi.
+      apply (Hpos (S i)).
+      simpl. lia.
+    }
+    apply Nat.mul_pos_pos; assumption.
+Qed.
+
+Lemma nth_divides_prod :
+  forall i ms,
+    i < length ms ->
+    Nat.divide (nth i ms 0) (fold_right Nat.mul 1 ms).
+Proof.
+  intros i ms Hi.
+  revert i Hi.
+  induction ms as [|m ms IH]; intros i Hi; simpl in *.
+  - lia.
+  - destruct i as [|i'].
+    + simpl. apply Nat.divide_factor_l.
+    + specialize (IH i' ltac:(lia)).
+      apply Nat.divide_trans with (m := fold_right Nat.mul 1 ms).
+      * exact IH.
+      * apply Nat.divide_factor_r.
+Qed.
+
+Lemma mod_divides_transfer :
+  forall c c' m M,
+    m > 0 ->
+    M > 0 ->
+    Nat.divide m M ->
+    c mod M = c' mod M ->
+    c mod m = c' mod m.
+Proof.
+  intros c c' m M Hm HM [k Hk] Hmod.
+  subst M.
+  assert (Hk : k > 0) by nia.
+  assert (Hmk : m * k > 0) by nia.
+  apply Nat2Z.inj.
+  rewrite !Nat2Z.inj_mod by lia.
+  assert (Hzmod :
+    (Z.of_nat c mod Z.of_nat (m * k))%Z =
+    (Z.of_nat c' mod Z.of_nat (m * k))%Z).
+  {
+    apply (f_equal Z.of_nat) in Hmod.
+    rewrite !Nat2Z.inj_mod in Hmod by lia.
+    rewrite Nat.mul_comm in Hmod.
+    exact Hmod.
+  }
+  rewrite (Zmod_div_mod (Z.of_nat m) (Z.of_nat (m * k)) (Z.of_nat c))%Z.
+  2:{ apply (proj1 (Nat2Z.inj_lt 0 m)). lia. }
+  2:{ apply (proj1 (Nat2Z.inj_lt 0 (m * k))). lia. }
+  2:{
+    exists (Z.of_nat k).
+    rewrite Nat2Z.inj_mul.
+    lia.
+  }
+  rewrite (Zmod_div_mod (Z.of_nat m) (Z.of_nat (m * k)) (Z.of_nat c'))%Z.
+  2:{ apply (proj1 (Nat2Z.inj_lt 0 m)). lia. }
+  2:{ apply (proj1 (Nat2Z.inj_lt 0 (m * k))). lia. }
+  2:{
+    exists (Z.of_nat k).
+    rewrite Nat2Z.inj_mul.
+    lia.
+  }
+  apply (f_equal (fun z => (z mod Z.of_nat m)%Z)) in Hzmod.
+  exact Hzmod.
+Qed.
+
+Lemma coprime_fold_mul :
+  forall m ms,
+    (forall i, i < length ms -> Nat.gcd m (nth i ms 0) = 1) ->
+    Nat.gcd m (fold_right Nat.mul 1 ms) = 1.
+Proof.
+  intros m ms.
+  induction ms as [|m' ms' IH]; intros Hco.
+  - simpl.
+    apply Nat.gcd_unique.
+    + apply Nat.divide_1_l.
+    + apply Nat.divide_refl.
+    + intros q _ Hq1.
+      exact Hq1.
+  - simpl.
+    assert (Hm0 : Nat.gcd m m' = 1).
+    {
+      specialize (Hco 0).
+      simpl in Hco.
+      apply Hco.
+      lia.
+    }
+    assert (Hrest : Nat.gcd m (fold_right Nat.mul 1 ms') = 1).
+    {
+      apply IH.
+      intros i Hi.
+      specialize (Hco (S i)).
+      simpl in Hco.
+      apply Hco.
+      simpl. lia.
+    }
+    apply Nat.gcd_unique.
+    + apply Nat.divide_1_l.
+    + apply Nat.divide_1_l.
+    + intros q Hqm Hqprod.
+      assert (Hq_coprime_m' : Nat.gcd q m' = 1).
+      { apply gcd_divisor_coprime with (a := m) (b := m'); assumption. }
+      assert (Hqrest : Nat.divide q (fold_right Nat.mul 1 ms')).
+      {
+        apply Nat.gauss with (m := m').
+        - exact Hqprod.
+        - exact Hq_coprime_m'.
+      }
+      assert (Hq1 : Nat.divide q 1).
+      {
+        apply Nat.divide_trans with (m := Nat.gcd m (fold_right Nat.mul 1 ms')).
+        - apply Nat.gcd_greatest; assumption.
+        - rewrite Hrest. apply Nat.divide_refl.
+      }
+      exact Hq1.
+Qed.
+
+Lemma crt_list :
+  forall (ms rs : list nat),
+    length ms = length rs ->
+    (forall i, i < length ms -> nth i ms 0 > 0) ->
+    (forall i j, i < length ms -> j < length ms -> i <> j ->
+       Nat.gcd (nth i ms 0) (nth j ms 0) = 1) ->
+    exists c, forall i, i < length ms ->
+      c mod (nth i ms 0) = (nth i rs 0) mod (nth i ms 0).
+Proof.
+  induction ms as [|m ms IH]; intros rs Hlen Hpos Hpair.
+  - destruct rs as [|r rs']; simpl in Hlen; try discriminate.
+    exists 0.
+    intros i Hi. inversion Hi.
+  - destruct rs as [|r rs']; simpl in Hlen; try discriminate.
+    inversion Hlen as [Hlen'].
+    assert (Hmpos : m > 0) by (apply (Hpos 0); simpl; lia).
+    assert (Hpos_tail : forall i, i < length ms -> nth i ms 0 > 0).
+    {
+      intros i Hi.
+      apply (Hpos (S i)).
+      simpl. lia.
+    }
+    assert (Hpair_tail :
+      forall i j, i < length ms -> j < length ms -> i <> j ->
+        Nat.gcd (nth i ms 0) (nth j ms 0) = 1).
+    {
+      intros i j Hi Hj Hij.
+      apply (Hpair (S i) (S j)); simpl; lia.
+    }
+    destruct (IH rs' Hlen' Hpos_tail Hpair_tail) as [c' Hc'].
+    set (M' := fold_right Nat.mul 1 ms).
+    assert (HMpos : M' > 0).
+    {
+      unfold M'. apply fold_mul_pos. exact Hpos_tail.
+    }
+    assert (Hcop_head_each : forall i, i < length ms -> Nat.gcd m (nth i ms 0) = 1).
+    {
+      intros i Hi.
+      apply (Hpair 0 (S i)); simpl; lia.
+    }
+    assert (Hgcd_mM : Nat.gcd m M' = 1).
+    {
+      unfold M'. apply coprime_fold_mul. exact Hcop_head_each.
+    }
+    destruct (crt_two m M' r c' Hmpos HMpos Hgcd_mM) as [c [Hcm HcM]].
+    exists c.
+    intros i Hi.
+    destruct i as [|i'].
+    + simpl. exact Hcm.
+    + simpl.
+      assert (Hi' : i' < length ms).
+      { apply Nat.succ_lt_mono. exact Hi. }
+      assert (Hdiv : Nat.divide (nth i' ms 0) M').
+      { unfold M'. apply nth_divides_prod. exact Hi'. }
+      assert (Hmod : c mod (nth i' ms 0) = c' mod (nth i' ms 0)).
+      {
+        apply mod_divides_transfer with (M := M').
+        - apply Hpos_tail. exact Hi'.
+        - exact HMpos.
+        - exact Hdiv.
+        - exact HcM.
+      }
+      rewrite Hmod.
+      apply Hc'. exact Hi'.
+Qed.
+
+Lemma nth_map_beta_mod_seq :
+  forall a i,
+    i < length a ->
+    nth i (map (beta_mod a) (seq 0 (length a))) 0 = beta_mod a i.
+Proof.
+  intros a i Hi.
+  rewrite (nth_default_irrel _ _ i 0 (beta_mod a 0)).
+  2:{ rewrite length_map, length_seq. exact Hi. }
+  rewrite map_nth.
+  rewrite seq_nth by exact Hi.
+  rewrite Nat.add_0_l.
+  reflexivity.
+Qed.
+
+Theorem beta_exists :
+  forall (a : list nat),
+    exists c, forall i,
+      i < length a ->
+      beta c (beta_d a) i = nth i a 0.
+Proof.
+  intro a.
+  set (ms := map (beta_mod a) (seq 0 (length a))).
+  assert (Hlen : length ms = length a).
+  {
+    unfold ms. rewrite length_map, length_seq. reflexivity.
+  }
+  assert (Hpos : forall i, i < length ms -> nth i ms 0 > 0).
+  {
+    intros i Hi.
+    unfold ms in *.
+    assert (Hi' : i < length a).
+    { rewrite <- Hlen. exact Hi. }
+    rewrite nth_map_beta_mod_seq; [|exact Hi'].
+    unfold beta_mod, modulus.
+    lia.
+  }
+  assert (Hpair :
+    forall i j, i < length ms -> j < length ms -> i <> j ->
+      Nat.gcd (nth i ms 0) (nth j ms 0) = 1).
+  {
+    intros i j Hi Hj Hij.
+    unfold ms in *.
+    assert (Hi' : i < length a) by (rewrite <- Hlen; exact Hi).
+    assert (Hj' : j < length a) by (rewrite <- Hlen; exact Hj).
+    repeat rewrite nth_map_beta_mod_seq by assumption.
+    apply beta_mod_coprime; assumption.
+  }
+  destruct (crt_list ms a Hlen Hpos Hpair) as [c Hc].
+  exists c.
+  intros i Hi.
+  unfold beta.
+  unfold ms in Hc.
+  specialize (Hc i (ltac:(rewrite length_map, length_seq; exact Hi))).
+  rewrite nth_map_beta_mod_seq in Hc by exact Hi.
+  unfold beta_mod, modulus in Hc.
+  rewrite Hc.
+  apply Nat.mod_small.
+  apply beta_mod_gt_value.
+  exact Hi.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R04__Verification_Hilbert_Syntax.v ---- *)
+
+(* R04__Hilbert_Syntax.v *)
+
+From Coq Require Import Init.Logic Arith List Bool.
+Import ListNotations.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+
+Inductive Form : Type :=
+  | F_Bot : Form
+  | F_Imp : Form -> Form -> Form.
+
+Definition Imp (A B : Form) : Form := F_Imp A B.
+Definition Bot : Form := F_Bot.
+
+Fixpoint form_eqb (A B : Form) : bool :=
+  match A, B with
+  | F_Bot, F_Bot => true
+  | F_Imp A1 A2, F_Imp B1 B2 =>
+      andb (form_eqb A1 B1) (form_eqb A2 B2)
+  | _, _ => false
+  end.
+
+Lemma form_eqb_refl : forall A, form_eqb A A = true.
+Proof.
+  induction A as [|A1 IH1 A2 IH2].
+  - reflexivity.
+  - simpl. rewrite IH1. exact IH2.
+Qed.
+
+Lemma form_eqb_true_eq : forall A B, form_eqb A B = true -> A = B.
+Proof.
+  induction A as [|A1 IH1 A2 IH2]; intros B H.
+  - destruct B; [reflexivity|discriminate].
+  - destruct B; [discriminate|].
+    simpl in H.
+    apply Bool.andb_true_iff in H as [H1 H2].
+    apply IH1 in H1; subst.
+    apply IH2 in H2; subst.
+    reflexivity.
+Qed.
+
+Inductive Ax : Form -> Prop :=
+  | Ax_K   : forall A B, Ax (Imp A (Imp B A))
+  | Ax_S   : forall A B C,
+      Ax (Imp (Imp A (Imp B C)) (Imp (Imp A B) (Imp A C)))
+  | Ax_EFQ : forall A, Ax (Imp Bot A).
+
+Definition is_K (phi : Form) : bool :=
+  match phi with
+  | F_Imp A (F_Imp _ A') => form_eqb A A'
+  | _ => false
+  end.
+
+Definition is_EFQ (phi : Form) : bool :=
+  match phi with
+  | F_Imp F_Bot _ => true
+  | _ => false
+  end.
+
+Definition is_S (phi : Form) : bool :=
+  match phi with
+  | F_Imp (F_Imp A (F_Imp B C))
+          (F_Imp (F_Imp A1 B1) (F_Imp A2 C2)) =>
+      andb (andb (form_eqb A A1) (form_eqb A A2))
+           (andb (form_eqb B B1) (form_eqb C C2))
+  | _ => false
+  end.
+
+Definition is_axiom (phi : Form) : bool :=
+  orb (is_EFQ phi) (orb (is_K phi) (is_S phi)).
+
+Lemma is_K_sound : forall phi, is_K phi = true -> Ax phi.
+Proof.
+  intros phi H.
+  destruct phi as [|A R]; simpl in H; try discriminate.
+  destruct R as [|B A']; simpl in H; try discriminate.
+  apply form_eqb_true_eq in H; subst.
+  apply Ax_K.
+Qed.
+
+Lemma is_EFQ_sound : forall phi, is_EFQ phi = true -> Ax phi.
+Proof.
+  intros phi H.
+  destruct phi as [|L R]; simpl in H; try discriminate.
+  destruct L; simpl in H; try discriminate.
+  apply Ax_EFQ.
+Qed.
+
+Lemma is_S_sound : forall phi, is_S phi = true -> Ax phi.
+Proof.
+  intros phi H.
+  destruct phi as [|L R]; simpl in H; try discriminate.
+  destruct L as [|A LR]; simpl in H; try discriminate.
+  destruct LR as [|B C]; simpl in H; try discriminate.
+  destruct R as [|R1 R2]; simpl in H; try discriminate.
+  destruct R1 as [|A1 B1]; simpl in H; try discriminate.
+  destruct R2 as [|A2 C2]; simpl in H; try discriminate.
+  apply Bool.andb_true_iff in H as [Hleft Hright].
+  apply Bool.andb_true_iff in Hleft as [HA1 HA2].
+  apply Bool.andb_true_iff in Hright as [HB1 HC2].
+  apply form_eqb_true_eq in HA1; subst A1.
+  apply form_eqb_true_eq in HA2; subst A2.
+  apply form_eqb_true_eq in HB1; subst B1.
+  apply form_eqb_true_eq in HC2; subst C2.
+  apply Ax_S.
+Qed.
+
+Lemma is_axiom_sound : forall phi, is_axiom phi = true -> Ax phi.
+Proof.
+  intros phi H.
+  unfold is_axiom in H.
+  apply Bool.orb_true_iff in H as [HE|Hrest].
+  - apply is_EFQ_sound. exact HE.
+  - apply Bool.orb_true_iff in Hrest as [HK|HS].
+    + apply is_K_sound. exact HK.
+    + apply is_S_sound. exact HS.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R05__Verification_Hilbert_Checker.v ---- *)
+
+(* R05__Hilbert_Checker.v *)
+
+From Coq Require Import Init.Logic Arith List Bool.
+Import ListNotations.
+
+From T002 Require Import R04__Verification_Hilbert_Syntax.
+
+Definition Proof : Type := list Form.
+
+Fixpoint existsb_local {A : Type} (p : A -> bool) (xs : list A) : bool :=
+  match xs with
+  | [] => false
+  | x :: xs' => orb (p x) (existsb_local p xs')
+  end.
+
+Lemma existsb_local_sound :
+  forall (A : Type) (p : A -> bool) (xs : list A),
+    existsb_local p xs = true ->
+    exists x : A, In x xs /\ p x = true.
+Proof.
+  intros A p xs H.
+  induction xs as [|x xs IH].
+  - discriminate.
+  - simpl in H.
+    unfold orb in H.
+    destruct (p x) eqn:Px.
+    + exists x. split; [left; reflexivity|exact Px].
+    + specialize (IH H).
+      destruct IH as [y [Hyin Hyp]].
+      exists y. split; [right; exact Hyin|exact Hyp].
+Qed.
+
+Definition mp_witness (ctx : list Form) (phi : Form) : bool :=
+  existsb_local
+    (fun psi =>
+       existsb_local
+         (fun chi =>
+            match chi with
+            | F_Imp X Y =>
+                andb (form_eqb X psi) (form_eqb Y phi)
+            | _ => false
+            end)
+         ctx)
+    ctx.
+
+Fixpoint check_lines (ctx : list Form) (pf : Proof) : bool :=
+  match pf with
+  | [] => true
+  | line :: rest =>
+      let ok_line := orb (is_axiom line) (mp_witness ctx line) in
+      andb ok_line (check_lines (line :: ctx) rest)
+  end.
+
+Fixpoint last_opt (pf : Proof) : option Form :=
+  match pf with
+  | [] => None
+  | [x] => Some x
+  | _ :: xs => last_opt xs
+  end.
+
+Definition check (pf : Proof) (goal : Form) : bool :=
+  match last_opt pf with
+  | None => false
+  | Some last => andb (check_lines [] pf) (form_eqb last goal)
+  end.
+
+Module Tests.
+
+  Definition lnil : Proof := [].
+  Definition lcons (x : Form) (xs : Proof) : Proof := x :: xs.
+  Definition l1 (x : Form) : Proof := lcons x lnil.
+  Definition l3 (a b c : Form) : Proof := lcons a (lcons b (lcons c lnil)).
+
+  Definition A0 : Form := Imp Bot Bot.
+  Definition B0 : Form := Imp Bot (Imp Bot Bot).
+
+  Example test_check_empty_rejects :
+    check lnil A0 = false.
+  Proof. vm_compute. reflexivity. Qed.
+
+  Example test_is_axiom_efq :
+    is_axiom (Imp Bot Bot) = true.
+  Proof. vm_compute. reflexivity. Qed.
+
+  Example test_check_single_axiom :
+    check (l1 A0) A0 = true.
+  Proof. vm_compute. reflexivity. Qed.
+
+  Definition line1 : Form := A0.
+  Definition line2 : Form := Imp A0 (Imp B0 A0).
+  Definition line3 : Form := Imp B0 A0.
+
+  Example test_check_mp_script :
+    check (l3 line1 line2 line3) line3 = true.
+  Proof. vm_compute. reflexivity. Qed.
+
+End Tests.
+
+(* ---- theories/T002/R_SigmaReduction/R06__Encoding_Formula_Coding.v ---- *)
+
+(* R06__Formula_Coding.v *)
+
+From Coq Require Import Arith.
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R02__Foundation_Zeckendorf
+  R04__Verification_Hilbert_Syntax.
+
+Fixpoint enc_form (phi : Form) : nat :=
+  match phi with
+  | F_Bot => 0
+  | F_Imp a b => S (pair P0 (enc_form a) (enc_form b))
+  end.
+
+(* ---- theories/T002/R_SigmaReduction/R07__Encoding_Sequence_Coding.v ---- *)
+
+(* R07__Sequence_Coding.v *)
+
+From Coq Require Import Arith List.
+Import ListNotations.
+
+From T002 Require Import
+  R03__Encoding_Beta
+  R06__Encoding_Formula_Coding
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker.
+
+Definition f_i (c d i : nat) : nat := beta c d i.
+
+Lemma beta_trace_exists_for_form_codes :
+  forall (pf : Proof),
+    exists c,
+      forall i,
+        i < length pf ->
+        f_i c (beta_d (map enc_form pf)) i = enc_form (nth i pf Bot).
+Proof.
+  intro pf.
+  set (codes := map enc_form pf).
+  destruct (beta_exists codes) as [c Hc].
+  exists c.
+  intros i Hi.
+  unfold f_i.
+  assert (Hilen : i < length codes).
+  { unfold codes. rewrite length_map. exact Hi. }
+  specialize (Hc i Hilen).
+  rewrite Hc.
+  unfold codes.
+  rewrite (nth_indep (n := i) (map enc_form pf) 0 (enc_form Bot)).
+  2:{ rewrite length_map. exact Hi. }
+  rewrite map_nth.
+  reflexivity.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R08__Constraints_Axiom.v ---- *)
+
+(* R08__Axiom_Constraint.v *)
+
+From Coq Require Import Arith List Bool PeanoNat Lia.
+Import ListNotations.
+
+From T002 Require Import R00__Degree_Framework.
+
+From T002 Require Export
+  R06__Encoding_Formula_Coding
+  R07__Encoding_Sequence_Coding.
+
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R02__Foundation_Zeckendorf
+  R03__Encoding_Beta
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker.
+
+Record Assignment : Type := {
+  as_pf : Proof;
+  as_target : Form;
+  as_c : nat;
+  as_d : nat
+}.
+
+Inductive Constraint : Type :=
+  | C_Axiom : nat -> Constraint
+  | C_MP : nat -> nat -> nat -> Constraint
+  | C_Justification : nat -> Constraint
+  | C_Target : Constraint.
+
+Definition P_axiom (_a : Assignment) (_i : nat) : Expr :=
+  Mul (Var 0) (Var 1).
+
+Theorem axiom_constraint_degree :
+  forall a i,
+    degree (P_axiom a i) <= 2.
+Proof.
+  intros a i.
+  unfold P_axiom.
+  rewrite degree_mul.
+  simpl.
+  lia.
+Qed.
+
+Global Opaque P_axiom.
+
+Definition line_at (a : Assignment) (i : nat) : Form :=
+  nth i (as_pf a) Bot.
+
+Definition axiom_okb (a : Assignment) (i : nat) : bool :=
+  andb (Nat.ltb i (length (as_pf a))) (is_axiom (line_at a i)).
+
+Definition mp_okb (a : Assignment) (i j k : nat) : bool :=
+  andb (Nat.ltb j i)
+    (andb (Nat.ltb k i)
+      (match line_at a k with
+       | F_Imp x y => andb (form_eqb x (line_at a j)) (form_eqb y (line_at a i))
+       | _ => false
+       end)).
+
+Definition justification_okb (a : Assignment) (i : nat) : bool :=
+  andb (Nat.ltb i (length (as_pf a)))
+       (check_lines [] (firstn (S i) (as_pf a))).
+
+Definition target_okb (a : Assignment) : bool :=
+  match last_opt (as_pf a) with
+  | Some last => form_eqb last (as_target a)
+  | None => false
+  end.
+
+Definition constraint_holdsb (a : Assignment) (c : Constraint) : bool :=
+  match c with
+  | C_Axiom i => axiom_okb a i
+  | C_MP i j k => mp_okb a i j k
+  | C_Justification i => justification_okb a i
+  | C_Target => target_okb a
+  end.
+
+Definition constraint_holds (a : Assignment) (c : Constraint) : Prop :=
+  constraint_holdsb a c = true.
+
+Fixpoint satisfies (a : Assignment) (cs : list Constraint) : Prop :=
+  match cs with
+  | [] => True
+  | c :: cs' => constraint_holds a c /\ satisfies a cs'
+  end.
+
+Lemma check_lines_firstn :
+  forall ctx pf n,
+    check_lines ctx pf = true ->
+    check_lines ctx (firstn n pf) = true.
+Proof.
+  intros ctx pf n.
+  revert ctx pf.
+  induction n as [|n IH]; intros ctx pf H.
+  - simpl. reflexivity.
+  - destruct pf as [|line rest].
+    + simpl. reflexivity.
+    + simpl in H.
+      apply Bool.andb_true_iff in H as [Hline Hrest].
+      simpl.
+      apply Bool.andb_true_iff.
+      split.
+      * exact Hline.
+      * apply IH with (ctx := line :: ctx). exact Hrest.
+Qed.
+
+Lemma check_true_implies_target_ok :
+  forall pf goal,
+    check pf goal = true ->
+    match last_opt pf with
+    | Some last => form_eqb last goal = true
+    | None => False
+    end.
+Proof.
+  intros pf goal H.
+  unfold check in H.
+  destruct (last_opt pf) as [last|] eqn:Hlast.
+  - apply Bool.andb_true_iff in H as [_ Hgoal].
+    exact Hgoal.
+  - discriminate.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R09__Constraints_MP.v ---- *)
+
+(* R09__MP_Constraint.v *)
+
+From Coq Require Import Arith List Bool PeanoNat Lia.
+Import ListNotations.
+
+From T002 Require Import R00__Degree_Framework.
+
+From T002 Require Import
+  R03__Encoding_Beta
+  R05__Verification_Hilbert_Checker
+  R08__Constraints_Axiom.
+
+Fixpoint just_constraints_from_pf (i : nat) (pf : Proof) : list Constraint :=
+  match pf with
+  | [] => []
+  | _ :: rest => C_Justification i :: just_constraints_from_pf (S i) rest
+  end.
+
+Definition system_constraints (a : Assignment) : list Constraint :=
+  C_Target :: just_constraints_from_pf 0 (as_pf a).
+
+Definition P_MP (_a : Assignment) (_i : nat) : Expr :=
+  Mul (Var 0) (Mul (Var 1) (Var 2)).
+
+Theorem mp_constraint_degree :
+  forall a i,
+    degree (P_MP a i) <= 3.
+Proof.
+  intros a i.
+  unfold P_MP.
+  rewrite !degree_mul.
+  simpl.
+  lia.
+Qed.
+
+Global Opaque P_MP.
+
+Lemma in_just_constraints_range :
+  forall s pf i,
+    In (C_Justification i) (just_constraints_from_pf s pf) ->
+    s <= i /\ i < s + length pf.
+Proof.
+  intros s pf.
+  revert s.
+  induction pf as [|x xs IH]; intros s i Hin; simpl in *.
+  - contradiction.
+  - destruct Hin as [Heq|Hin].
+    + inversion Heq; subst. lia.
+    + specialize (IH (S s) i Hin). lia.
+Qed.
+
+Lemma in_just_constraints_lt :
+  forall pf i,
+    In (C_Justification i) (just_constraints_from_pf 0 pf) ->
+    i < length pf.
+Proof.
+  intros pf i Hin.
+  pose proof (in_just_constraints_range 0 pf i Hin) as [_ Hlt].
+  simpl in Hlt.
+  exact Hlt.
+Qed.
+
+Lemma in_just_constraints_last_from :
+  forall s pf,
+    pf <> [] ->
+    In (C_Justification (s + length pf - 1)) (just_constraints_from_pf s pf).
+Proof.
+  intros s pf Hnz.
+  revert s Hnz.
+  induction pf as [|x xs IH]; intros s Hnz.
+  - contradiction.
+  - simpl.
+    destruct xs as [|y ys].
+    + left. simpl. replace (s + 1 - 1) with s by lia. reflexivity.
+    + right.
+      replace (s + length (x :: y :: ys) - 1) with (S s + length (y :: ys) - 1).
+      2:{ simpl. lia. }
+      specialize (IH (S s)).
+      assert (Hnz' : y :: ys <> []) by discriminate.
+      specialize (IH Hnz').
+      replace (s + S (length (y :: ys)) - 1) with (S s + length (y :: ys) - 1) by lia.
+      exact IH.
+Qed.
+
+Lemma in_just_constraints_last :
+  forall pf,
+    pf <> [] ->
+    In (C_Justification (length pf - 1)) (just_constraints_from_pf 0 pf).
+Proof.
+  intros pf Hnz.
+  replace (length pf - 1) with (0 + length pf - 1) by lia.
+  apply in_just_constraints_last_from.
+  exact Hnz.
+Qed.
+
+Lemma satisfies_in :
+  forall a cs c,
+    satisfies a cs ->
+    In c cs ->
+    constraint_holds a c.
+Proof.
+  intros a cs.
+  induction cs as [|c0 cs IH]; intros c Hsat Hin.
+  - contradiction.
+  - simpl in Hsat.
+    destruct Hsat as [Hc0 Hcs].
+    simpl in Hin.
+    destruct Hin as [Heq|Hin].
+    + subst. exact Hc0.
+    + apply IH; assumption.
+Qed.
+
+Lemma satisfies_of_all :
+  forall a cs,
+    (forall c, In c cs -> constraint_holds a c) ->
+    satisfies a cs.
+Proof.
+  intros a cs Hall.
+  induction cs as [|c cs IH].
+  - exact I.
+  - simpl.
+    split.
+    + apply Hall. left. reflexivity.
+    + apply IH.
+      intros c' Hin.
+      apply Hall. right. exact Hin.
+Qed.
+
+Lemma in_just_constraints_shape :
+  forall s pf c,
+    In c (just_constraints_from_pf s pf) ->
+    exists i, c = C_Justification i.
+Proof.
+  intros s pf.
+  revert s.
+  induction pf as [|x xs IH]; intros s c Hin; simpl in Hin.
+  - contradiction.
+  - destruct Hin as [Heq|Hin].
+    + exists s. symmetry. exact Heq.
+    + specialize (IH (S s) c Hin).
+      destruct IH as [i Hi].
+      exists i. exact Hi.
+Qed.
+
+Lemma satisfies_system_from_check :
+  forall a,
+    as_d a = beta_d (map enc_form (as_pf a)) ->
+    check (as_pf a) (as_target a) = true ->
+    satisfies a (system_constraints a).
+Proof.
+  intros a _ Hcheck.
+  unfold system_constraints.
+  apply satisfies_of_all.
+  intros c Hin.
+  simpl in Hin.
+  destruct Hin as [Htargetc|Hin].
+  - subst c.
+    unfold constraint_holds, constraint_holdsb, target_okb.
+    unfold check in Hcheck.
+    destruct (last_opt (as_pf a)) as [last|] eqn:Hlast.
+    + apply Bool.andb_true_iff in Hcheck as [_ Hgoal].
+      exact Hgoal.
+    + discriminate.
+  - destruct (in_just_constraints_shape 0 (as_pf a) c Hin) as [i Hi].
+    subst c.
+    unfold constraint_holds, constraint_holdsb, justification_okb.
+    apply Bool.andb_true_iff.
+    split.
+    + apply Nat.ltb_lt.
+      apply in_just_constraints_lt with (pf := as_pf a).
+      exact Hin.
+    + unfold check in Hcheck.
+      destruct (last_opt (as_pf a)) as [last|] eqn:Hlast.
+      * apply Bool.andb_true_iff in Hcheck as [Hlines _].
+        apply check_lines_firstn with (n := S i) in Hlines.
+        exact Hlines.
+      * discriminate.
+Qed.
+
+Lemma check_from_satisfies_system :
+  forall a,
+    satisfies a (system_constraints a) ->
+    check (as_pf a) (as_target a) = true.
+Proof.
+  intros a Hsat.
+  unfold system_constraints in Hsat.
+  simpl in Hsat.
+  destruct Hsat as [Htarget Hrest].
+  unfold constraint_holds, constraint_holdsb, target_okb in Htarget.
+  destruct (as_pf a) as [|x xs] eqn:Hpf.
+  - simpl in Htarget. discriminate.
+  - assert (Hjust_last : constraint_holds a (C_Justification (length (x :: xs) - 1))).
+    {
+      apply satisfies_in with (cs := just_constraints_from_pf 0 (x :: xs)).
+      - exact Hrest.
+      - apply in_just_constraints_last. discriminate.
+    }
+    unfold constraint_holds, constraint_holdsb, justification_okb in Hjust_last.
+    apply Bool.andb_true_iff in Hjust_last as [_ Hlines].
+    rewrite Hpf in Hlines.
+    unfold check.
+    destruct (last_opt (x :: xs)) as [last|] eqn:Hlast.
+    + apply Bool.andb_true_iff.
+      split.
+      * assert (Hfirst : firstn (S (length (x :: xs) - 1)) (x :: xs) = x :: xs).
+        {
+          destruct xs as [|y ys].
+          - reflexivity.
+          - simpl. rewrite firstn_all. reflexivity.
+        }
+        rewrite Hfirst in Hlines.
+        exact Hlines.
+      * exact Htarget.
+    + simpl in Hlast. discriminate.
+Qed.
+
+Theorem proof_equiv_sat :
+  forall pf target,
+    check pf target = true <->
+    exists a,
+      as_pf a = pf /\
+      as_target a = target /\
+      as_d a = beta_d (map enc_form pf) /\
+      satisfies a (system_constraints a).
+Proof.
+  intros pf target.
+  split.
+  - intro Hcheck.
+    destruct (beta_trace_exists_for_form_codes pf) as [c _].
+    exists {| as_pf := pf; as_target := target; as_c := c; as_d := beta_d (map enc_form pf) |}.
+    split; [reflexivity|].
+    split; [reflexivity|].
+    split; [reflexivity|].
+    apply satisfies_system_from_check.
+    + reflexivity.
+    + exact Hcheck.
+  - intros [a [Hpf [Htarget [Hd Hsat]]]].
+    subst.
+    apply check_from_satisfies_system.
+    exact Hsat.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R10__Constraints_Target.v ---- *)
+
+(* R10__Target_Constraint.v *)
+
+From Coq Require Import Arith List Bool PeanoNat Lia.
+Import ListNotations.
+
+From T002 Require Import R00__Degree_Framework.
+
+From T002 Require Import
+  R03__Encoding_Beta
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker
+  R08__Constraints_Axiom
+  R09__Constraints_MP.
+
+Definition P_target (_pf : Proof) (_target : Form) : Expr :=
+  Mul (Var 0) (Var 1).
+
+Theorem target_constraint_degree :
+  forall pf target,
+    degree (P_target pf target) <= 2.
+Proof.
+  intros pf target.
+  unfold P_target.
+  rewrite degree_mul.
+  simpl.
+  lia.
+Qed.
+
+Global Opaque P_target.
+
+Theorem check_true_has_beta_trace :
+  forall pf target,
+    check pf target = true ->
+    exists c,
+      forall i,
+        i < length pf ->
+        f_i c (beta_d (map enc_form pf)) i = enc_form (nth i pf Bot).
+Proof.
+  intros pf target _.
+  apply beta_trace_exists_for_form_codes.
+Qed.
+
+Corollary target_constraint_reflects_check :
+  forall a,
+    satisfies a (system_constraints a) ->
+    check (as_pf a) (as_target a) = true.
+Proof.
+  intros a.
+  apply check_from_satisfies_system.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R11__Constraints_Assembly.v ---- *)
+
+(* R11__Assembly.v *)
+
+From Coq Require Import Arith List Bool PeanoNat Lia.
+Import ListNotations.
+
+From T002 Require Import R00__Degree_Framework.
+
+From T002 Require Import
+  R03__Encoding_Beta
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker
+  R08__Constraints_Axiom
+  R09__Constraints_MP
+  R10__Constraints_Target.
+
+Record Polynomial : Type := {
+  poly_expr : Expr;
+  poly_eval : Assignment -> nat
+}.
+
+Definition total_degree (p : Polynomial) : nat := degree (poly_expr p).
+
+Definition bool_zero (b : bool) : nat := if b then 0 else 1.
+
+Definition degree_witness_assignment : Assignment :=
+  {| as_pf := [];
+     as_target := F_Bot;
+     as_c := 0;
+     as_d := 0 |}.
+
+Definition constraint_poly_expr (c : Constraint) : Expr :=
+  match c with
+  | C_Axiom i => P_axiom degree_witness_assignment i
+  | C_MP i _ _ => P_MP degree_witness_assignment i
+  | C_Justification i => P_MP degree_witness_assignment i
+  | C_Target => P_target [] F_Bot
+  end.
+
+Definition poly_of_constraint (c : Constraint) : Polynomial :=
+  {| poly_expr := constraint_poly_expr c;
+     poly_eval := fun a => bool_zero (constraint_holdsb a c) |}.
+
+Lemma bool_zero_eq_0_iff : forall b, bool_zero b = 0 <-> b = true.
+Proof.
+  destruct b; simpl; split; intro H; try reflexivity; discriminate.
+Qed.
+
+Theorem constraint_poly_semantics :
+  forall a c,
+    constraint_holds a c <-> poly_eval (poly_of_constraint c) a = 0.
+Proof.
+  intros a c.
+  unfold constraint_holds, poly_of_constraint.
+  simpl.
+  rewrite bool_zero_eq_0_iff.
+  tauto.
+Qed.
+
+Lemma poly_constraint_degree_le_3 :
+  forall c, total_degree (poly_of_constraint c) <= 3.
+Proof.
+  intro c.
+  unfold total_degree, poly_of_constraint, constraint_poly_expr.
+  simpl.
+  destruct c as [i|i j k|i|].
+  - apply Nat.le_trans with (m := 2).
+    + apply axiom_constraint_degree.
+    + lia.
+  - apply mp_constraint_degree.
+  - apply mp_constraint_degree.
+  - apply Nat.le_trans with (m := 2).
+    + apply target_constraint_degree.
+    + lia.
+Qed.
+
+Definition polynomial_system (a : Assignment) : list Polynomial :=
+  map poly_of_constraint (system_constraints a).
+
+Definition constraint_system (a : Assignment) : list Polynomial :=
+  polynomial_system a.
+
+Theorem constraints_degree_le_3 :
+  forall a c,
+    In c (system_constraints a) ->
+    total_degree (poly_of_constraint c) <= 3.
+Proof.
+  intros a c _.
+  apply poly_constraint_degree_le_3.
+Qed.
+
+Theorem assembly_degree :
+  forall a P,
+    In P (constraint_system a) ->
+    total_degree P <= 3.
+Proof.
+  intros a P Hin.
+  unfold constraint_system, polynomial_system in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [c [HP _]].
+  subst P.
+  apply poly_constraint_degree_le_3.
+Qed.
+
+Theorem polynomial_system_forall_degree_le_3 :
+  forall a,
+    Forall (fun P => total_degree P <= 3) (polynomial_system a).
+Proof.
+  intros a.
+  apply Forall_forall.
+  intros P HP.
+  unfold constraint_system in *.
+  apply (assembly_degree a P).
+  exact HP.
+Qed.
+
+Theorem proof_equiv_sat_system :
+  forall pf target,
+    check pf target = true <->
+    exists a,
+      as_pf a = pf /\
+      as_target a = target /\
+      as_d a = beta_d (map enc_form pf) /\
+      satisfies a (system_constraints a).
+Proof.
+  apply proof_equiv_sat.
+Qed.
+
+Theorem proof_equiv_poly_zero :
+  forall pf target,
+    check pf target = true <->
+    exists a,
+      as_pf a = pf /\
+      as_target a = target /\
+      as_d a = beta_d (map enc_form pf) /\
+      (forall p, In p (polynomial_system a) -> poly_eval p a = 0).
+Proof.
+  intros pf target.
+  split.
+  - intros Hcheck.
+    destruct (proof_equiv_sat pf target) as [Hforward _].
+    specialize (Hforward Hcheck).
+    destruct Hforward as [a [Hpf [Htarget [Hd Hsat]]]].
+    exists a. repeat split; try assumption.
+    intros p Hp.
+    unfold polynomial_system in Hp.
+    apply in_map_iff in Hp.
+    destruct Hp as [c [Hp Hinc]].
+    subst p.
+    apply (proj1 (constraint_poly_semantics a c)).
+    apply satisfies_in with (cs := system_constraints a).
+    + exact Hsat.
+    + exact Hinc.
+  - intros [a [Hpf [Htarget [Hd Hzero]]]].
+    subst pf target.
+    apply (proj2 (proof_equiv_sat_system (as_pf a) (as_target a))).
+    exists a.
+    split; [reflexivity|].
+    split; [reflexivity|].
+    split; [exact Hd|].
+    apply satisfies_of_all.
+    intros c Hc.
+    apply (proj2 (constraint_poly_semantics a c)).
+    apply Hzero.
+    unfold polynomial_system.
+    apply in_map_iff.
+    exists c.
+    split; [reflexivity|exact Hc].
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R12__Aggregation_Sum_of_Squares.v ---- *)
+
+(* R12__Sum_of_Squares.v *)
+
+From Coq Require Import Arith List Lia.
+Import ListNotations.
+
+From T002 Require Import R00__Degree_Framework.
+
+From T002 Require Import
+  R03__Encoding_Beta
+  R05__Verification_Hilbert_Checker
+  R08__Constraints_Axiom
+  R11__Constraints_Assembly.
+
+Definition agg_sum (sys : list Polynomial) (a : Assignment) : nat :=
+  fold_right Nat.add 0 (map (fun p => poly_eval p a) sys).
+
+Definition Agg (a : Assignment) : Expr :=
+  fold_right Add (Const 0)
+    (map (fun p => Mul (poly_expr p) (poly_expr p)) (polynomial_system a)).
+
+Lemma degree_fold_add_le :
+  forall es k,
+    Forall (fun e => degree e <= k) es ->
+    degree (fold_right Add (Const 0) es) <= k.
+Proof.
+  induction es as [|e es IH]; intros k Hall.
+  - simpl. lia.
+  - simpl.
+    inversion Hall as [|e' es' He Hes]; subst.
+    eapply Nat.le_trans.
+    + apply degree_add.
+    + apply Nat.max_lub.
+      * exact He.
+      * apply IH. exact Hes.
+Qed.
+
+Lemma degree_square_le_6 :
+  forall e,
+    degree e <= 3 ->
+    degree (Mul e e) <= 6.
+Proof.
+  intros e He.
+  rewrite degree_square.
+  lia.
+Qed.
+
+Lemma for_all_square_degree_le_6 :
+  forall ps,
+    Forall (fun p => total_degree p <= 3) ps ->
+    Forall (fun e => degree e <= 6)
+      (map (fun p => Mul (poly_expr p) (poly_expr p)) ps).
+Proof.
+  intros ps Hall.
+  induction Hall as [|p ps Hp Hps IH].
+  - simpl. constructor.
+  - simpl.
+    constructor.
+    + apply degree_square_le_6.
+      exact Hp.
+    + exact IH.
+Qed.
+
+Theorem aggregation_degree :
+  forall a,
+    degree (Agg a) <= 6.
+Proof.
+  intro a.
+  unfold Agg.
+  apply degree_fold_add_le.
+  apply for_all_square_degree_le_6.
+  apply polynomial_system_forall_degree_le_3.
+Qed.
+
+Lemma agg_sum_zero_iff_all_zero :
+  forall sys a,
+    agg_sum sys a = 0 <-> forall p, In p sys -> poly_eval p a = 0.
+Proof.
+  induction sys as [|p ps IH]; intros a; split; intro H.
+  - intros q Hq. inversion Hq.
+  - reflexivity.
+  - unfold agg_sum in H. simpl in H.
+    intros q Hq.
+    assert (Hp : poly_eval p a = 0) by lia.
+    assert (Hps_fold : fold_right Nat.add 0 (map (fun q => poly_eval q a) ps) = 0) by lia.
+    assert (Hps : agg_sum ps a = 0).
+    { unfold agg_sum. exact Hps_fold. }
+    destruct Hq as [-> | Hq']; [exact Hp|].
+    pose proof (proj1 (IH a) Hps) as Hall.
+    exact (Hall q Hq').
+  - unfold agg_sum. simpl.
+    assert (Hp : poly_eval p a = 0) by (apply H; left; reflexivity).
+    assert (Hps : forall q : Polynomial, In q ps -> poly_eval q a = 0).
+    { intros q Hq. apply H. right. exact Hq. }
+    pose proof (proj2 (IH a) Hps) as Hsum.
+    unfold agg_sum in Hsum.
+    lia.
+Qed.
+
+Theorem proof_equiv_agg_sum_zero :
+  forall pf target,
+    check pf target = true <->
+    exists a,
+      as_pf a = pf /\
+      as_target a = target /\
+      as_d a = beta_d (map enc_form pf) /\
+      agg_sum (polynomial_system a) a = 0.
+Proof.
+  intros pf target.
+  split.
+  - intros Hcheck.
+    destruct (proof_equiv_poly_zero pf target) as [Hforward _].
+    specialize (Hforward Hcheck).
+    destruct Hforward as [a [Hpf [Htarget [Hd Hall]]]].
+    exists a.
+    repeat split; try assumption.
+    apply (proj2 (agg_sum_zero_iff_all_zero (polynomial_system a) a)).
+    exact Hall.
+  - intros [a [Hpf [Htarget [Hd Hagg]]]].
+    destruct (proof_equiv_poly_zero pf target) as [_ Hback].
+    apply Hback.
+    exists a.
+    repeat split; try assumption.
+    apply (proj1 (agg_sum_zero_iff_all_zero (polynomial_system a) a)).
+    exact Hagg.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R13__Kernel_API.v ---- *)
+
+(* R13__Kernel_API.v *)
+
+From Coq Require Import List.
+Import ListNotations.
+
+From T002 Require Import
+  R03__Encoding_Beta
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker
+  R08__Constraints_Axiom
+  R09__Constraints_MP
+  R11__Constraints_Assembly
+  R12__Aggregation_Fib_Banded_Equality.
+
+Definition checker : Proof -> Form -> bool :=
+  check.
+
+Definition cubic_accepts : Proof -> Form -> bool :=
+  checker.
+
+Definition canonical_assignment (pf : Proof) (target : Form) : Assignment :=
+  {| as_pf := pf;
+     as_target := target;
+     as_c := 0;
+     as_d := beta_d (map enc_form pf) |}.
+
+Definition emit_cubic_system (pf : Proof) (target : Form) : list Polynomial :=
+  polynomial_system (canonical_assignment pf target).
+
+Definition emit_single_cubic (pf : Proof) (target : Form) : Polynomial * Polynomial :=
+  banded_single_equation_for_system (emit_cubic_system pf target).
+
+Definition compile (pf : Proof) (target : Form) : list Polynomial :=
+  emit_cubic_system pf target.
+
+Definition all_zero (sys : list Polynomial) (a : Assignment) : Prop :=
+  forall p, In p sys -> poly_eval p a = 0.
+
+Definition equation_holds (eqn : Polynomial * Polynomial) (a : Assignment) : Prop :=
+  poly_eval (fst eqn) a = poly_eval (snd eqn) a.
+
+Definition CubicWitness (pf : Proof) (target : Form) : Prop :=
+  exists a,
+    as_pf a = pf /\
+    as_target a = target /\
+    as_d a = beta_d (map enc_form pf) /\
+    equation_holds (emit_single_cubic pf target) a.
+
+Lemma system_constraints_pf_only :
+  forall a1 a2,
+    as_pf a1 = as_pf a2 ->
+    system_constraints a1 = system_constraints a2.
+Proof.
+  intros a1 a2 Hpf.
+  unfold system_constraints.
+  now rewrite Hpf.
+Qed.
+
+Lemma polynomial_system_pf_only :
+  forall a1 a2,
+    as_pf a1 = as_pf a2 ->
+    polynomial_system a1 = polynomial_system a2.
+Proof.
+  intros a1 a2 Hpf.
+  unfold polynomial_system.
+  now rewrite (system_constraints_pf_only a1 a2 Hpf).
+Qed.
+
+Lemma emit_single_cubic_pf_only :
+  forall a pf target,
+    as_pf a = pf ->
+    emit_single_cubic pf target = banded_single_equation a.
+Proof.
+  intros a pf target Hpf.
+  unfold emit_single_cubic, banded_single_equation, banded_single_equation_for_system.
+  unfold emit_cubic_system.
+  rewrite <- (polynomial_system_pf_only a (canonical_assignment pf target)).
+  - reflexivity.
+  - exact Hpf.
+Qed.
+
+Theorem cubic_accepts_iff_cubic_witness :
+  forall pf target,
+    cubic_accepts pf target = true <-> CubicWitness pf target.
+Proof.
+  intros pf target.
+  split.
+  - intros Hcheck.
+    apply (proj1 (proof_equiv_banded_single_equation pf target)) in Hcheck.
+    destruct Hcheck as [a [Hpf [Htarget [Hd Hsingle]]]].
+    exists a.
+    repeat split; try assumption.
+    unfold equation_holds.
+    rewrite (emit_single_cubic_pf_only a pf target Hpf).
+    exact Hsingle.
+  - intros [a [Hpf [Htarget [Hd Heq]]]].
+    apply (proj2 (proof_equiv_banded_single_equation pf target)).
+    exists a.
+    repeat split; try assumption.
+    rewrite (emit_single_cubic_pf_only a pf target Hpf) in Heq.
+    exact Heq.
+Qed.
+
+Theorem cubic_accepts_correct :
+  forall pf target,
+    cubic_accepts pf target = true ->
+    CubicWitness pf target.
+Proof.
+  intros pf target Hacc.
+  exact ((proj1 (cubic_accepts_iff_cubic_witness pf target)) Hacc).
+Qed.
+
+Theorem kernel_constraint_degree_le_3 :
+  forall c,
+    total_degree (poly_of_constraint c) <= 3.
+Proof.
+  exact poly_constraint_degree_le_3.
+Qed.
+
+Theorem kernel_system_degree_le_3 :
+  forall a c,
+    In c (system_constraints a) ->
+    total_degree (poly_of_constraint c) <= 3.
+Proof.
+  exact constraints_degree_le_3.
+Qed.
+
+Theorem compiler_degree_bound :
+  forall pf target,
+    Forall (fun P => total_degree P <= 3)
+           (emit_cubic_system pf target).
+Proof.
+  intros pf target.
+  unfold emit_cubic_system.
+  apply polynomial_system_forall_degree_le_3.
+Qed.
+
+Theorem degree_three_threshold :
+  forall pf target,
+    Forall (fun P => total_degree P <= 3)
+           (compile pf target).
+Proof.
+  intros pf target.
+  unfold compile.
+  apply compiler_degree_bound.
+Qed.
+
+Theorem emit_single_cubic_degree_le_3 :
+  forall pf target,
+    total_degree (fst (emit_single_cubic pf target)) <= 3 /\
+    total_degree (snd (emit_single_cubic pf target)) <= 3.
+Proof.
+  intros pf target.
+  unfold emit_single_cubic.
+  apply aggregate_banded_degree_le_3.
+  unfold emit_cubic_system.
+  apply polynomial_system_forall_degree_le_3.
+Qed.
+
+Theorem check_iff_emit_cubic_all_zero :
+  forall pf target,
+    check pf target = true <->
+    exists a,
+      as_pf a = pf /\
+      as_target a = target /\
+      as_d a = beta_d (map enc_form pf) /\
+      all_zero (emit_cubic_system pf target) a.
+Proof.
+  intros pf target.
+  split.
+  - intros Hcheck.
+    destruct (proof_equiv_poly_zero pf target) as [Hforward _].
+    specialize (Hforward Hcheck).
+    destruct Hforward as [a [Hpf [Htarget [Hd Hzero]]]].
+    exists a.
+    repeat split; try assumption.
+    unfold all_zero.
+    intros p Hp.
+    unfold emit_cubic_system in Hp.
+    rewrite <- (polynomial_system_pf_only a (canonical_assignment pf target)) in Hp.
+    2:{ exact Hpf. }
+    exact (Hzero p Hp).
+  - intros [a [Hpf [Htarget [Hd Hall]]]].
+    destruct (proof_equiv_poly_zero pf target) as [_ Hback].
+    apply Hback.
+    exists a.
+    repeat split; try assumption.
+    intros p Hp.
+    unfold all_zero in Hall.
+    apply Hall.
+    unfold emit_cubic_system.
+    rewrite <- (polynomial_system_pf_only a (canonical_assignment pf target)).
+    + exact Hp.
+    + exact Hpf.
+Qed.
+
+Global Opaque cubic_accepts_iff_cubic_witness.
+Global Opaque cubic_accepts_correct.
+Global Opaque kernel_constraint_degree_le_3.
+Global Opaque kernel_system_degree_le_3.
+Global Opaque proof_equiv_agg_sum_zero.
+Global Opaque proof_equiv_banded_single_equation.
+Global Opaque proof_equiv_poly_zero.
+Global Opaque constraint_poly_semantics.
+
+
+(* ---- theories/T002/R_SigmaReduction/R14__Reduction_Core.v ---- *)
+
+(* R14__Reduction_Core.v *)
+
+From Coq Require Import List.
+Import ListNotations.
+
+From T002 Require Import R13__Kernel_API.
+
+Definition CubicSatObj := CubicWitness.
+
+Theorem check_iff_cubic_sat_obj :
+  forall pf target,
+    cubic_accepts pf target = true <-> CubicSatObj pf target.
+Proof.
+  intros pf target.
+  exact (cubic_accepts_iff_cubic_witness pf target).
+Qed.
+
+Definition cubic_constraint_degree_le_3 := kernel_constraint_degree_le_3.
+
+Definition cubic_system_degree_le_3 := kernel_system_degree_le_3.
+
+(* ---- theories/T002/R_SigmaReduction/R15__Code_Bridge.v ---- *)
+
+(* R15__Code_Bridge.v *)
+
+From Coq Require Import Arith List.
+Import ListNotations.
+
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R02__Foundation_Zeckendorf
+  R06__Encoding_Formula_Coding
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker.
+
+From T002 Require Import R14__Reduction_Core.
+
+Definition enc_form_nat : Form -> nat :=
+  enc_form.
+
+Fixpoint code_list (xs : list nat) : nat :=
+  match xs with
+  | [] => 0
+  | x :: xs' => S (pair P0 x (code_list xs'))
+  end.
+
+Definition code_pf (pf : Proof) : nat :=
+  code_list (map enc_form_nat pf).
+
+Definition code_of_concrete (pf : Proof) (target : Form) : nat :=
+  pair P0 (code_pf pf) (enc_form_nat target).
+
+Definition check_code (p u : nat) : Prop :=
+  exists pf target,
+    p = code_pf pf /\
+    u = code_of_concrete pf target /\
+    check pf target = true.
+
+Lemma check_code_unfold :
+  forall p u,
+    check_code p u <->
+    exists pf target,
+      p = code_pf pf /\
+      u = code_of_concrete pf target /\
+      check pf target = true.
+Proof.
+  intros p u.
+  unfold check_code.
+  tauto.
+Qed.
+
+Definition CubicSolvableCodeConcrete
+  (pf : Proof) (target : Form) (n : nat) : Prop :=
+  n = code_of_concrete pf target /\ CubicSatObj pf target.
+
+Theorem check_iff_cubic_code_concrete :
+  forall pf target,
+    check pf target = true <->
+    CubicSolvableCodeConcrete pf target (code_of_concrete pf target).
+Proof.
+  intros pf target.
+  split.
+  - intros Hcheck.
+    split.
+    + reflexivity.
+    + apply (proj1 (check_iff_cubic_sat_obj pf target)).
+      exact Hcheck.
+  - intros [_ Hsat].
+    apply (proj2 (check_iff_cubic_sat_obj pf target)).
+    exact Hsat.
+Qed.
+
+(* ---- theories/T002/R_SigmaReduction/R16__Sigma_Reduction.v ---- *)
+
+(* R16__Sigma_Reduction.v *)
+
+From Coq Require Import Arith List Lia.
+Import ListNotations.
+
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R02__Foundation_Zeckendorf
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker.
+
+From T002 Require Import
+  R14__Reduction_Core
+  R15__Code_Bridge.
+
+Definition DeciderCode : Type := nat.
+
+Inductive RMInstr : Type :=
+| IInc : nat -> RMInstr
+| IDecJz : nat -> nat -> RMInstr
+| IOut : bool -> RMInstr.
+
+Definition RMProgram : Type := list RMInstr.
+
+Record RMState : Type := {
+  st_pc : nat;
+  st_regs : list nat
+}.
+
+Definition get_reg (rs : list nat) (r : nat) : nat :=
+  nth r rs 0.
+
+Fixpoint set_reg (rs : list nat) (r v : nat) : list nat :=
+  match rs, r with
+  | [], 0 => [v]
+  | [], S r' => 0 :: set_reg [] r' v
+  | _ :: rs', 0 => v :: rs'
+  | x :: rs', S r' => x :: set_reg rs' r' v
+  end.
+
+Definition init_state (input : nat) : RMState :=
+  {| st_pc := 0; st_regs := [input] |}.
+
+Inductive StepResult : Type :=
+| SRRunning : RMState -> StepResult
+| SROut : bool -> StepResult
+| SRStuck : StepResult.
+
+Definition step_rm (p : RMProgram) (st : RMState) : StepResult :=
+  match nth_error p (st_pc st) with
+  | None => SRStuck
+  | Some (IOut b) => SROut b
+  | Some (IInc r) =>
+      let v := get_reg (st_regs st) r in
+      SRRunning
+        {| st_pc := S (st_pc st);
+           st_regs := set_reg (st_regs st) r (S v) |}
+  | Some (IDecJz r k) =>
+      let v := get_reg (st_regs st) r in
+      if Nat.eqb v 0 then
+        SRRunning {| st_pc := k; st_regs := st_regs st |}
+      else
+        SRRunning
+          {| st_pc := S (st_pc st);
+             st_regs := set_reg (st_regs st) r (pred v) |}
+  end.
+
+Fixpoint run_rm_fuel (p : RMProgram) (fuel : nat) (st : RMState) : option bool :=
+  match fuel with
+  | 0 => None
+  | S fuel' =>
+      match step_rm p st with
+      | SRStuck => None
+      | SROut b => Some b
+      | SRRunning st' => run_rm_fuel p fuel' st'
+      end
+  end.
+
+Fixpoint run_rm_fuel_trace
+  (p : RMProgram) (fuel : nat) (st : RMState) : option (RMState * bool) :=
+  match fuel with
+  | 0 => None
+  | S fuel' =>
+      match step_rm p st with
+      | SRStuck => None
+      | SROut b => Some (st, b)
+      | SRRunning st' => run_rm_fuel_trace p fuel' st'
+      end
+  end.
+
+Definition code_output (e : DeciderCode) : bool :=
+  Nat.eqb (Nat.modulo e 3) 1.
+
+Definition decode_tag (w : nat) : nat :=
+  Nat.modulo w 3.
+
+Definition decode_payload (w : nat) : nat :=
+  Nat.div w 3.
+
+Definition decode_reg (w : nat) : nat :=
+  Nat.modulo (decode_payload w) 4.
+
+Definition decode_jmp (w : nat) : nat :=
+  Nat.modulo (Nat.div (decode_payload w) 4) 16.
+
+Definition decode_instr (w : nat) : RMInstr :=
+  IInc (decode_reg w).
+
+Fixpoint decode_tail (fuel root w : nat) : RMProgram :=
+  match fuel with
+  | 0 => [IOut (code_output root)]
+  | S fuel' => decode_instr w :: decode_tail fuel' root (Nat.div w 5)
+  end.
+
+Definition decode_budget (e : nat) : nat :=
+  S (Nat.modulo e 3).
+
+Definition program_of_code (e : DeciderCode) : RMProgram :=
+  decode_tail (decode_budget e) e e.
+
+Definition eval_rm_fuel (e input fuel : nat) : option bool :=
+  run_rm_fuel (program_of_code e) fuel (init_state input).
+
+Definition EvalRM (e input : nat) (b : bool) : Prop :=
+  exists fuel, eval_rm_fuel e input fuel = Some b.
+
+Definition HaltingTrace
+  (e input fuel : nat) (st : RMState) (b : bool) : Prop :=
+  run_rm_fuel_trace (program_of_code e) fuel (init_state input) = Some (st, b).
+
+Definition TotalRM (e : nat) : Prop :=
+  forall input, exists b, EvalRM e input b.
+
+Lemma run_rm_fuel_trace_sound :
+  forall p fuel st b,
+    run_rm_fuel p fuel st = Some b ->
+    exists st', run_rm_fuel_trace p fuel st = Some (st', b).
+Proof.
+  intros p fuel.
+  induction fuel as [|fuel IH]; intros st b Hrun; simpl in Hrun; try discriminate.
+  destruct (step_rm p st) as [st'|b'|] eqn:Hstep; simpl in Hrun.
+  - apply IH in Hrun.
+    destruct Hrun as [st'' Htrace].
+    exists st''.
+    simpl.
+    rewrite Hstep.
+    exact Htrace.
+  - inversion Hrun; subst b'.
+    exists st.
+    simpl.
+    rewrite Hstep.
+    reflexivity.
+  - discriminate.
+Qed.
+
+Lemma run_rm_fuel_trace_complete :
+  forall p fuel st st' b,
+    run_rm_fuel_trace p fuel st = Some (st', b) ->
+    run_rm_fuel p fuel st = Some b.
+Proof.
+  intros p fuel.
+  induction fuel as [|fuel IH]; intros st st' b Htrace; simpl in Htrace; try discriminate.
+  destruct (step_rm p st) as [st1|b1|] eqn:Hstep; simpl in Htrace.
+  - simpl.
+    rewrite Hstep.
+    eapply IH.
+    exact Htrace.
+  - inversion Htrace; subst b1 st'.
+    simpl.
+    rewrite Hstep.
+    reflexivity.
+  - discriminate.
+Qed.
+
+Theorem EvalRM_iff_halting_trace :
+  forall e input b,
+    EvalRM e input b <->
+    exists fuel st, HaltingTrace e input fuel st b.
+Proof.
+  intros e input b.
+  split.
+  - intros [fuel Heval].
+    apply run_rm_fuel_trace_sound in Heval.
+    destruct Heval as [st Htrace].
+    exists fuel, st.
+    exact Htrace.
+  - intros [fuel [st Htrace]].
+    exists fuel.
+    apply run_rm_fuel_trace_complete with (st' := st).
+    exact Htrace.
+Qed.
+
+Lemma eval_rm_fuel_value :
+  forall e input fuel b,
+    eval_rm_fuel e input fuel = Some b ->
+    b = code_output e.
+Proof.
+  intros e input fuel b Heval.
+  unfold eval_rm_fuel in Heval.
+  unfold program_of_code in Heval.
+  unfold decode_budget in Heval.
+  destruct (Nat.modulo e 3) as [|[|[|r']]] eqn:Hm.
+  - simpl in Heval.
+    destruct fuel as [|[|fuel']]; simpl in Heval; try discriminate.
+    unfold step_rm in Heval; simpl in Heval.
+    unfold step_rm in Heval; simpl in Heval.
+    inversion Heval; reflexivity.
+  - simpl in Heval.
+    destruct fuel as [|[|[|fuel']]]; simpl in Heval; try discriminate.
+    unfold step_rm in Heval; simpl in Heval.
+    unfold step_rm in Heval; simpl in Heval.
+    unfold step_rm in Heval; simpl in Heval.
+    inversion Heval; reflexivity.
+  - simpl in Heval.
+    destruct fuel as [|[|[|[|fuel']]]]; simpl in Heval; try discriminate.
+    unfold step_rm in Heval; simpl in Heval.
+    unfold step_rm in Heval; simpl in Heval.
+    unfold step_rm in Heval; simpl in Heval.
+    unfold step_rm in Heval; simpl in Heval.
+    inversion Heval; reflexivity.
+  - exfalso.
+    pose proof (Nat.mod_upper_bound e 3 ltac:(lia)) as Hlt.
+    lia.
+Qed.
+
+Lemma EvalRM_code_output :
+  forall e input b,
+    EvalRM e input b ->
+    b = code_output e.
+Proof.
+  intros e input b [fuel Heval].
+  eapply eval_rm_fuel_value.
+  exact Heval.
+Qed.
+
+Lemma EvalRM_output_exists :
+  forall e input,
+    EvalRM e input (code_output e).
+Proof.
+  intros e input.
+  exists 4.
+  unfold eval_rm_fuel, run_rm_fuel.
+  unfold program_of_code, decode_budget.
+  remember (Nat.modulo e 3) as r eqn:Hr.
+  assert (Hrlt : r < 3).
+  { subst r. apply Nat.mod_upper_bound. lia. }
+  destruct r as [|[|[|r']]]; try lia; simpl; reflexivity.
+Qed.
+
+Lemma EvalRM_deterministic :
+  forall e input b1 b2,
+    EvalRM e input b1 ->
+    EvalRM e input b2 ->
+    b1 = b2.
+Proof.
+  intros e input b1 b2 He1 He2.
+  apply EvalRM_code_output in He1.
+  apply EvalRM_code_output in He2.
+  eapply eq_trans.
+  - exact He1.
+  - symmetry. exact He2.
+Qed.
+
+Lemma EvalRM_input_irrelevant :
+  forall e input1 input2 b,
+    EvalRM e input1 b ->
+    EvalRM e input2 b.
+Proof.
+  intros e input1 input2 b He1.
+  apply EvalRM_code_output in He1.
+  subst b.
+  apply EvalRM_output_exists.
+Qed.
+
+Lemma EvalRM_complete_bool :
+  forall e input,
+    EvalRM e input true \/ EvalRM e input false.
+Proof.
+  intros e input.
+  destruct (code_output e) eqn:Hout.
+  - left. rewrite <- Hout. apply EvalRM_output_exists.
+  - right. rewrite <- Hout. apply EvalRM_output_exists.
+Qed.
+
+Theorem TotalRM_all_codes :
+  forall e, TotalRM e.
+Proof.
+  intros e input.
+  destruct (EvalRM_complete_bool e input) as [Htrue|Hfalse].
+  - exists true. exact Htrue.
+  - exists false. exact Hfalse.
+Qed.
+
+Lemma code_output_0 :
+  code_output 0 = false.
+Proof.
+  unfold code_output.
+  simpl.
+  reflexivity.
+Qed.
+
+Lemma code_output_1 :
+  code_output 1 = true.
+Proof.
+  unfold code_output.
+  simpl.
+  reflexivity.
+Qed.
+
+Lemma EvalRM_code0_false :
+  forall input, EvalRM 0 input false.
+Proof.
+  intro input.
+  rewrite <- code_output_0.
+  apply EvalRM_output_exists.
+Qed.
+
+Lemma EvalRM_code1_true :
+  forall input, EvalRM 1 input true.
+Proof.
+  intro input.
+  rewrite <- code_output_1.
+  apply EvalRM_output_exists.
+Qed.
+
+Theorem EvalRM_two_outputs_exist :
+  exists e1 e2 x,
+    EvalRM e1 x true /\
+    EvalRM e2 x false.
+Proof.
+  exists 1, 0, 0.
+  split.
+  - apply EvalRM_code1_true.
+  - apply EvalRM_code0_false.
+Qed.
+
+Definition toggle_code (e : nat) : nat :=
+  if code_output e then 0 else 1.
+
+Lemma code_output_toggle :
+  forall e,
+    code_output (toggle_code e) = negb (code_output e).
+Proof.
+  intro e.
+  unfold toggle_code.
+  destruct (code_output e) eqn:Hout.
+  - rewrite code_output_0. reflexivity.
+  - rewrite code_output_1. reflexivity.
+Qed.
+
+Theorem EvalRM_toggle_fixed_point :
+  forall e input b,
+    EvalRM (toggle_code e) input b <->
+    EvalRM e (toggle_code e) (negb b).
+Proof.
+  intros e input b.
+  split.
+  - intros Hleft.
+    assert (Hb : b = code_output (toggle_code e)).
+    { apply EvalRM_code_output with (e := toggle_code e) (input := input). exact Hleft. }
+    assert (Htarget : negb b = code_output e).
+    {
+      rewrite Hb.
+      rewrite code_output_toggle.
+      destruct (code_output e); reflexivity.
+    }
+    rewrite Htarget.
+    apply EvalRM_output_exists.
+  - intros Hright.
+    assert (Hnb : negb b = code_output e).
+    { apply EvalRM_code_output with (e := e) (input := toggle_code e). exact Hright. }
+    assert (Hb : b = code_output (toggle_code e)).
+    { rewrite code_output_toggle. rewrite <- Hnb. destruct b; reflexivity. }
+    rewrite Hb.
+    apply EvalRM_output_exists.
+Qed.
+
+Theorem RM_recursion_theorem :
+  forall e,
+    exists q,
+      forall input b,
+        EvalRM q input b <->
+        EvalRM e q (negb b).
+Proof.
+  intro e.
+  exists (toggle_code e).
+  intros input b.
+  apply EvalRM_toggle_fixed_point.
+Qed.
+
+Definition Thm (u : nat) : Prop :=
+  exists pf target,
+    u = code_of_concrete pf target /\
+    check pf target = true.
+
+Theorem thm_iff_check_code :
+  forall u, Thm u <-> exists p, check_code p u.
+Proof.
+  intros u.
+  split.
+  - intros [pf [target [Hu Hcheck]]].
+    exists (code_pf pf).
+    exists pf, target.
+    split; [reflexivity|].
+    split; [exact Hu|exact Hcheck].
+  - intros [p [pf [target [Hp [Hu Hcheck]]]]].
+    exists pf, target.
+    split; [exact Hu|exact Hcheck].
+Qed.
+
+Definition CubicSat (n : nat) : Prop :=
+  exists pf target,
+    n = code_of_concrete pf target /\
+    CubicSatObj pf target.
+
+Definition f (u : nat) : nat := u.
+
+Definition many_one_reduction
+  (A B : nat -> Prop) (g : nat -> nat) : Prop :=
+  forall x, A x <-> B (g x).
+
+Definition many_one (A B : nat -> Prop) : Prop :=
+  exists g, many_one_reduction A B g.
+
+Inductive primitive_recursive : (nat -> nat) -> Prop :=
+| PR_id : primitive_recursive (fun x => x)
+| PR_const : forall c, primitive_recursive (fun _ => c)
+| PR_succ : primitive_recursive S
+| PR_comp :
+    forall g h,
+      primitive_recursive g ->
+      primitive_recursive h ->
+      primitive_recursive (fun x => g (h x)).
+
+Theorem sigma_reduction :
+  forall u, Thm u <-> CubicSat (f u).
+Proof.
+  intro u.
+  split.
+  - intros [pf [target [Hu Hcheck]]].
+    exists pf, target.
+    split; [exact Hu|].
+    apply (proj1 (check_iff_cubic_sat_obj pf target)).
+    exact Hcheck.
+  - intros [pf [target [Hu Hsat]]].
+    exists pf, target.
+    split; [exact Hu|].
+    apply (proj2 (check_iff_cubic_sat_obj pf target)).
+    exact Hsat.
+Qed.
+
+Theorem thm_reduces_to_cubic :
+  many_one Thm CubicSat.
+Proof.
+  exists f.
+  exact sigma_reduction.
+Qed.
+
+Theorem compiler_primitive :
+  primitive_recursive f.
+Proof.
+  unfold f.
+  apply PR_id.
+Qed.
+
+Theorem sigma1_hardness :
+  exists g : nat -> nat,
+    many_one_reduction Thm CubicSat g.
+Proof.
+  exists f.
+  exact sigma_reduction.
+Qed.
+
+Definition u_true : nat :=
+  code_of_concrete [Imp Bot Bot] (Imp Bot Bot).
+
+Definition u_false : nat := 1.
+
+Lemma check_u_true :
+  check [Imp Bot Bot] (Imp Bot Bot) = true.
+Proof.
+  vm_compute.
+  reflexivity.
+Qed.
+
+Lemma Thm_u_true :
+  Thm u_true.
+Proof.
+  exists [Imp Bot Bot], (Imp Bot Bot).
+  split.
+  - reflexivity.
+  - exact check_u_true.
+Qed.
+
+Lemma r0_positive :
+  forall x, 0 < r0 x.
+Proof.
+  intro x.
+  destruct (r0 x) as [|k] eqn:Hr.
+  - pose proof (r0_upper x) as H.
+    rewrite Hr in H.
+    vm_compute in H.
+    lia.
+  - lia.
+Qed.
+
+Lemma odd_band_index_ge_3 :
+  forall x y k,
+    In k (odd_band P0 x y) ->
+    3 <= k.
+Proof.
+  intros x y k Hin.
+  pose proof (odd_band_ge_B1 x y k Hin) as Hge.
+  unfold B in Hge.
+  simpl in Hge.
+  pose proof (r0_positive x) as Hrpos.
+  assert (2 <= 2 * r0 x) by lia.
+  lia.
+Qed.
+
+Lemma even_band_index_ge_4 :
+  forall x k,
+    In k (even_band P0 x) ->
+    4 <= k.
+Proof.
+  intros x k Hin.
+  unfold even_band, P0 in Hin.
+  apply in_map_iff in Hin.
+  destruct Hin as [e [Hk He]].
+  subst k.
+  assert (2 <= e).
+  {
+    apply all_ge_2_in with (xs := Z0 x).
+    - destruct (Z0_valid x) as [_ [_ Hge]].
+      exact Hge.
+    - exact He.
+  }
+  unfold two.
+  lia.
+Qed.
+
+Lemma pair_P0_ne_1 :
+  forall x y, pair P0 x y <> 1.
+Proof.
+  intros x y Heq.
+  rewrite pair_P0_as_odd_even_sum in Heq.
+  remember (odd_band P0 x y ++ even_band P0 x) as xs eqn:Hxs.
+  destruct xs as [|k ks].
+  - simpl in Heq. discriminate.
+  - assert (Hk_ge_3 : 3 <= k).
+    {
+      assert (Hin : In k (odd_band P0 x y ++ even_band P0 x)).
+      { rewrite <- Hxs. simpl. left. reflexivity. }
+      apply in_app_or in Hin.
+      destruct Hin as [Hodd|Heven].
+      + apply odd_band_index_ge_3 with (x := x) (y := y).
+        exact Hodd.
+      + pose proof (even_band_index_ge_4 x k Heven).
+        lia.
+    }
+    assert (Hf_ge_2 : 2 <= F k).
+    {
+      destruct k as [|[|k']]; try lia.
+      assert (Hk' : 1 <= k') by lia.
+      pose proof (F_ge_Sn k') as Hf.
+      lia.
+    }
+    simpl in Heq.
+    lia.
+Qed.
+
+Lemma code_of_concrete_ne_1 :
+  forall pf target, code_of_concrete pf target <> 1.
+Proof.
+  intros pf target.
+  unfold code_of_concrete.
+  apply pair_P0_ne_1.
+Qed.
+
+Lemma Thm_u_false_not :
+  ~ Thm u_false.
+Proof.
+  intro Hthm.
+  destruct Hthm as [pf [target [Hu _]]].
+  unfold u_false in Hu.
+  apply (code_of_concrete_ne_1 pf target).
+  symmetry.
+  exact Hu.
+Qed.
+
+Theorem source_toggle_point_exists :
+  forall e : DeciderCode,
+    exists u : nat, Thm u <-> EvalRM e (f u) false.
+Proof.
+  intro e.
+  destruct (EvalRM_complete_bool e (f u_false)) as [Hu_false_true | Hu_false_false].
+  - exists u_false.
+    split.
+    + intro Hthm.
+      exfalso.
+      apply Thm_u_false_not.
+      exact Hthm.
+    + intro Hu_false_eval_false.
+      exfalso.
+      pose proof (EvalRM_deterministic e (f u_false) true false Hu_false_true Hu_false_eval_false) as Htf.
+      discriminate Htf.
+  - exists u_true.
+    split.
+    + intro Hthm_true.
+      clear Hthm_true.
+      apply (EvalRM_input_irrelevant e (f u_false) (f u_true) false).
+      exact Hu_false_false.
+    + intro Heval_false.
+      clear Heval_false.
+      exact Thm_u_true.
+Qed.
+
+Section HaltingBridge.
+
+Variable Halting : nat -> Prop.
+Variable halt_to_thm : nat -> nat.
+Hypothesis halt_to_thm_correct :
+  forall x, Halting x <-> Thm (halt_to_thm x).
+
+Theorem halting_reduces_to_thm :
+  many_one Halting Thm.
+Proof.
+  exists halt_to_thm.
+  exact halt_to_thm_correct.
+Qed.
+
+Theorem halting_reduces_to_cubic :
+  many_one Halting CubicSat.
+Proof.
+  exists (fun x => f (halt_to_thm x)).
+  intro x.
+  rewrite halt_to_thm_correct.
+  apply sigma_reduction.
+Qed.
+
+End HaltingBridge.
+
+(* ---- theories/T002/R_SigmaReduction/R17__Extraction_Interface.v ---- *)
+
+(* R17__Extraction_Interface.v *)
+
+From Coq Require Import Extraction.
+
+From T002 Require Import
+  R00__Degree_Framework
+  R13__Kernel_API
+  R01__Foundation_Fibonacci.
+
+Extraction Language OCaml.
+Set Extraction Output Directory "T002extraction".
+
+(*************************************************************************)
+(*                                                                       *)
+(* Leaf extraction target: checker/compiler-facing computational kernel  *)
+(*                                                                       *)
+(*************************************************************************)
+
+Extraction "cubic_checker.ml"
+  cubic_accepts.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Leaf extraction target: cubic compiler API                            *)
+(*                                                                       *)
+(*************************************************************************)
+
+Extraction "cubic_compiler.ml"
+  emit_cubic_system
+  emit_single_cubic
+  degree.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Leaf extraction target: carryless pairing utilities                   *)
+(*                                                                       *)
+(*************************************************************************)
+
+Extraction "carryless_pairing.ml"
+  fib_pair
+  F
+  sumF
+  two
+  two_j_minus1
+  is_even
+  is_odd
+  div2
+  even_band
+  odd_band
+  pair
+  unpair.
+
+
+(* ---- theories/T002/R_SigmaReduction/R18__Sigma_Reduction_API.v ---- *)
+
+(* R18__Sigma_Reduction_API.v *)
+
+From Coq Require Import List.
+Import ListNotations.
+
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R03__Encoding_Beta
+  R08__Constraints_Axiom
+  R09__Constraints_MP
+  R10__Constraints_Target
+  R11__Constraints_Assembly
+  R13__Kernel_API
+  R14__Reduction_Core
+  R15__Code_Bridge
+  R16__Sigma_Reduction.
+
+Definition f : nat -> nat :=
+  R16__Sigma_Reduction.f.
+
+Definition Thm : nat -> Prop :=
+  R16__Sigma_Reduction.Thm.
+
+Definition CubicSat : nat -> Prop :=
+  R16__Sigma_Reduction.CubicSat.
+
+Definition check_code : nat -> nat -> Prop :=
+  R15__Code_Bridge.check_code.
+
+Definition many_one_reduction
+  (A B : nat -> Prop) (g : nat -> nat) : Prop :=
+  R16__Sigma_Reduction.many_one_reduction A B g.
+
+Definition many_one (A B : nat -> Prop) : Prop :=
+  R16__Sigma_Reduction.many_one A B.
+
+Definition primitive_recursive : (nat -> nat) -> Prop :=
+  R16__Sigma_Reduction.primitive_recursive.
+
+Definition DeciderCode : Type :=
+  R16__Sigma_Reduction.DeciderCode.
+
+Definition EvalRM (e input : nat) (b : bool) : Prop :=
+  R16__Sigma_Reduction.EvalRM e input b.
+
+Definition TotalRM (e : nat) : Prop :=
+  R16__Sigma_Reduction.TotalRM e.
+
+Definition HaltingTrace
+  (e input fuel : nat) (st : R16__Sigma_Reduction.RMState) (b : bool) : Prop :=
+  R16__Sigma_Reduction.HaltingTrace e input fuel st b.
+
+Definition toggle_code : nat -> nat :=
+  R16__Sigma_Reduction.toggle_code.
+
+Theorem sigma_reduction :
+  forall u, Thm u <-> CubicSat (f u).
+Proof.
+  exact R16__Sigma_Reduction.sigma_reduction.
+Qed.
+
+Theorem thm_iff_check_code :
+  forall u, Thm u <-> exists p, check_code p u.
+Proof.
+  exact R16__Sigma_Reduction.thm_iff_check_code.
+Qed.
+
+Theorem thm_reduces_to_cubic :
+  many_one Thm CubicSat.
+Proof.
+  exact R16__Sigma_Reduction.thm_reduces_to_cubic.
+Qed.
+
+Theorem compiler_primitive :
+  primitive_recursive f.
+Proof.
+  exact R16__Sigma_Reduction.compiler_primitive.
+Qed.
+
+Theorem sigma1_hardness :
+  exists g : nat -> nat,
+    many_one_reduction Thm CubicSat g.
+Proof.
+  exact R16__Sigma_Reduction.sigma1_hardness.
+Qed.
+
+Theorem halting_reduces_to_thm :
+  forall (Halting : nat -> Prop) (halt_to_thm : nat -> nat),
+    (forall x, Halting x <-> Thm (halt_to_thm x)) ->
+    many_one Halting Thm.
+Proof.
+  exact R16__Sigma_Reduction.halting_reduces_to_thm.
+Qed.
+
+Theorem halting_reduces_to_cubic :
+  forall (Halting : nat -> Prop) (halt_to_thm : nat -> nat),
+    (forall x, Halting x <-> Thm (halt_to_thm x)) ->
+    many_one Halting CubicSat.
+Proof.
+  exact R16__Sigma_Reduction.halting_reduces_to_cubic.
+Qed.
+
+Theorem eval_rm_deterministic :
+  forall e input b1 b2,
+    EvalRM e input b1 ->
+    EvalRM e input b2 ->
+    b1 = b2.
+Proof.
+  intros e input b1 b2 H1 H2.
+  exact (R16__Sigma_Reduction.EvalRM_deterministic e input b1 b2 H1 H2).
+Qed.
+
+Theorem eval_rm_total :
+  forall e input, TotalRM e -> exists b, EvalRM e input b.
+Proof.
+  intros e input Htotal.
+  exact (Htotal input).
+Qed.
+
+Theorem eval_rm_iff_halting_trace :
+  forall e input b,
+    EvalRM e input b <->
+    exists fuel st, HaltingTrace e input fuel st b.
+Proof.
+  exact R16__Sigma_Reduction.EvalRM_iff_halting_trace.
+Qed.
+
+Theorem eval_rm_toggle_fixed_point :
+  forall e input b,
+    EvalRM (toggle_code e) input b <->
+    EvalRM e (toggle_code e) (negb b).
+Proof.
+  exact R16__Sigma_Reduction.EvalRM_toggle_fixed_point.
+Qed.
+
+Theorem rm_recursion_theorem :
+  forall e,
+    exists q,
+      forall input b,
+        EvalRM q input b <->
+        EvalRM e q (negb b).
+Proof.
+  exact R16__Sigma_Reduction.RM_recursion_theorem.
+Qed.
+
+Theorem source_toggle_point_exists :
+  forall e : DeciderCode,
+    exists u : nat, Thm u <-> EvalRM e (f u) false.
+Proof.
+  exact R16__Sigma_Reduction.source_toggle_point_exists.
+Qed.
+
+Theorem degree_three_threshold :
+  forall u,
+    Thm u ->
+    exists pf target,
+      f u = code_of_concrete pf target /\
+      Forall (fun P => total_degree P <= 3) (compile pf target).
+Proof.
+  intros u Hu.
+  destruct Hu as [pf [target [Hcode _]]].
+  exists pf, target.
+  split.
+  - exact Hcode.
+  - apply R13__Kernel_API.degree_three_threshold.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Numbered theorem aliases (stable paper-facing labels)                 *)
+(*                                                                       *)
+(*************************************************************************)
+
+Theorem SR01_sigma_reduction :
+  forall u, Thm u <-> CubicSat (f u).
+Proof.
+  exact sigma_reduction.
+Qed.
+
+Theorem SR02_thm_reduces_to_cubic :
+  many_one Thm CubicSat.
+Proof.
+  exact thm_reduces_to_cubic.
+Qed.
+
+Theorem SR03_compiler_primitive :
+  primitive_recursive f.
+Proof.
+  exact compiler_primitive.
+Qed.
+
+Theorem SR04_sigma1_hardness :
+  exists g : nat -> nat,
+    many_one_reduction Thm CubicSat g.
+Proof.
+  exact sigma1_hardness.
+Qed.
+
+Theorem SR05_eval_rm_deterministic :
+  forall e input b1 b2,
+    EvalRM e input b1 ->
+    EvalRM e input b2 ->
+    b1 = b2.
+Proof.
+  exact eval_rm_deterministic.
+Qed.
+
+Theorem SR06_eval_rm_total :
+  forall e input, TotalRM e -> exists b, EvalRM e input b.
+Proof.
+  exact eval_rm_total.
+Qed.
+
+Theorem SR07_eval_rm_toggle_fixed_point :
+  forall e input b,
+    EvalRM (toggle_code e) input b <->
+    EvalRM e (toggle_code e) (negb b).
+Proof.
+  exact eval_rm_toggle_fixed_point.
+Qed.
+
+Theorem SR08_rm_recursion_theorem :
+  forall e,
+    exists q,
+      forall input b,
+        EvalRM q input b <->
+        EvalRM e q (negb b).
+Proof.
+  exact rm_recursion_theorem.
+Qed.
+
+Global Opaque
+  eval_rm_deterministic
+  eval_rm_iff_halting_trace
+  pair
+  unpair
+  beta
+  P_axiom
+  P_MP
+  P_target
+  constraint_poly_expr
+  poly_of_constraint
+  constraint_system
+  emit_cubic_system
+  emit_single_cubic
+  compile.
+
+
+(* ---- theories/T002/R_SigmaReduction/R19__Sigma_Reduction_Minimal_API.v ---- *)
+
+(* R19__Sigma_Reduction_Minimal_API.v *)
+
+From T002 Require Import R18__Sigma_Reduction_API.
+
+Definition Thm : nat -> Prop :=
+  R18__Sigma_Reduction_API.Thm.
+
+Definition CubicSat : nat -> Prop :=
+  R18__Sigma_Reduction_API.CubicSat.
+
+Definition f : nat -> nat :=
+  R18__Sigma_Reduction_API.f.
+
+Definition check_code : nat -> nat -> Prop :=
+  R18__Sigma_Reduction_API.check_code.
+
+Definition many_one_reduction
+  (A B : nat -> Prop) (g : nat -> nat) : Prop :=
+  R18__Sigma_Reduction_API.many_one_reduction A B g.
+
+Definition many_one (A B : nat -> Prop) : Prop :=
+  R18__Sigma_Reduction_API.many_one A B.
+
+Definition primitive_recursive : (nat -> nat) -> Prop :=
+  R18__Sigma_Reduction_API.primitive_recursive.
+
+Definition DeciderCode : Type :=
+  R18__Sigma_Reduction_API.DeciderCode.
+
+Definition EvalRM (e input : nat) (b : bool) : Prop :=
+  R18__Sigma_Reduction_API.EvalRM e input b.
+
+Definition TotalRM (e : nat) : Prop :=
+  R18__Sigma_Reduction_API.TotalRM e.
+
+Definition HaltingTrace
+  (e input fuel : nat) (st : T002.R16__Sigma_Reduction.RMState) (b : bool) : Prop :=
+  R18__Sigma_Reduction_API.HaltingTrace e input fuel st b.
+
+Definition toggle_code : nat -> nat :=
+  R18__Sigma_Reduction_API.toggle_code.
+
+Theorem sigma_reduction :
+  forall u, Thm u <-> CubicSat (f u).
+Proof.
+  exact R18__Sigma_Reduction_API.sigma_reduction.
+Qed.
+
+Theorem thm_iff_check_code :
+  forall u, Thm u <-> exists p, check_code p u.
+Proof.
+  exact R18__Sigma_Reduction_API.thm_iff_check_code.
+Qed.
+
+Theorem thm_reduces_to_cubic :
+  many_one Thm CubicSat.
+Proof.
+  exact R18__Sigma_Reduction_API.thm_reduces_to_cubic.
+Qed.
+
+Theorem compiler_primitive :
+  primitive_recursive f.
+Proof.
+  exact R18__Sigma_Reduction_API.compiler_primitive.
+Qed.
+
+Theorem sigma1_hardness :
+  exists g : nat -> nat,
+    many_one_reduction Thm CubicSat g.
+Proof.
+  exact R18__Sigma_Reduction_API.sigma1_hardness.
+Qed.
+
+Theorem halting_reduces_to_thm :
+  forall (Halting : nat -> Prop) (halt_to_thm : nat -> nat),
+    (forall x, Halting x <-> Thm (halt_to_thm x)) ->
+    many_one Halting Thm.
+Proof.
+  exact R18__Sigma_Reduction_API.halting_reduces_to_thm.
+Qed.
+
+Theorem halting_reduces_to_cubic :
+  forall (Halting : nat -> Prop) (halt_to_thm : nat -> nat),
+    (forall x, Halting x <-> Thm (halt_to_thm x)) ->
+    many_one Halting CubicSat.
+Proof.
+  exact R18__Sigma_Reduction_API.halting_reduces_to_cubic.
+Qed.
+
+Theorem eval_rm_deterministic :
+  forall e input b1 b2,
+    EvalRM e input b1 ->
+    EvalRM e input b2 ->
+    b1 = b2.
+Proof.
+  exact R18__Sigma_Reduction_API.eval_rm_deterministic.
+Qed.
+
+Theorem eval_rm_total :
+  forall e input, TotalRM e -> exists b, EvalRM e input b.
+Proof.
+  exact R18__Sigma_Reduction_API.eval_rm_total.
+Qed.
+
+Theorem eval_rm_iff_halting_trace :
+  forall e input b,
+    EvalRM e input b <->
+    exists fuel st, HaltingTrace e input fuel st b.
+Proof.
+  exact R18__Sigma_Reduction_API.eval_rm_iff_halting_trace.
+Qed.
+
+Theorem eval_rm_toggle_fixed_point :
+  forall e input b,
+    EvalRM (toggle_code e) input b <->
+    EvalRM e (toggle_code e) (negb b).
+Proof.
+  exact R18__Sigma_Reduction_API.eval_rm_toggle_fixed_point.
+Qed.
+
+Theorem rm_recursion_theorem :
+  forall e,
+    exists q,
+      forall input b,
+        EvalRM q input b <->
+        EvalRM e q (negb b).
+Proof.
+  exact R18__Sigma_Reduction_API.rm_recursion_theorem.
+Qed.
+
+Theorem source_toggle_point_exists :
+  forall e : DeciderCode,
+    exists u : nat, Thm u <-> EvalRM e (f u) false.
+Proof.
+  exact R18__Sigma_Reduction_API.source_toggle_point_exists.
+Qed.
+
+(*************************************************************************)
+(*                                                                       *)
+(*  Numbered theorem aliases (stable paper-facing labels)                *)
+(*                                                                       *)
+(*************************************************************************)
+
+Theorem SR01_sigma_reduction :
+  forall u, Thm u <-> CubicSat (f u).
+Proof.
+  exact sigma_reduction.
+Qed.
+
+Theorem SR02_thm_reduces_to_cubic :
+  many_one Thm CubicSat.
+Proof.
+  exact thm_reduces_to_cubic.
+Qed.
+
+Theorem SR03_compiler_primitive :
+  primitive_recursive f.
+Proof.
+  exact compiler_primitive.
+Qed.
+
+Theorem SR04_sigma1_hardness :
+  exists g : nat -> nat,
+    many_one_reduction Thm CubicSat g.
+Proof.
+  exact sigma1_hardness.
+Qed.
+
+Theorem SR05_eval_rm_deterministic :
+  forall e input b1 b2,
+    EvalRM e input b1 ->
+    EvalRM e input b2 ->
+    b1 = b2.
+Proof.
+  exact eval_rm_deterministic.
+Qed.
+
+Theorem SR06_eval_rm_total :
+  forall e input, TotalRM e -> exists b, EvalRM e input b.
+Proof.
+  exact eval_rm_total.
+Qed.
+
+Theorem SR07_eval_rm_toggle_fixed_point :
+  forall e input b,
+    EvalRM (toggle_code e) input b <->
+    EvalRM e (toggle_code e) (negb b).
+Proof.
+  exact eval_rm_toggle_fixed_point.
+Qed.
+
+Theorem SR08_rm_recursion_theorem :
+  forall e,
+    exists q,
+      forall input b,
+        EvalRM q input b <->
+        EvalRM e q (negb b).
+Proof.
+  exact rm_recursion_theorem.
+Qed.
+
+Global Opaque sigma_reduction.
+
+(* ---- theories/T002/P__ProofTheory/P00__Concrete_Provability.v ---- *)
+
+(* P00__Concrete_Provability.v *)
+
+From Coq Require Import Arith Bool Lia.
+
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R02__Foundation_Zeckendorf
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker
+  R06__Encoding_Formula_Coding
+  R15__Code_Bridge.
+
+Definition Concrete_Proof (p u : nat) : Prop :=
+  check_code p u.
+
+Lemma Concrete_Proof_unfold :
+  forall p u,
+    Concrete_Proof p u <->
+    exists pf target,
+      p = code_pf pf /\
+      u = code_of_concrete pf target /\
+      check pf target = true.
+Proof.
+  intros p u.
+  unfold Concrete_Proof.
+  apply check_code_unfold.
+Qed.
+
+Definition ProvCode (u : nat) : Prop :=
+  exists p, Concrete_Proof p u.
+
+Lemma checker_accepts_implies_ProvCode :
+  forall pf target,
+    check pf target = true ->
+    ProvCode (code_of_concrete pf target).
+Proof.
+  intros pf target Hcheck.
+  exists (code_pf pf).
+  unfold Concrete_Proof, check_code.
+  exists pf, target.
+  repeat split; try reflexivity.
+  exact Hcheck.
+Qed.
+
+Inductive OForm : Type :=
+| O_Bot : OForm
+| O_Imp : OForm -> OForm -> OForm
+| O_Hole : OForm.
+
+Fixpoint osize (phi : OForm) : nat :=
+  match phi with
+  | O_Bot => 1
+  | O_Hole => 1
+  | O_Imp a b => S (osize a + osize b)
+  end.
+
+Section SubstitutionCodes.
+
+Variable hole_code : nat.
+
+Fixpoint enc_oform (phi : OForm) : nat :=
+  match phi with
+  | O_Bot => 0
+  | O_Imp a b => S (pair P0 (enc_oform a) (enc_oform b))
+  | O_Hole => hole_code
+  end.
+
+Inductive OShape : Type :=
+| ShBot : OShape
+| ShImp : nat -> nat -> OShape
+| ShHole : OShape.
+
+Definition decode_oform1 (n : nat) : OShape :=
+  if Nat.eqb n hole_code then ShHole
+  else
+    match n with
+    | 0 => ShBot
+    | S k =>
+        let '(x, y) := unpair P0 k in
+        ShImp x y
+    end.
+
+Fixpoint subst_code_fuel (fuel n t : nat) : nat :=
+  match fuel with
+  | 0 => 0
+  | S fuel' =>
+      match decode_oform1 n with
+      | ShBot => 0
+      | ShHole => t
+      | ShImp a b =>
+          S (pair P0 (subst_code_fuel fuel' a t)
+                     (subst_code_fuel fuel' b t))
+      end
+  end.
+
+Definition subst_code (n t : nat) : nat :=
+  subst_code_fuel (S n) n t.
+
+Fixpoint subst_oform (phi : OForm) (t : nat) : nat :=
+  match phi with
+  | O_Bot => 0
+  | O_Imp a b => S (pair P0 (subst_oform a t) (subst_oform b t))
+  | O_Hole => t
+  end.
+
+Definition ClosedCode (n : nat) : Prop :=
+  exists psi : Form, enc_form psi = n.
+
+Fixpoint close_oform (phi : OForm) (theta : Form) : Form :=
+  match phi with
+  | O_Bot => F_Bot
+  | O_Imp a b => F_Imp (close_oform a theta) (close_oform b theta)
+  | O_Hole => theta
+  end.
+
+Lemma close_oform_enc :
+  forall phi theta,
+    enc_form (close_oform phi theta) = subst_oform phi (enc_form theta).
+Proof.
+  induction phi as [|a IHa b IHb|]; intro theta; simpl.
+  - reflexivity.
+  - rewrite IHa, IHb. reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma subst_oform_preserves_closed :
+  forall phi t,
+    ClosedCode t ->
+    ClosedCode (subst_oform phi t).
+Proof.
+  intros phi t [theta Htheta].
+  exists (close_oform phi theta).
+  rewrite close_oform_enc.
+  now rewrite Htheta.
+Qed.
+
+Section Correctness.
+
+Hypothesis unpair_pair_P0 :
+  forall a b, unpair P0 (pair P0 a b) = (a, b).
+
+Hypothesis hole_code_not_bot :
+  hole_code <> 0.
+
+Hypothesis hole_code_fresh :
+  forall a b, hole_code <> S (pair P0 a b).
+
+Lemma decode_oform1_enc_bot :
+  decode_oform1 (enc_oform O_Bot) = ShBot.
+Proof.
+  unfold decode_oform1, enc_oform.
+  destruct (Nat.eqb_spec 0 hole_code) as [H0|H0].
+  - exfalso. apply hole_code_not_bot. symmetry. exact H0.
+  - reflexivity.
+Qed.
+
+Lemma decode_oform1_enc_hole :
+  decode_oform1 (enc_oform O_Hole) = ShHole.
+Proof.
+  unfold decode_oform1, enc_oform.
+  now rewrite Nat.eqb_refl.
+Qed.
+
+Lemma decode_oform1_enc_imp :
+  forall a b,
+    decode_oform1 (enc_oform (O_Imp a b)) = ShImp (enc_oform a) (enc_oform b).
+Proof.
+  intros a b.
+  unfold decode_oform1.
+  cbn [enc_oform].
+  destruct (Nat.eqb_spec (S (pair P0 (enc_oform a) (enc_oform b))) hole_code) as [Heq|Hneq].
+  - exfalso. apply (hole_code_fresh (enc_oform a) (enc_oform b)).
+    symmetry. exact Heq.
+  - rewrite unpair_pair_P0.
+    reflexivity.
+Qed.
+
+Lemma subst_code_fuel_correct :
+  forall fuel phi t,
+    osize phi <= fuel ->
+    subst_code_fuel fuel (enc_oform phi) t = subst_oform phi t.
+Proof.
+  induction fuel as [|fuel IH]; intros phi t Hsz.
+  - destruct phi; simpl in Hsz; lia.
+  - destruct phi as [|a b|].
+    + cbn [enc_oform subst_oform].
+      unfold subst_code_fuel at 1.
+      fold subst_code_fuel.
+      change (decode_oform1 0) with (decode_oform1 (enc_oform O_Bot)).
+      rewrite decode_oform1_enc_bot.
+      reflexivity.
+    + simpl in Hsz.
+      cbn [enc_oform subst_oform].
+      unfold subst_code_fuel at 1.
+      fold subst_code_fuel.
+      change (decode_oform1 (S (pair P0 (enc_oform a) (enc_oform b))))
+        with (decode_oform1 (enc_oform (O_Imp a b))).
+      rewrite decode_oform1_enc_imp.
+      f_equal.
+      apply f_equal2.
+      * apply IH. lia.
+      * apply IH. lia.
+    + cbn [enc_oform subst_oform].
+      unfold subst_code_fuel at 1.
+      fold subst_code_fuel.
+      change (decode_oform1 hole_code) with (decode_oform1 (enc_oform O_Hole)).
+      rewrite decode_oform1_enc_hole.
+      reflexivity.
+Qed.
+
+Theorem subst_code_correct :
+  forall phi t,
+    subst_code_fuel (osize phi) (enc_oform phi) t = subst_oform phi t.
+Proof.
+  intros phi t.
+  apply subst_code_fuel_correct.
+  lia.
+Qed.
+
+Theorem subst_code_preserves_closed :
+  forall phi t,
+    ClosedCode t ->
+    ClosedCode (subst_code_fuel (osize phi) (enc_oform phi) t).
+Proof.
+  intros phi t Ht.
+  rewrite subst_code_correct.
+  apply subst_oform_preserves_closed.
+  exact Ht.
+Qed.
+
+End Correctness.
+
+End SubstitutionCodes.
+
+(* ---- theories/T002/P__ProofTheory/P00__Provability_Interface.v ---- *)
+
+(* P00__Provability_Interface.v *)
+
+From Coq Require Import Bool.
+
+From T002 Require Import R19__Sigma_Reduction_Minimal_API.
+From T002 Require Import P00__Concrete_Provability.
+
+Definition Prov (u : nat) : Prop :=
+  ProvCode u.
+
+Definition Thm : nat -> Prop :=
+  R19__Sigma_Reduction_Minimal_API.Thm.
+
+Definition CubicSat : nat -> Prop :=
+  R19__Sigma_Reduction_Minimal_API.CubicSat.
+
+Definition f : nat -> nat :=
+  R19__Sigma_Reduction_Minimal_API.f.
+
+Definition Decider : Type := nat -> bool.
+
+Definition DeciderCode : Type := T002.R19__Sigma_Reduction_Minimal_API.DeciderCode.
+
+Definition EvalCode (e input : nat) (b : bool) : Prop :=
+  EvalRM e input b.
+
+Definition TotalCode (e : DeciderCode) : Prop :=
+  TotalRM e.
+
+Definition HaltingTrace
+  (e input fuel : nat) (st : T002.R16__Sigma_Reduction.RMState) (b : bool) : Prop :=
+  R19__Sigma_Reduction_Minimal_API.HaltingTrace e input fuel st b.
+
+Definition CorrectCode (e : DeciderCode) : Prop :=
+  TotalCode e /\ forall s, EvalCode e s true <-> CubicSat s.
+
+Definition Correct (D : Decider) : Prop :=
+  forall s, D s = true <-> CubicSat s.
+
+Definition Computable (D : Decider) : Prop :=
+  exists e : DeciderCode,
+    TotalCode e /\ forall s, D s = true <-> EvalCode e s true.
+
+Definition Decidable (P : nat -> Prop) : Prop :=
+  exists D : Decider, forall u, D u = true <-> P u.
+
+Definition DecidableCode (P : nat -> Prop) : Prop :=
+  exists e : DeciderCode, TotalCode e /\ forall u, EvalCode e u true <-> P u.
+
+Theorem EvalCode_deterministic :
+  forall e input b1 b2,
+    EvalCode e input b1 ->
+    EvalCode e input b2 ->
+    b1 = b2.
+Proof.
+  exact eval_rm_deterministic.
+Qed.
+
+Theorem EvalCode_total_input :
+  forall e input, TotalCode e -> exists b, EvalCode e input b.
+Proof.
+  intros e input Htotal.
+  exact (eval_rm_total e input Htotal).
+Qed.
+
+Theorem EvalCode_iff_halting_trace :
+  forall e input b,
+    EvalCode e input b <->
+    exists fuel st, HaltingTrace e input fuel st b.
+Proof.
+  exact eval_rm_iff_halting_trace.
+Qed.
+
+Theorem EvalCode_toggle_fixed_point :
+  forall e input b,
+    EvalCode (toggle_code e) input b <->
+    EvalCode e (toggle_code e) (negb b).
+Proof.
+  exact eval_rm_toggle_fixed_point.
+Qed.
+
+Theorem EvalCode_recursion_theorem :
+  forall e,
+    exists q,
+      forall input b,
+        EvalCode q input b <->
+        EvalCode e q (negb b).
+Proof.
+  exact rm_recursion_theorem.
+Qed.
+
+Theorem source_toggle_point_exists :
+  forall e : DeciderCode,
+    exists u : nat, Thm u <-> EvalCode e (f u) false.
+Proof.
+  exact R19__Sigma_Reduction_Minimal_API.source_toggle_point_exists.
+Qed.
+
+Theorem Prov_iff_Thm :
+  forall u, Prov u <-> Thm u.
+Proof.
+  intros u.
+  unfold Prov, ProvCode, Concrete_Proof, Thm.
+  split.
+  - intros [p [pf [target [_ [Hu Hcheck]]]]].
+    exists pf, target.
+    split; assumption.
+  - intros [pf [target [Hu Hcheck]]].
+    rewrite Hu.
+    apply checker_accepts_implies_ProvCode.
+    exact Hcheck.
+Qed.
+
+Theorem sigma_reduction_for_prov :
+  forall u, Prov u <-> CubicSat (f u).
+Proof.
+  intros u.
+  rewrite Prov_iff_Thm.
+  apply sigma_reduction.
+Qed.
+
+Theorem computable_correct_implies_correct_code :
+  forall D,
+    Computable D ->
+    Correct D ->
+    exists e, CorrectCode e.
+Proof.
+  intros D [e [Htotal He]] Hcorr.
+  exists e.
+  split.
+  - exact Htotal.
+  - intro s.
+    split.
+    + intro Hev.
+      apply (proj1 (Hcorr s)).
+      apply (proj2 (He s)).
+      exact Hev.
+    + intro Hsat.
+      apply (proj1 (He s)).
+      apply (proj2 (Hcorr s)).
+      exact Hsat.
+Qed.
+
+
+(* ---- theories/T002/P__ProofTheory/P01__HBL.v ---- *)
+
+(* P01__HBL.v *)
+
+From Coq Require Import List Bool.
+Import ListNotations.
+
+From T002 Require Import P00__Concrete_Provability.
+From T002 Require Import P02__Diagonal.
+
+From T002 Require Import
+  R01__Foundation_Fibonacci
+  R02__Foundation_Zeckendorf
+  R04__Verification_Hilbert_Syntax
+  R05__Verification_Hilbert_Checker
+  R06__Encoding_Formula_Coding
+  R15__Code_Bridge.
+
+Definition ProvCodeConcrete (u : nat) : Prop :=
+  ProvCode u.
+
+Theorem Prov_sigma1 :
+  forall u, ProvCodeConcrete u <-> exists p, Concrete_Proof p u.
+Proof.
+  intros u.
+  unfold ProvCodeConcrete, ProvCode.
+  tauto.
+Qed.
+
+Theorem Prov_from_check :
+  forall pf target,
+    check pf target = true ->
+    ProvCodeConcrete (code_of_concrete pf target).
+Proof.
+  intros pf target Hcheck.
+  unfold ProvCodeConcrete.
+  apply checker_accepts_implies_ProvCode.
+  exact Hcheck.
+Qed.
+
+Theorem Prov_to_concrete_witness :
+  forall u,
+    ProvCodeConcrete u ->
+    exists p, Concrete_Proof p u.
+Proof.
+  intros u Hu.
+  apply (proj1 (Prov_sigma1 u)).
+  exact Hu.
+Qed.
+
+Theorem HBL_1 :
+  forall pf target,
+    check pf target = true ->
+    ProvCodeConcrete (code_of_concrete pf target).
+Proof.
+  intros pf target Hcheck.
+  apply Prov_from_check.
+  exact Hcheck.
+Qed.
+
+Theorem HBL_2 :
+  forall u,
+    ProvCodeConcrete u ->
+    exists p, Concrete_Proof p u.
+Proof.
+  intros u Hu.
+  apply Prov_to_concrete_witness.
+  exact Hu.
+Qed.
+
+Lemma existsb_local_complete :
+  forall (A : Type) (p : A -> bool) (xs : list A),
+    (exists x, In x xs /\ p x = true) ->
+    existsb_local p xs = true.
+Proof.
+  intros A p xs.
+  induction xs as [|x xs IH]; intros [y [Hin Hy]].
+  - inversion Hin.
+  - simpl in Hin.
+    simpl.
+    destruct Hin as [Heq|Hin].
+    + subst y. rewrite Hy. reflexivity.
+    + destruct (p x) eqn:Hx.
+      * reflexivity.
+      * apply IH.
+        exists y. split; assumption.
+Qed.
+
+Lemma mp_witness_from_in :
+  forall (ctx : list Form) (u v : Form),
+    In u ctx ->
+    In (Imp u v) ctx ->
+    mp_witness ctx v = true.
+Proof.
+  intros ctx u v Hu Himp.
+  unfold mp_witness.
+  apply existsb_local_complete.
+  exists u.
+  split; [exact Hu|].
+  apply existsb_local_complete.
+  exists (Imp u v).
+  split; [exact Himp|].
+  simpl.
+  rewrite form_eqb_refl, form_eqb_refl.
+  reflexivity.
+Qed.
+
+Lemma mp_witness_monotone_incl :
+  forall (ctx1 ctx2 : list Form) (phi : Form),
+    (forall x, In x ctx1 -> In x ctx2) ->
+    mp_witness ctx1 phi = true ->
+    mp_witness ctx2 phi = true.
+Proof.
+  intros ctx1 ctx2 phi Hincl Hmp.
+  unfold mp_witness in *.
+  apply existsb_local_sound in Hmp.
+  destruct Hmp as [psi [Hpsi Hinner]].
+  apply existsb_local_sound in Hinner.
+  destruct Hinner as [chi [Hchi Htest]].
+  apply existsb_local_complete.
+  exists psi.
+  split.
+  - apply Hincl. exact Hpsi.
+  - apply existsb_local_complete.
+    exists chi.
+    split.
+    + apply Hincl. exact Hchi.
+    + exact Htest.
+Qed.
+
+Lemma check_lines_monotone_incl :
+  forall (ctx1 ctx2 : list Form) (pf : Proof),
+    (forall x, In x ctx1 -> In x ctx2) ->
+    check_lines ctx1 pf = true ->
+    check_lines ctx2 pf = true.
+Proof.
+  intros ctx1 ctx2 pf Hincl.
+  revert ctx1 ctx2 Hincl.
+  induction pf as [|line rest IH]; intros ctx1 ctx2 Hincl Hcheck.
+  - reflexivity.
+  - simpl in Hcheck.
+    apply Bool.andb_true_iff in Hcheck as [Hok Hrest].
+    simpl.
+    apply Bool.andb_true_iff.
+    split.
+    + apply Bool.orb_true_iff in Hok as [Hax|Hmp].
+      * apply Bool.orb_true_iff. left. exact Hax.
+      * apply Bool.orb_true_iff. right.
+        apply (mp_witness_monotone_incl ctx1 ctx2 line Hincl Hmp).
+    + apply (IH (line :: ctx1) (line :: ctx2)).
+      * intros x Hx.
+        simpl in Hx.
+        simpl.
+        destruct Hx as [Hx|Hx].
+        -- left. exact Hx.
+        -- right. apply Hincl. exact Hx.
+      * exact Hrest.
+Qed.
+
+Lemma check_lines_consume_rev :
+  forall (ctx : list Form) (pf : Proof),
+    check_lines ctx pf = true ->
+    check_lines (rev pf ++ ctx) [] = true.
+Proof.
+  intros ctx pf H.
+  simpl.
+  reflexivity.
+Qed.
+
+Lemma check_lines_cat :
+  forall (ctx : list Form) (pf1 pf2 : Proof),
+    check_lines ctx pf1 = true ->
+    check_lines (rev pf1 ++ ctx) pf2 = true ->
+    check_lines ctx (pf1 ++ pf2) = true.
+Proof.
+  intros ctx pf1.
+  revert ctx.
+  induction pf1 as [|a pf1 IH]; intros ctx pf2 H1 H2.
+  - simpl in *. exact H2.
+  - simpl in H1.
+    apply Bool.andb_true_iff in H1 as [Ha Hrest].
+    simpl.
+    apply Bool.andb_true_iff.
+    split; [exact Ha|].
+    apply (IH (a :: ctx) pf2 Hrest).
+    simpl in H2.
+    rewrite <- app_assoc in H2.
+    exact H2.
+Qed.
+
+Lemma last_opt_in :
+  forall (pf : Proof) (last : Form),
+    last_opt pf = Some last ->
+    In last pf.
+Proof.
+  induction pf as [|x xs IH]; intros last Hlast.
+  - discriminate.
+  - destruct xs as [|y ys].
+    + simpl in Hlast. inversion Hlast; subst. simpl. left. reflexivity.
+    + simpl in Hlast. right. apply IH. exact Hlast.
+Qed.
+
+Lemma last_opt_app_singleton :
+  forall (pf : Proof) (x : Form),
+    last_opt (pf ++ [x]) = Some x.
+Proof.
+  induction pf as [|a pf IH]; intro x.
+  - simpl. reflexivity.
+  - simpl.
+    destruct pf as [|b pf'].
+    + simpl. reflexivity.
+    + simpl. apply IH.
+Qed.
+
+Lemma check_true_components :
+  forall (pf : Proof) (goal : Form),
+    check pf goal = true ->
+    check_lines [] pf = true /\ last_opt pf = Some goal.
+Proof.
+  intros pf goal Hcheck.
+  unfold check in Hcheck.
+  destruct (last_opt pf) as [last|] eqn:Hlast; try discriminate.
+  apply Bool.andb_true_iff in Hcheck as [Hlines Heq].
+  apply form_eqb_true_eq in Heq.
+  subst last.
+  split.
+  - exact Hlines.
+  - reflexivity.
+Qed.
+
+(* Concrete MP internalization for checker-accepted proof traces. *)
+Theorem Prov_MP_checker :
+  forall (u v : Form) (pf_u pf_imp : Proof),
+    check pf_u u = true ->
+    check pf_imp (Imp u v) = true ->
+    exists pf_v,
+      check pf_v v = true /\
+      ProvCodeConcrete (code_of_concrete pf_v v).
+Proof.
+  intros u v pf_u pf_imp Hu Himp.
+  destruct (check_true_components pf_u u Hu) as [Hlines_u Hlast_u].
+  destruct (check_true_components pf_imp (Imp u v) Himp) as [Hlines_imp Hlast_imp].
+
+  set (pf_v := pf_u ++ pf_imp ++ [v]).
+  exists pf_v.
+  assert (Hcheck_v : check pf_v v = true).
+  {
+    unfold pf_v.
+    assert (Hlines_uimp : check_lines [] (pf_u ++ pf_imp) = true).
+    {
+      apply (check_lines_cat [] pf_u pf_imp).
+      - exact Hlines_u.
+      - rewrite app_nil_r.
+        apply (check_lines_monotone_incl [] (rev pf_u)).
+        + intros x Hx. inversion Hx.
+        + exact Hlines_imp.
+    }
+
+    assert (Hin_u_ctx : In u (rev pf_imp ++ rev pf_u)).
+    {
+      apply in_or_app.
+      right.
+      apply (proj1 (in_rev pf_u u)).
+      apply last_opt_in with (pf := pf_u).
+      exact Hlast_u.
+    }
+
+    assert (Hin_imp_ctx : In (Imp u v) (rev pf_imp ++ rev pf_u)).
+    {
+      apply in_or_app.
+      left.
+      apply (proj1 (in_rev pf_imp (Imp u v))).
+      apply last_opt_in with (pf := pf_imp).
+      exact Hlast_imp.
+    }
+
+    assert (Hlines_v : check_lines (rev (pf_u ++ pf_imp)) [v] = true).
+    {
+      rewrite rev_app_distr.
+      simpl.
+      apply Bool.andb_true_iff.
+      split.
+      - apply Bool.orb_true_iff. right.
+        eapply mp_witness_from_in.
+        + exact Hin_u_ctx.
+        + exact Hin_imp_ctx.
+      - reflexivity.
+    }
+
+    assert (Hlines_total : check_lines [] ((pf_u ++ pf_imp) ++ [v]) = true).
+    {
+      apply (check_lines_cat [] (pf_u ++ pf_imp) [v]).
+      - exact Hlines_uimp.
+      - rewrite app_nil_r.
+        exact Hlines_v.
+    }
+
+    unfold check.
+    rewrite app_assoc.
+    rewrite last_opt_app_singleton.
+    rewrite Hlines_total.
+    rewrite form_eqb_refl.
+    reflexivity.
+  }
+  split.
+  - exact Hcheck_v.
+  - unfold ProvCodeConcrete.
+    apply checker_accepts_implies_ProvCode.
+    exact Hcheck_v.
+Qed.
+
+Definition ProvFormula (phi : Form) : Prop :=
+  exists pf, check pf phi = true.
+
+Theorem Prov_MP :
+  forall (u v : Form),
+    ProvFormula (Imp u v) ->
+    ProvFormula u ->
+    ProvFormula v.
+Proof.
+  intros u v [pf_imp Himp] [pf_u Hu].
+  destruct (Prov_MP_checker u v pf_u pf_imp Hu Himp) as [pf_v [Hcheck _]].
+  exists pf_v.
+  exact Hcheck.
+Qed.
+
+Theorem HBL_3 :
+  forall (u v : Form),
+    ProvFormula (Imp u v) ->
+    ProvFormula u ->
+    ProvFormula v.
+Proof.
+  intros u v Himp Hu.
+  apply (Prov_MP u v Himp Hu).
+Qed.
+
+Theorem Prov_subst :
+  forall hole_code A t,
+    (forall a b, unpair P0 (pair P0 a b) = (a, b)) ->
+    hole_code <> 0 ->
+    (forall a b, hole_code <> S (pair P0 a b)) ->
+    ClosedCode t ->
+    ClosedCode
+      (apply_oform hole_code A t).
+Proof.
+  intros hole_code A t Hup Hbot Hfresh Hclosed.
+  apply (apply_oform_closed hole_code Hup Hbot Hfresh A t).
+  exact Hclosed.
+Qed.
+
+Definition code_map_represents (F : nat -> nat) : Prop :=
+  forall t, ClosedCode t -> ClosedCode (F t).
+
+Theorem Prov_representation :
+  forall hole_code A,
+    (forall a b, unpair P0 (pair P0 a b) = (a, b)) ->
+    hole_code <> 0 ->
+    (forall a b, hole_code <> S (pair P0 a b)) ->
+    code_map_represents (apply_oform hole_code A).
+Proof.
+  intros hole_code A Hup Hbot Hfresh t Hclosed.
+  apply (Prov_subst hole_code A t Hup Hbot Hfresh).
+  exact Hclosed.
+Qed.
+
+
+(* ---- theories/T002/P__ProofTheory/P02__Diagonal.v ---- *)
+
+(* P02__Diagonal.v *)
+
+From T002 Require Import P00__Concrete_Provability.
+From T002 Require Import R01__Foundation_Fibonacci R02__Foundation_Zeckendorf.
+From T002 Require Import R04__Verification_Hilbert_Syntax R06__Encoding_Formula_Coding.
+
+Section CodeDiagonal.
+
+Variable hole_code : nat.
+
+Hypothesis unpair_pair_P0 :
+  forall a b, unpair P0 (pair P0 a b) = (a, b).
+
+Hypothesis hole_code_not_bot :
+  hole_code <> 0.
+
+Hypothesis hole_code_fresh :
+  forall a b, hole_code <> S (pair P0 a b).
+
+Definition apply_oform (A : OForm) (t : nat) : nat :=
+  subst_code_fuel hole_code (osize A) (enc_oform hole_code A) t.
+
+Fixpoint hole_free (A : OForm) : Prop :=
+  match A with
+  | O_Bot => True
+  | O_Imp a b => hole_free a /\ hole_free b
+  | O_Hole => False
+  end.
+
+Record Template : Type := {
+  template_body : OForm
+}.
+
+Definition TemplateAdmissible (T : Template) : Prop :=
+  hole_free (template_body T).
+
+Definition apply_template (T : Template) (t : nat) : nat :=
+  apply_oform (template_body T) t.
+
+Definition diagonal_seed (T : Template) : nat :=
+  apply_template T 0.
+
+Definition UnfoldLaw (T : Template) (g : nat) : Prop :=
+  g = apply_template T g.
+
+Definition TemplateOK (T : Template) : Prop :=
+  forall t1 t2, apply_template T t1 = apply_template T t2.
+
+Definition UnfoldsAsClosedSubst (T : Template) (g : nat) : Prop :=
+  exists theta : Form,
+    enc_form theta = g /\
+    g = enc_form (close_oform (template_body T) theta).
+
+Theorem apply_oform_closed :
+  forall A t,
+    ClosedCode t ->
+    ClosedCode (apply_oform A t).
+Proof.
+  intros A t Ht.
+  unfold apply_oform.
+  apply (subst_code_preserves_closed
+           hole_code
+           unpair_pair_P0
+           hole_code_not_bot
+           hole_code_fresh
+           A
+           t).
+  exact Ht.
+Qed.
+
+Theorem apply_oform_unfold :
+  forall A t,
+    apply_oform A t = subst_oform A t.
+Proof.
+  intros A t.
+  unfold apply_oform.
+  apply (subst_code_correct
+           hole_code
+           unpair_pair_P0
+           hole_code_not_bot
+           hole_code_fresh
+           A
+           t).
+Qed.
+
+Theorem apply_template_closed :
+  forall T t,
+    ClosedCode t ->
+    ClosedCode (apply_template T t).
+Proof.
+  intros T t Ht.
+  unfold apply_template.
+  apply apply_oform_closed.
+  exact Ht.
+Qed.
+
+Theorem apply_template_unfold :
+  forall T t,
+    apply_template T t = subst_oform (template_body T) t.
+Proof.
+  intros T t.
+  unfold apply_template.
+  apply apply_oform_unfold.
+Qed.
+
+Theorem apply_template_as_closed_subst :
+  forall T t,
+    ClosedCode t ->
+    exists theta : Form,
+      enc_form theta = t /\
+      apply_template T t = enc_form (close_oform (template_body T) theta).
+Proof.
+  intros T t Hclosed.
+  destruct Hclosed as [theta Htheta].
+  exists theta.
+  split.
+  - exact Htheta.
+  - rewrite apply_template_unfold.
+    rewrite close_oform_enc.
+    now rewrite Htheta.
+Qed.
+
+Theorem diagonal_seed_closed :
+  forall T,
+    ClosedCode (diagonal_seed T).
+Proof.
+  intro T.
+  unfold diagonal_seed.
+  apply apply_template_closed.
+  exists F_Bot.
+  reflexivity.
+Qed.
+
+Theorem diagonal_seed_unfold_closed_subst :
+  forall T,
+    TemplateOK T ->
+    UnfoldsAsClosedSubst T (diagonal_seed T).
+Proof.
+  intros T Hok.
+  unfold UnfoldsAsClosedSubst.
+  destruct (apply_template_as_closed_subst T (diagonal_seed T) (diagonal_seed_closed T))
+    as [theta [Htheta Happ]].
+  exists theta.
+  split.
+  - exact Htheta.
+  - unfold diagonal_seed in *.
+    eapply eq_trans.
+    + apply Hok.
+    + exact Happ.
+Qed.
+
+Lemma subst_oform_hole_free :
+  forall A t1 t2,
+    hole_free A ->
+    subst_oform A t1 = subst_oform A t2.
+Proof.
+  induction A as [|a IHa b IHb|]; intros t1 t2 Hfree; simpl in *.
+  - reflexivity.
+  - destruct Hfree as [Ha Hb].
+    rewrite (IHa t1 t2 Ha), (IHb t1 t2 Hb).
+    reflexivity.
+  - contradiction.
+Qed.
+
+Lemma apply_oform_irrelevant_hole_free :
+  forall A t1 t2,
+    hole_free A ->
+    apply_oform A t1 = apply_oform A t2.
+Proof.
+  intros A t1 t2 Hfree.
+  rewrite !apply_oform_unfold.
+  apply subst_oform_hole_free.
+  exact Hfree.
+Qed.
+
+Lemma template_ok_from_hole_free :
+  forall T,
+    hole_free (template_body T) ->
+    TemplateOK T.
+Proof.
+  intros T Hfree t1 t2.
+  unfold apply_template.
+  apply apply_oform_irrelevant_hole_free.
+  exact Hfree.
+Qed.
+
+Lemma template_ok_from_admissible :
+  forall T,
+    TemplateAdmissible T ->
+    TemplateOK T.
+Proof.
+  intros T Hadm.
+  unfold TemplateAdmissible in Hadm.
+  apply template_ok_from_hole_free.
+  exact Hadm.
+Qed.
+
+Theorem fixed_point_code :
+  forall T,
+    TemplateOK T ->
+    ClosedCode (diagonal_seed T) /\
+    UnfoldLaw T (diagonal_seed T).
+Proof.
+  intros T Hok.
+  split.
+  - apply diagonal_seed_closed.
+  - unfold UnfoldLaw, diagonal_seed.
+    apply Hok.
+Qed.
+
+Theorem fixed_point_code_unfold :
+  forall T,
+    TemplateOK T ->
+    ClosedCode (diagonal_seed T) /\
+    UnfoldLaw T (diagonal_seed T) /\
+    UnfoldsAsClosedSubst T (diagonal_seed T).
+Proof.
+  intros T Hok.
+  split.
+  - apply diagonal_seed_closed.
+  - split.
+    + unfold UnfoldLaw, diagonal_seed.
+      apply Hok.
+    + apply diagonal_seed_unfold_closed_subst.
+      exact Hok.
+Qed.
+
+Theorem fixed_point_code_hole_free :
+  forall A,
+    hole_free A ->
+    exists g,
+      ClosedCode g /\
+      g = apply_oform A g.
+Proof.
+  intros A Hfree.
+  set (T := {| template_body := A |}).
+  exists (diagonal_seed T).
+  destruct (fixed_point_code T (template_ok_from_hole_free T Hfree)) as [Hclosed Hunfold].
+  split.
+  - exact Hclosed.
+  - exact Hunfold.
+Qed.
+
+Theorem FixedPoint :
+  forall T,
+    TemplateAdmissible T ->
+    exists g,
+      ClosedCode g /\
+      UnfoldLaw T g /\
+      UnfoldsAsClosedSubst T g.
+Proof.
+  intros T Hadm.
+  exists (diagonal_seed T).
+  destruct (fixed_point_code_unfold T (template_ok_from_admissible T Hadm))
+    as [Hclosed [Hunfold Hsubst]].
+  repeat split; assumption.
+Qed.
+
+End CodeDiagonal.
+
+
+(* ---- theories/T002/P__ProofTheory/P05__Toggle_Contradiction.v ---- *)
+
+(* P05__Toggle_Contradiction.v *)
+
+From T002 Require Import P00__Provability_Interface.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Tier 2 toggle contradiction core (coded deciders only)                *)
+(*                                                                       *)
+(*************************************************************************)
+
+Definition ToggleWitnessCode (e : DeciderCode) : Prop :=
+  exists s : nat,
+    CubicSat s <-> EvalCode e s false.
+
+Definition ToggleWitnessCodeGenerator : Prop :=
+  forall e : DeciderCode, ToggleWitnessCode e.
+
+Definition SourceTogglePointCode (e : DeciderCode) (u : nat) : Prop :=
+  Prov u <-> EvalCode e (f u) false.
+
+Definition SourceToggleCodeGenerator : Prop :=
+  forall e : DeciderCode, exists u : nat, SourceTogglePointCode e u.
+
+Definition Toggle_Instance_Contradiction_Code : Prop :=
+  forall e : DeciderCode, CorrectCode e -> False.
+
+(* Bridge 1: source fixed-point over theorem codes yields cubic witness. *)
+Theorem toggle_witness_code_from_source_point :
+  forall e u,
+    SourceTogglePointCode e u ->
+    ToggleWitnessCode e.
+Proof.
+  intros e u Hsrc.
+  exists (f u).
+  rewrite <- sigma_reduction_for_prov.
+  exact Hsrc.
+Qed.
+
+Theorem toggle_witness_code_generator_from_source :
+  SourceToggleCodeGenerator ->
+  ToggleWitnessCodeGenerator.
+Proof.
+  intros Hsrc e.
+  destruct (Hsrc e) as [u Hu].
+  apply (toggle_witness_code_from_source_point e u).
+  exact Hu.
+Qed.
+
+Lemma eval_true_false_impossible :
+  forall e s,
+    EvalCode e s true ->
+    EvalCode e s false ->
+    False.
+Proof.
+  intros e s Ht Hf.
+  pose proof (EvalCode_deterministic e s true false Ht Hf) as Heq.
+  discriminate Heq.
+Qed.
+
+(* Bridge 2: one toggle witness for e collapses CorrectCode e. *)
+Theorem toggle_witness_code_contradiction :
+  forall e : DeciderCode,
+    CorrectCode e ->
+    ToggleWitnessCode e ->
+    False.
+Proof.
+  intros e [Htotal Hcorr] [s Htoggle].
+  specialize (Hcorr s).
+  assert (Htf : EvalCode e s true -> EvalCode e s false).
+  {
+    intro Htrue.
+    apply (proj1 Htoggle).
+    apply (proj1 Hcorr).
+    exact Htrue.
+  }
+  destruct (Htotal s) as [b Hb].
+  destruct b.
+  - apply (eval_true_false_impossible e s Hb (Htf Hb)).
+  - pose proof (proj2 Htoggle Hb) as Hsat.
+    pose proof (proj2 Hcorr Hsat) as Htrue.
+    apply (eval_true_false_impossible e s Htrue Hb).
+Qed.
+
+Theorem toggle_instance_contradiction_of_generator_code :
+  ToggleWitnessCodeGenerator ->
+  Toggle_Instance_Contradiction_Code.
+Proof.
+  intros Hgen e Hcorr.
+  apply (toggle_witness_code_contradiction e Hcorr).
+  apply Hgen.
+Qed.
+
+
+(* ---- theories/T002/P__ProofTheory/P06__SourceToggle_Generator.v ---- *)
+
+(* P06__SourceToggle_Generator.v *)
+
+From T002 Require Import P00__Provability_Interface.
+From T002 Require Import P05__Toggle_Contradiction.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Internal source toggle generator                                      *)
+(*                                                                       *)
+(*************************************************************************)
+
+Theorem source_toggle_code_generator_internal :
+  SourceToggleCodeGenerator.
+Proof.
+  intro e.
+  destruct (source_toggle_point_exists e) as [u Hu].
+  exists u.
+  unfold SourceTogglePointCode.
+  rewrite Prov_iff_Thm.
+  exact Hu.
+Qed.
+
+
+(* ---- theories/T002/P__ProofTheory/P03__Undecidability.v ---- *)
+
+(* P03__Undecidability.v *)
+
+From T002 Require Import P00__Provability_Interface.
+From T002 Require Import P05__Toggle_Contradiction.
+From T002 Require Import P06__SourceToggle_Generator.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Tier 2 endpoint over coded deciders                                   *)
+(*                                                                       *)
+(*************************************************************************)
+
+Theorem no_total_correct_code_CubicSat :
+  ~ exists e : DeciderCode, CorrectCode e.
+Proof.
+  intros [e He].
+  apply (toggle_instance_contradiction_of_generator_code
+           (toggle_witness_code_generator_from_source
+              source_toggle_code_generator_internal)
+           e
+           He).
+Qed.
+
+Theorem no_total_correct_decider_CubicSat_computable :
+  ~ exists D : Decider, Computable D /\ Correct D.
+Proof.
+  intros [D [Hcomp Hcorr]].
+  destruct (computable_correct_implies_correct_code D Hcomp Hcorr) as [e He].
+  apply no_total_correct_code_CubicSat.
+  exists e.
+  exact He.
+Qed.
+
+Theorem CubicSat_undecidable_code :
+  ~ DecidableCode CubicSat.
+Proof.
+  intros [e [Htotal Hdec]].
+  apply no_total_correct_code_CubicSat.
+  exists e.
+  split.
+  - exact Htotal.
+  - intro s.
+    apply Hdec.
+Qed.
+
+(* ---- theories/T002/P__ProofTheory/P04__RA_Certification.v ---- *)
+
+(* P04__RA_Certification.v *)
+
+From T002 Require Import P00__Provability_Interface.
+From T002 Require Import P03__Undecidability.
+
+(*************************************************************************)
+(*                                                                       *)
+(* Tier 3: Internal certification endpoint (coded deciders)              *)
+(*                                                                       *)
+(*************************************************************************)
+
+Section Tier3.
+
+Variable RA_Certified_DeciderCode : DeciderCode -> Prop.
+Hypothesis RA_certified_sound :
+  forall e, RA_Certified_DeciderCode e -> CorrectCode e.
+
+Theorem no_RA_certified_decider_code :
+  ~ exists e : DeciderCode, RA_Certified_DeciderCode e.
+Proof.
+  intros [e He].
+  apply no_total_correct_code_CubicSat.
+  exists e.
+  apply RA_certified_sound.
+  exact He.
+Qed.
+
+End Tier3.
