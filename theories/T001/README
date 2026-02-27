@@ -1,0 +1,63 @@
+(* README *)
+
+1 - Description
+    -----------
+
+    T001 provides a mechanized proof of the “Carryless Pairing” construction in 
+    Rocq. The development relies on the standard libraries Arith, List, Bool,
+    and PeanoNat.
+
+    The `artifacts/` directory contains the proof-erasure outputs generated from
+    the development.
+
+
+2 - Repository Tree
+    ---------------
+
+    .
+    ├── README
+    │
+    │      (This file.)
+    │
+    ├── R01__Carryless_Pairing_Definitions.v
+    │
+    │      Core definitions of the carryless pairing function, including the
+    │      arithmetic encoding, auxiliary constructions, and structural lemmas.
+    │
+    ├── R02__Carryless_Pairing_Correctness.v
+    │
+    │      Main correctness results. In particular, it proves 
+    │      [ unpair (pair x y) = (x, y) ] under the stated Zeckendorf
+    │      specification, together with supporting soundness and representation
+    │      lemmas.
+    │
+    ├── R03__Carryless_Pairing_Examples.v
+    │
+    │      Concrete realizations and computational examples, including a greedy
+    │      Zeckendorf construction and `vm_compute` evaluations.
+    │
+    ├── RX__Carryless_Pairing_Export.v
+    │
+    │      Extraction directives for OCaml generation and reporting of logical
+    │      assumptions for the main theorems.
+    │
+    └── artifacts
+           ├── Carryless_Pairing.ml
+           │
+           │      Extracted OCaml implementation of the verified “Carryless
+           │      pairing construction.
+           │
+           ├── Carryless_Pairing.mli
+           │
+           │      Generated OCaml interface exposing the extracted types and
+           │      functions.
+           │
+           ├── assumptions.log
+           │
+           │      Output of `Print Assumptions` for the principal correctness
+           │      theorems.
+           │
+           └── v.context.txt
+           
+                  Snapshot of the main `.v` sources at extraction
+                  time, included for traceability.

@@ -1,0 +1,90 @@
+(* README *)
+
+    ┏━┓┏━┓┏━┓┏━┓┏━╸┏━╸┏━┓┏━┓┏━╸
+    ┣━┛┣┳┛┃ ┃┃ ┃┣╸ ┃  ┣━┫┗━┓┣╸ 
+    ╹  ╹┗╸┗━┛┗━┛╹  ┗━╸╹ ╹┗━┛┗━╸
+
+
+1 - About
+    -----
+
+    “Proofcase” is a collection of some self-contained Rocq developments. Each
+    component is designed to stand independently, typically serving as a formal
+    companion to a paper, note, or conceptual construction.
+
+
+2 - Style
+    -----
+
+    The formalizations prioritize clarity and minimality. Developments follow
+    established practices and contemporary conventions, with an emphasis on
+    readable structure and disciplined proof design.
+
+
+3 - Structure
+    ---------
+
+    .
+    ├── README
+    │
+    │      This file.
+    │
+    ├── _CoqProject
+    │
+    │      Rocq project manifest. Declares the logical root, namespace
+    │      mappings (-Q), and the complete ordered list of source files
+    │      to be compiled.
+    │
+    ├── builders
+    │    │
+    │    ├── 1 compile.command
+    │    │
+    │    │      Compiles the project into an isolated shadow build under
+    │    │      scratch/shadow/, runs axiom discipline checks, and writes
+    │    │      a certificate to success.txt on a clean Makefile run.
+    │    │
+    │    ├── 2 print.command
+    │    │
+    │    │      Concatenates selected .v files into a single context dump
+    │    │      (v.context.txt). Source selection is driven interactively
+    │    │      by a _Textslect file or _CoqProject.
+    │    │
+    │    ├── 3 tree.command
+    │    │
+    │    │      Generates a module dependency graph via coqdep. Outputs a
+    │    │      .dot graph, edge list, topological sort, and an SVG render
+    │    │      into scratch/.
+    │    │
+    │    ├── _TextslectFLT
+    │    │
+    │    │      A curated file list for selective concatenation. Read by
+    │    │      2 print.command to constrain output to a chosen subset of
+    │    │      sources, independent of _CoqProject order.
+    │    │
+    │    └── success.txt
+    │
+    │           Build certificate produced by 1 compile.command. Records
+    │           the build timestamp, Rocq version, axiom listing, a
+    │           _CoqProject snapshot, and optional per-file hashes.
+    │
+    ├── scratch
+    │
+    │      Typical “scratch” build folder. Keeps files uncluttered.
+    │
+    └── theories
+         │
+         │      Root of all Rocq sources. Organized into numbered theory
+         │      subdirectories, each constituting an independent development.
+         │
+         ├── T001
+         │
+         ├── T002
+         │
+         └── [...]
+
+4 - Contact
+    -------
+
+    www.milanrosko.com
+
+    hi "at" milanrosko "dot" com

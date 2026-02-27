@@ -1,0 +1,236 @@
+(* README *)
+
+1 - Description
+    -----------
+
+    T002 provides a mechanized Rocq development of a Hilbert-style proof checker
+    and its reduction to a cubic polynomial satisfiability witness system. The
+    construction is built in layers: Fibonacci/Zeckendorf foundations,
+    syntactic proof verification, constraint assembly, and final reduction
+    interfaces.
+
+    The coded-decider semantics used by Tier-2 is execution-based (`EvalRM`
+    transported by halting traces), exposed only through the R18/R19 API
+    boundary. R20 exposes an explicit aggregated-evaluator semantics for the
+    single cubic equation, and R21 proves `unpair_pair_P0` for the carryless
+    pairing instance used in code decoding.
+
+    The `artifacts/` directory contains extracted OCaml code and context/testing
+    outputs generated from this development.
+
+
+2 - Repository Tree
+    ---------------
+
+    .
+    ├── README
+    │
+    │      (This file.)
+    │
+    ├── P__ProofTheory
+    │         │
+    │         ├── P00__Concrete_Provability.v
+    │         │
+    │         │      Concrete provability kernel: defines
+    │         │      `Concrete_Proof`/`ProvCode` directly from coded checker 
+    │         │      acceptance, and provides the substitution-code
+    │         │      infrastructure used by code-level diagonalization.
+    │         │
+    │         ├── P00__Provability_Interface.v
+    │         │
+    │         │      Stable proof-theory interface: exports `Prov`, `Thm`,
+    │         │      `CubicSat`, coded decider notions (`DeciderCode`,
+    │         │      `EvalCode`, `CorrectCode`), and bridge theorems
+    │         │      (`Prov_iff_Thm`, `sigma_reduction_for_prov`), including
+    │         │      halting-trace transport (`EvalCode_iff_halting_trace`).
+    │         │
+    │         ├── P01__HBL.v
+    │         │
+    │         │      Concrete derivability layer (axiom-free): witness 
+    │         │      extraction, checker-based MP internalization, and
+    │         │      substitution/representability lemmas used downstream by the
+    │         │      proof-theory path.
+    │         │
+    │         ├── P02__Diagonal.v
+    │         │
+    │         │      Code-level diagonal toolkit: template application,
+    │         │      admissibility, fixed-point construction, and close/unfold.
+    │         │
+    │         ├── P03__Undecidability.v
+    │         │
+    │         │      Tier-2 endpoint: premise-free coded undecidability theorem
+    │         │      `no_total_correct_code_CubicSat` and computable-function
+    │         │      corollary.
+    │         │
+    │         ├── P04__RA_Certification.v
+    │         │
+    │         │      Tier-3 certification corollary: section-parametric result
+    │         │      reducing RA-certified decider codes to the Tier-2
+    │         │      impossibility theorem.
+    │         │
+    │         ├── P05__Toggle_Contradiction.v
+    │         │
+    │         │      Toggle-witness contradiction core: source-point to witness
+    │         │      bridge and contradiction theorem collapsing `CorrectCode e`.
+    │         │
+    │         └── P06__SourceToggle_Generator.v
+    │
+    │                Internal source-toggle diagonal generator.
+    │
+    ├── R_SigmaReduction
+    │         │
+    │         ├── R00__Degree_Framework.v
+    │         │
+    │         │      Foundational expression-degree framework used for local
+    │         │      degree reasoning (`degree`, add/sub/mul bounds,
+    │         │      square/multiplicative lemmas).
+    │         │
+    │         ├── R01__Foundation_Fibonacci.v
+    │         │
+    │         │      Core carryless-pairing foundations: Fibonacci arithmetic,
+    │         │      pair/unpair definitions, and parameterized band encodings.
+    │         │
+    │         ├── R02__Foundation_Zeckendorf.v
+    │         │
+    │         │      Main Zeckendorf layer: greedy constructor, correctness and
+    │         │      uniqueness proofs, and odd/even split used by pairing.
+    │         │
+    │         ├── R04__Verification_Hilbert_Syntax.v
+    │         │
+    │         │      Hilbert formula syntax (`Bot`, `Imp`), boolean equality,
+    │         │      axiom recognizers (K/S/EFQ), and soundness lemmas.
+    │         │
+    │         ├── R05__Verification_Hilbert_Checker.v
+    │         │
+    │         │      Executable proof checker (`check`) with modus-ponens 
+    │         │      witness search, line-by-line validation, and small
+    │         │      `vm_compute` test cases.
+    │         │
+    │         ├── R06__Encoding_Formula_Coding.v
+    │         │
+    │         │      Recursive coding of formulas into naturals via
+    │         │      Carryless Pairing.
+    │         │
+    │         ├── R08__Constraints_Axiom.v
+    │         │
+    │         │      Constraint language and assignment model; defines axiom/MP
+    │         │      predicates and basic properties for boolean constraints.
+    │         │
+    │         ├── R09__Constraints_MP.v
+    │         │
+    │         │      System-level constraint assembly, core equivalence theorem
+    │         │      `check pf target = true <-> satisfies (system_constraints)`.
+    │         │
+    │         ├── R10__Constraints_Target.v
+    │         │
+    │         │      Target-layer bridge lemmas: beta-trace consequence of
+    │         │      successful checking and reflection from system satisfaction
+    │         │      back to `check`.
+    │         │
+    │         ├── R11__Constraints_Assembly.v
+    │         │
+    │         │      Maps constraints to low-degree polynomials, proves degree
+    │         │      bounds (<= 3), and relates proof checking to polynomial
+    │         │      zero conditions.
+    │         │
+    │         ├── R12__Aggregation_Fib_Banded_Equality.v
+    │         │
+    │         │      Aggregates polynomial obligations into one cubic equation
+    │         │      and proves equivalence between checker acceptance and
+    │         │      Fibonacci-banded two-channel equality (Zeckendorf no-carry).
+    │         │
+    │         ├── R13__Kernel_API.v
+    │         │
+    │         │      Public kernel interface (`cubic_accepts`, `CubicWitness`)
+    │         │      with correctness theorem and exported degree-bound
+    │         │      guarantees.
+    │         │
+    │         ├── R14__Reduction_Core.v
+    │         │
+    │         │      Reduction-core aliases and direct checker-to-cubic-object
+    │         │      equivalence.
+    │         │
+    │         ├── R15__Code_Bridge.v
+    │         │
+    │         │      Concrete coding bridge from `(proof, target)` objects to N
+    │         │      with equivalence theorem at the coded-instance boundary.
+    │         │
+    │         ├── R16__Sigma_Reduction.v
+    │         │
+    │         │      Coded evaluator + reduction nucleus: defines
+    │         │      `EvalRM`/`TotalRM`, `HaltingTrace` and
+    │         │      `EvalRM <-> HaltingTrace`, recursion/fixed point theorem
+    │         │      over decider codes, theorems `sigma_reduction`,
+    │         │      `thm_reduces_to_cubic`, `compiler_primitive`.
+    │         │
+    │         ├── R17__Extraction_Interface.v
+    │         │
+    │         │      emits OCaml artifacts for `cubic_accepts`
+    │         │
+    │         ├── R18__Sigma_Reduction_API.v
+    │         │
+    │         │      Full reduction API boundary: re-exports stable definitions
+    │         │      from R16 and seals heavy internals via `Global Opaque`.
+    │         │
+    │         ├── R19__Sigma_Reduction_Minimal_API.v
+    │         │
+    │         │      Deliberately excludes evaluator-shape internals such as
+    │         │      `code_output`-style collapse lemmas.
+    │         │
+    │         ├── R20__Aggregated_Evaluator.v
+    │         │
+    │         │      Aggregated single-equation evaluator (`eval_agg`) and
+    │         │      its correctness lemma (`aggregation_correct`).
+    │         │
+    │         └── R21__Pairing_Correctness_P0.v
+    │
+    │                `unpair_pair_P0` correctness for the P0 pairing instance.
+    │
+    └── artifacts
+        │
+        ├── Carryless_Pairing.ml
+        │
+        │      Extracted OCaml implementation of the carryless-pairing
+        │      foundations (Fibonacci, pairing, and unpairing utilities).
+        │
+        ├── Carryless_Pairing.mli
+        │
+        │      Generated OCaml interface for the extracted pairing module.
+        │
+        ├── carryless_pairing_t003.ml
+        │
+        │      Extracted OCaml carryless-pairing artifact for the T003
+        │      pipeline/variant.
+        │
+        ├── cubic_checker.ml
+        │
+        │      Extracted OCaml checker implementing the Hilbert proof
+        │      verification kernel.
+        │
+        ├── cubic_checker.mli
+        │
+        │      Generated OCaml interface exposing the extracted checker API.
+        │
+        ├── cubic_compiler.ml
+        │
+        │      Extracted OCaml compiler surface exposing `emit_cubic_system`
+        │      and `degree` for cubic-polynomial generation/inspection.
+        │
+        ├── cubic_compiler.mli
+        │
+        │      Generated OCaml interface for the extracted cubic compiler API.
+        │
+        ├── smoketest.py
+        │
+        │      Independent Python reference checker and smoke tests for
+        │      cross-checking the extracted checker behavior.
+        │
+        ├── TechnicalSummary.yaml
+        │
+        │      Machine-readable technical map: manuscript-claim cross-references,
+        │      theorem dependency chain, tier architecture, and API surfaces.
+        │
+        └── printassumptions
+
+               Output log of `Print Assumptions`/audit checks for key endpoint
+               theorems.

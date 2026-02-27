@@ -1,0 +1,256 @@
+(* README *)
+
+1 - Description
+    -----------
+
+    T003 provides two bounded coefficient-table cubic artifacts.
+
+    The Rocq modules in this folder are generated against the minimal profile.
+
+    In `R04__Universal.v`:
+
+    (i)     `U_table` is the bounded universal cubic polynomial
+            (from `R02__Coefficients.v`).
+
+    (ii)    `U` is aliased to `U_table` for table-first exports.
+
+    (iii)   `UC` packages the table, public index map, and digest gate.
+
+    In `R08__Bounded_Universality.v`:
+
+    (i)     `Bounded_Thm_k` is the bounded theoremhood predicate for the pinned
+            parameters (`bound_n_lines`, `bound_digit_width`, representation
+            bounds).
+
+    (ii)    `bounded_universal_cubic` is the table-level endpoint theorem:
+            `Bounded_Thm_k t <-> exists rho,InputEncoding_table t rho /\ ...
+
+    Each fixed bounded artifact is decidable (hence RE). The undecidability
+    witness is the uniform compiler family as bounds scale, not a claim that
+    one fixed bounded instance is already RE-complete.
+
+2 - On Python
+    ---------
+    
+    The Rocq kernel checks `table_digest_ok` in `R07__Table_Inspection.v` over
+    the concrete table. We use Python as the construction layer for feasibility:
+    a direct OCaml-to-polynomial-unfolding compiler path is conjectured to be
+    impractical at this artifact size/complexity.
+
+    The constructor pipeline emits `R00__VarMap.v` alongside the coefficient
+    modules.
+
+
+3 - Repository Tree
+    ---------------
+
+    .
+    ├── README
+    │
+    │      (This file.)
+    │
+    ├── Chunks
+    │       │
+    │       │      Equation/cefficients packed in “chunks” for handling.
+    │       │
+    │       ├── Coeff_chunk_0.v
+    │       ├── Coeff_chunk_1.v
+    │       ├── Coeff_chunk_10.v
+    │       ├── Coeff_chunk_11.v
+    │       ├── Coeff_chunk_12.v
+    │       ├── Coeff_chunk_13.v
+    │       ├── Coeff_chunk_14.v
+    │       ├── Coeff_chunk_15.v
+    │       ├── Coeff_chunk_16.v
+    │       ├── Coeff_chunk_17.v
+    │       ├── Coeff_chunk_18.v
+    │       ├── Coeff_chunk_19.v
+    │       ├── Coeff_chunk_2.v
+    │       ├── Coeff_chunk_3.v
+    │       ├── Coeff_chunk_4.v
+    │       ├── Coeff_chunk_5.v
+    │       ├── Coeff_chunk_6.v
+    │       ├── Coeff_chunk_7.v
+    │       ├── Coeff_chunk_8.v
+    │       └── Coeff_chunk_9.v
+    │
+    ├── R01__Coeff_types.v
+    │
+    │      Shared metadata (var_count/base/channel_count/hash) and monom type.
+    │
+    ├── R02__Coefficients.v
+    │
+    │      Concrete monomial list `poly` and coefficient-table polynomial
+    │      `U` (exported in R04 as `U_table`).
+    │
+    ├── R03__Degree.v
+    │
+    │      Degree bounds and cubicity certificates for the coefficient-table
+    │      polynomial.
+    │
+    ├── R04__Universal.v
+    │
+    │      Bounded universal interface: table-first exports (`U := U_table`) and
+    │      packaged artifact record `UC`.
+    │
+    ├── R08__Bounded_Universality.v
+    │
+    │      Bounded theoremhood endpoint theorem over `U_table`.
+    │
+    ├── R05__Effectivity.v
+    │
+    │      Sanity checks for the coefficient-table artifact (indices, degree,
+    │      nonzero monomials, and evaluability).
+    │
+    ├── R07__Table_Inspection.v
+    │
+    │      Coq-internal digest gate over the concrete table (`poly`) with a
+    │      fixed computed digest constant.
+    │
+    ├── python
+    │   │
+    │   │
+    │   ├── gen.py
+    │   │
+    │   │    Coefficient-table generator (minimal/effective profiles).
+    │   │
+    │   └── webgen.py
+    │
+    │   Compact web JSON / JS / HTML emitter from generated JSON.
+    │
+    └── artifacts
+           │
+           ├── universal_cubic.minimal.coefficients.json
+           │
+           │      Minimal (Rocq-focused) bounded cubic table.
+           │
+           ├── universal_cubic.minimal.web.html
+           │
+           │      Rendered long-form equation view for the minimal table.
+           │
+           ├── universal_cubic.effective.coefficients.json
+           │
+           │      Effective (demo-focused) bounded cubic table.
+           │
+           └── universal_cubic.effective.web.html
+
+                  Rendered long-form equation view for the effective table.
+
+
+4 - Regeneration
+    ------------
+
+    Generate minimal JSON (Rocq-focused):
+
+    python3 theories/T003/python/generator/gen.py \
+      --k 3 --w 4 --base 5 --mode hierarchical --block-size 32 --outer-base 7 \
+      --public-vars u:trace_code --out theories/T003/artifacts/universal_cubic.minimal.coefficients.json
+
+    Generate effective JSON (web/demo-focused):
+
+    python3 theories/T003/python/generator/gen.py \
+      --k 1 --w 9 --base 6000001 --mode hierarchical --block-size 32 --outer-base 6000003 \
+      --public-vars u:trace_code --reserve-public-slots \
+      --out theories/T003/artifacts/universal_cubic.effective.coefficients.json
+
+    Render web equation HTML from a generated JSON:
+
+    python3 theories/T003/python/generator/webgen.py \
+      --in theories/T003/artifacts/universal_cubic.minimal.coefficients.json \
+      --emit-html theories/T003/artifacts/universal_cubic.minimal.web.html
+
+    python3 theories/T003/python/generator/webgen.py \
+      --in theories/T003/artifacts/universal_cubic.effective.coefficients.json \
+      --emit-html theories/T003/artifacts/universal_cubic.effective.web.html
+
+
+5 - Semantics
+    ---------
+
+    Source of truth for encoding is the Python code
+
+    `theories/T003/python/generator/gen.py`.
+
+    The cubic artifact does not define a new encoding in Rocq. Rocq consumes
+    the generated table + VarMap. If you want to encode a sentence/formula,
+    edit/check these exact functions in `gen.py`.
+
+    (i)     Formula AST and semantic checker:
+
+       (a)   `class Form`                         (syntax root)
+       (b)   `check_proof(pf, goal)`              (bounded semantic checker)
+
+    (ii)    Numeric encoding functions (the canonical path):
+
+       (a)   `enc_form(phi, width)`               (formula -> nat code)
+       (b)   `code_pf(pf, width)`                 (proof/list -> nat code)
+       (c)   `code_of_concrete(pf, goal, width)`  (proof, goal -> nat code)
+  
+    (iii)   Pairing/unpairing layer used by encodings:
+
+       (a)   `pair_value(x, y, width)`
+       (b)   `unpair_value(z, width)`
+            
+            These are pinned to Zeckendorf + gap-4 carryless layout, with
+            successor convention pinned in metadata as
+            `successor = "nat_plus_one_eq"`.
+
+    (iv)    Constraint variables carrying the encoded input
+
+            In `emit_cubic_system(...)` the key variables are:
+
+       (a)   `goal_code`
+       (b)   `proof_code`
+       (c)   `trace_code`
+
+            The public input is mapped as:
+            - `u -> trace_code` (CLI/default public map)
+
+    (v)     Public index pinning into Rocq. 
+
+       (a)   During regeneration, `meta.public_vars` from JSON is used to emit
+             `R00__VarMap.v` with `ix_u`
+       (b)   Endpoint-side input encoding then reads:
+             `rho ix_u = Z.of_nat u` (via `InputEncoding_table`)
+
+             So the only supported way to change what `u` means is:
+             (1) change Python mapping/encoding, (2) regenerate artifacts,
+             and (3) rebuild Rocq.
+
+    (vi)    Practical recipe. To encode a goal sentence/formula `phi`
+
+       (a)   Build a `Form` value.
+       (b)   Call `enc_form(phi, width)` to get `goal_code`.
+
+            To encode a full bounded instance `(pf, goal)` into public input `u`
+
+       (a)   Build proof lines `pf : list[Form]`.
+       (b)   Build `goal : Form`.
+       (c)   Call `code_of_concrete(pf, goal, width)`; this is the canonical
+             concrete code that flows into `trace_code`/`u`.
+
+    (vii)   One would always regenerate via
+            `python3 theories/T003/python/generator/gen.py` with explicit
+            profile parameters, and ensure constructor gates pass via
+            `--self-check` and `--contract-check`.
+
+    (viii)  What `k` means and how long a line is
+
+       (a)   `k` is the proof-length bound (`n_lines`), not the number of
+              variables and not text length.
+       (b)   A "line" is one encoded formula value `f_i` inside the bounded
+             arithmetic coding.
+       (c)   Line capacity is controlled by digit width:
+             `lane_width = digit_width / 4` (gap-4 pairing lanes).
+       (d)   Each line code must fit the lane bound by
+             `0 <= f_i <= max_repr_lane`.
+
+            For the current pinned artifact this means
+
+       (a)   `k = 3` (`n_lines = 3`)
+       (b)   `digit_width = 16`
+       (c)   `lane_width = 4`
+       (d)   `max_repr_lane = 7`.
+
+            Hence the table supports proofs with at most 3 lines, and each line
+            formula code must fit within the lane bound above.

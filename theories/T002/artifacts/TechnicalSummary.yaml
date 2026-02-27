@@ -1,0 +1,786 @@
+#  TechnicalSummary.yaml
+
+meta:
+  theory: T002
+  prover_version: "Coq 8.20.1"
+  axioms: none
+  repository: https://github.com/Milan-Rosko/Proofcase/tree/main/theories/T002
+
+#  1. TIER ARCHITECTURE
+
+tiers:
+  - id: 1
+    name: Compilation
+    description: >-
+      Certified uniform primitive recursive compiler from RA-sentence
+      codes to finite cubic constraint systems, plus mixed-radix
+      aggregation to a single cubic equation.  Degree <= 3 bound
+      certified by structural induction on emitted ASTs.
+    methodology: constructive
+    modules:
+      - R00__Degree_Framework
+      - R01__Foundation_Fibonacci
+      - R02__Foundation_Zeckendorf
+      - R04__Verification_Hilbert_Syntax
+      - R05__Verification_Hilbert_Checker
+      - R06__Encoding_Formula_Coding
+      - R08__Constraints_Axiom
+      - R09__Constraints_MP
+      - R10__Constraints_Target
+      - R11__Constraints_Assembly
+      - R12__Aggregation_Fib_Banded_Equality
+      - R13__Kernel_API
+      - R14__Reduction_Core
+      - R15__Code_Bridge
+      - R16__Sigma_Reduction
+      - R17__Extraction_Interface
+      - R18__Sigma_Reduction_API
+      - R19__Sigma_Reduction_Minimal_API
+
+  - id: 2
+    name: Fixed-point logic
+    description: >-
+      Code-level diagonal: HBL derivability conditions, fixed-point
+      construction, and the premise-free coded undecidability theorem
+      no_total_correct_code_CubicSat.  Constructive (no classical axioms).
+    methodology: constructive
+    modules:
+      - P00__Concrete_Provability
+      - P00__Provability_Interface
+      - P01__HBL
+      - P02__Diagonal
+      - P03__Undecidability
+      - P05__Toggle_Contradiction
+      - P06__SourceToggle_Generator
+
+  - id: 3
+    name: Internal collapse
+    description: >-
+      RA-certification corollary: if RA could internally certify
+      correctness of a cubic decider on the compiler image, it would
+      prove RFN_{Sigma_1}(RA), hence Con(RA), contradicting Goedel's 2nd.
+      Classical meta-theoretic argument (not Rocq-verified).
+    methodology: classical
+    modules:
+      - P04__RA_Certification
+
+#  2. MODULE CHAIN
+
+module_layers:
+  - layer: 1
+    name: Foundations
+    range: R00 -- R02
+    files:
+      - R00__Degree_Framework.v
+      - R01__Foundation_Fibonacci.v
+      - R02__Foundation_Zeckendorf.v
+
+  - layer: 2
+    name: Verification and constraint compilation
+    range: R04 -- R11
+    files:
+      - R04__Verification_Hilbert_Syntax.v
+      - R05__Verification_Hilbert_Checker.v
+      - R06__Encoding_Formula_Coding.v
+      - R08__Constraints_Axiom.v
+      - R09__Constraints_MP.v
+      - R10__Constraints_Target.v
+      - R11__Constraints_Assembly.v
+
+  - layer: 3
+    name: Aggregation and kernel interface
+    range: R12 -- R13
+    files:
+      - R12__Aggregation_Fib_Banded_Equality.v
+      - R13__Kernel_API.v
+
+  - layer: 4
+    name: Reduction endpoint and proof theory
+    range: R14 -- R19, P00 -- P06
+    files:
+      - R14__Reduction_Core.v
+      - R15__Code_Bridge.v
+      - R16__Sigma_Reduction.v
+      - R17__Extraction_Interface.v
+      - R18__Sigma_Reduction_API.v
+      - R19__Sigma_Reduction_Minimal_API.v
+      - P00__Concrete_Provability.v
+      - P00__Provability_Interface.v
+      - P01__HBL.v
+      - P02__Diagonal.v
+      - P03__Undecidability.v
+      - P04__RA_Certification.v
+      - P05__Toggle_Contradiction.v
+      - P06__SourceToggle_Generator.v
+
+#  3. MANUSCRIPT-CLAIM CROSS-REFERENCES
+
+cross_references:
+
+  - claim: Definition 1.1 (Register Arithmetic RA)
+    label: def:register-arithmetic
+    status: framework
+    notes: >-
+      Calibration point of the development: RA = (IDelta_0 + BSigma_1)
+      restricted to L_RA = {0, S, +, =}.  Multiplication is a
+      Sigma_1-representable relation, not a primitive.
+
+  - claim: Definition 1.5 (H(N,d,n) notation)
+    label: def:hn-notation
+    status: notation
+    notes: Gasarch-style parameterized Diophantine solvability notation.
+
+  - claim: Definition 3.1 (Formula syntax)
+    label: def:formula-syntax
+    rocq: R04__Verification_Hilbert_Syntax.v
+    identifier: Form
+    status: mechanized
+
+  - claim: Definition 3.2 (Axiom schemas K, S, EFQ)
+    label: def:axiom-schemas
+    rocq: R04__Verification_Hilbert_Syntax.v
+    identifiers:
+      - is_K
+      - is_S
+      - is_EFQ
+    status: mechanized
+
+  - claim: Definition 3.4 (Proof checker)
+    label: def:proof-checker
+    rocq: R05__Verification_Hilbert_Checker.v
+    identifier: check
+    status: mechanized
+
+  - claim: Definition 3.9 (Proof constraint system)
+    label: def:proof-constraint-system
+    rocq: R11__Constraints_Assembly.v
+    identifiers:
+      - polynomial_system
+      - constraint_system
+    status: mechanized
+
+  - claim: Definition 3.12 (Cubic system compiler)
+    label: def:cubic-compiler
+    rocq: R13__Kernel_API.v
+    identifier: emit_cubic_system
+    status: mechanized
+
+  - claim: Definition 3.13 (Single-equation compiler)
+    label: def:single-equation-compiler
+    rocq: R13__Kernel_API.v
+    identifier: emit_single_cubic
+    status: mechanized
+
+  - claim: Definition 4.1 (Syntactic and proof predicates)
+    label: def:syntactic-predicates
+    rocq: P00__Provability_Interface.v
+    identifiers:
+      - Prov
+      - Thm
+      - CubicSat
+    status: mechanized
+
+  - claim: Definition 4.4 (Internal decision specification)
+    label: def:restricted-internal-decision-spec
+    rocq: P04__RA_Certification.v
+    notes: Dec_M formalized via section parameters.
+    status: mechanized
+
+  - claim: Definition (DeciderCode / EvalCode / CorrectCode)
+    rocq: P00__Provability_Interface.v
+    identifiers:
+      - DeciderCode
+      - EvalCode
+      - TotalCode
+      - CorrectCode
+    status: mechanized
+
+  - claim: Definition (EvalRM / TotalRM / HaltingTrace)
+    rocq: R16__Sigma_Reduction.v
+    identifiers:
+      - EvalRM
+      - TotalRM
+    status: mechanized
+
+  # --- Theorems (Tier 1: Compilation) ---
+
+  - claim: Theorem 1.2 (Representability of multiplication)
+    label: thm:mult-representable
+    status: framework
+    notes: >-
+      Mult(x,y,z) as Sigma_1-representation via iterated addition.
+      Standard in bounded arithmetic literature.
+
+  - claim: Theorem 2.1 (Zeckendorf's Theorem)
+    label: thm:zeckendorf
+    rocq: R02__Foundation_Zeckendorf.v
+    status: mechanized
+
+  - claim: Theorem 2.2 (Carryless Pairing)
+    label: thm:carryless-pair
+    rocq: R01__Foundation_Fibonacci.v
+    status: mechanized
+
+  - claim: Theorem 3.5 (Kernel soundness)
+    label: thm:kernel-soundness
+    rocq: R05__Verification_Hilbert_Checker.v
+    status: mechanized
+
+  - claim: Theorem 3.10 (Constraint equivalence)
+    label: thm:checker-constraint-equivalence
+    rocq: R11__Constraints_Assembly.v
+    identifier: proof_equiv_poly_zero
+    status: mechanized
+
+  - claim: Proposition 3.11 (Global degree bound)
+    label: prop:global-degree-bound
+    rocq: R11__Constraints_Assembly.v
+    identifier: polynomial_system_forall_degree_le_3
+    status: mechanized
+
+  - claim: Theorem 3.14 (Certified cubic reduction)
+    label: thm:certified-cubic-reduction
+    rocq: R13__Kernel_API.v
+    identifier: check_iff_emit_cubic_all_zero
+    status: mechanized
+
+  - claim: Theorem 3.7 (Proof evaluation via single cubic)
+    label: thm:proof-agg-sum-zero
+    rocq: R12__Aggregation_Fib_Banded_Equality.v
+    identifier: proof_equiv_agg_sum_zero
+    status: mechanized
+
+  - claim: Proposition 3.8 (Degree bound after aggregation)
+    label: prop:degree-after-aggregation
+    rocq: R12__Aggregation_Fib_Banded_Equality.v
+    identifier: aggregate_banded_degree_le_3
+    status: mechanized
+
+  - claim: Lemma (Aggregation correctness)
+    label: lem:banded-aggregation-correct
+    rocq: R12__Aggregation_Fib_Banded_Equality.v
+    identifier: aggregate_banded_correct
+    status: mechanized
+
+  - claim: Lemma (AST degree correspondence)
+    label: lem:expr-degree
+    rocq: R00__Degree_Framework.v
+    status: mechanized
+
+  - claim: Theorem (Sigma reduction / compiler_primitive)
+    rocq: R16__Sigma_Reduction.v
+    identifiers:
+      - sigma_reduction
+      - thm_reduces_to_cubic
+      - compiler_primitive
+      - sigma1_hardness
+    status: mechanized
+
+  - claim: Theorem (Kernel API degree bounds)
+    rocq: R13__Kernel_API.v
+    identifiers:
+      - kernel_constraint_degree_le_3
+      - kernel_system_degree_le_3
+      - compiler_degree_bound
+      - degree_three_threshold
+      - emit_single_cubic_degree_le_3
+    status: mechanized
+
+  - claim: Theorem (cubic_accepts correctness)
+    rocq: R13__Kernel_API.v
+    identifiers:
+      - cubic_accepts_iff_cubic_witness
+      - cubic_accepts_correct
+    status: mechanized
+
+  # --- Theorems (Tier 2: Fixed-point logic) ---
+
+  - claim: Theorem 4.1 (Derivability Conditions D1-D3)
+    label: thm:derivability-conditions
+    rocq: P01__HBL.v
+    identifiers:
+      - HBL_1
+      - HBL_2
+      - HBL_3
+    status: mechanized
+
+  - claim: Theorem 4.2 (Diagonal Lemma)
+    label: thm:diagonal-lemma
+    rocq: P02__Diagonal.v
+    identifier: FixedPoint
+    status: mechanized
+
+  - claim: Theorem (Fixed-point code construction)
+    rocq: P02__Diagonal.v
+    identifiers:
+      - fixed_point_code
+      - fixed_point_code_unfold
+      - fixed_point_code_hole_free
+    status: mechanized
+
+  - claim: Theorem (Modus Ponens internalization)
+    rocq: P01__HBL.v
+    identifier: Prov_MP
+    status: mechanized
+
+  - claim: Theorem (Substitution representability)
+    rocq: P01__HBL.v
+    identifiers:
+      - Prov_subst
+      - Prov_representation
+    status: mechanized
+
+  - claim: Theorem 4.3 (No total correct single-cubic decider)
+    label: thm:no-single-cubic
+    rocq: P03__Undecidability.v
+    identifier: no_total_correct_code_CubicSat
+    status: mechanized
+    notes: >-
+      Code-level impossibility: quantifies over natural-number codes.
+      Constructive (no classical axioms).
+
+  - claim: Theorem (No computable correct decider)
+    rocq: P03__Undecidability.v
+    identifier: no_total_correct_decider_CubicSat_computable
+    status: mechanized
+
+  - claim: Theorem (CubicSat undecidable, code level)
+    rocq: P03__Undecidability.v
+    identifier: CubicSat_undecidable_code
+    status: mechanized
+
+  - claim: Theorem (Toggle-witness fixed point)
+    rocq: R16__Sigma_Reduction.v
+    identifiers:
+      - EvalRM_toggle_fixed_point
+      - source_toggle_point_exists
+    status: mechanized
+
+  - claim: Theorem (Halting reduces to cubic)
+    rocq: R16__Sigma_Reduction.v
+    identifiers:
+      - halting_reduces_to_thm
+      - halting_reduces_to_cubic
+    status: mechanized
+
+  # --- Theorems (Tier 3: Internal collapse) ---
+
+  - claim: Theorem 4.5 (Decision on compiler image yields Sigma_1-reflection)
+    label: thm:decision-reflection
+    status: classical-metatheoretic
+    notes: >-
+      If RA proves Dec_M then RA proves RFN_{Sigma_1}(RA).
+      Not Rocq-verified; ordinary mathematical argument.
+
+  - claim: Corollary 4.6 (Incompleteness discharge)
+    label: cor:no-ra-provable-cubic-decider
+    rocq: P04__RA_Certification.v
+    identifier: no_RA_certified_decider_code
+    status: mechanized
+    notes: >-
+      Section-parametric result reducing RA-certified decider codes
+      to the Tier-2 impossibility theorem.
+
+  - claim: Corollary 4.4 (Undecidability for single Diophantine equations)
+    label: cor:single-equation-undecidable
+    status: classical-metatheoretic
+    notes: >-
+      DiophEqSat is Sigma^0_1-complete and undecidable.  Over Z the
+      corresponding degree bound is 6 by difference encoding.
+
+  - claim: Lemma 1.3 (Guard correctness and degree)
+    label: lem:guard-correctness
+    status: schematic
+    notes: >-
+      Conceptual guard template u * E(x) = 0; in the implemented
+      system, selectors (degree 1) activate quadratic constraints.
+
+  - claim: Lemma 1.6 (Transfer)
+    label: lem:hn-full-structure
+    status: classical-metatheoretic
+    notes: >-
+      Monotonicity, sign expansion, three-square encoding for
+      parameter transfer between N and Z, and (d,n) monotonicity.
+
+  - claim: Proposition 1.7 (Banded aggregation)
+    label: prop:banded-aggregation
+    rocq: R12__Aggregation_Fib_Banded_Equality.v
+    status: mechanized
+
+  - claim: Proposition 1.8 (Numeralwise representability)
+    label: prop:representability
+    status: framework
+    notes: >-
+      Standard in bounded arithmetic.  Used only for numeralwise
+      representability of specific primitive recursive functions.
+
+  - claim: Proposition 1.9 (Instancewise checker-constraint equivalence)
+    label: thm:ra-compilation
+    rocq: R13__Kernel_API.v
+    identifier: check_iff_emit_cubic_all_zero
+    status: mechanized
+
+  - claim: Proposition 3.6 (Decidability structure)
+    label: prop:decidability-structure
+    status: framework
+    notes: >-
+      Provable(phi) is Sigma^0_1.  Sigma^0_1-completeness is standard.
+
+  - claim: Lemma (Quartic-to-cubic closure)
+    label: lem:quartic-cubic-closure
+    status: classical-metatheoretic
+    notes: H(N,4,58) = U implies H(N,3,1769) = U via auxiliary product variables.
+
+  - claim: Corollary (Trivial cubic threshold 1769)
+    label: cor:cubic-threshold-1769
+    status: classical-metatheoretic
+    notes: 58 + C(59,2) = 1769.
+
+  - claim: Corollary (Sparsity refinement)
+    label: cor:sparsity-refinement
+    status: classical-metatheoretic
+    notes: H(N,3,58 + m_2(P)) = U where m_2(P) <= C(59,2).
+
+  - claim: Theorem (Region Impredicativity)
+    label: thm:region-impredicativity
+    status: classical-metatheoretic
+    notes: >-
+      The undecidability region U = {(d,n) | H(N,d,n) = U} has
+      non-computable minimal thresholds n*(d) and is not decidable.
+
+
+  - claim: Conjecture (Universal Cubic)
+    label: conj:universal-cubic
+    status: open
+    notes: >-
+      Existence of a single universal cubic Diophantine equation
+      U(x, n) of total degree <= 3 parameterizing all r.e. sets.
+
+  - claim: Conjecture (Diophantine Gap)
+    label: conj:32-status-barrier
+    status: open
+    notes: >-
+      No consistent recursively axiomatized extension T of weak
+      arithmetic proves H(N,3,2) = D or H(N,3,2) = U.
+
+#  4. THEOREM DEPENDENCY CHAIN
+
+dependency_chain:
+
+  - name: Fibonacci / Zeckendorf foundations
+    modules: [R01, R02]
+    provides:
+      - Fibonacci arithmetic
+      - Zeckendorf uniqueness and greedy constructor
+      - Carryless pairing (pair, hd, tl)
+      - List encoding (code_list)
+    degree_ceiling: 2
+
+  - name: Degree framework
+    modules: [R00]
+    provides:
+      - Expr AST (Const, Var, Add, Sub, Mul)
+      - degree : Expr -> nat
+      - Add/Sub/Mul degree bounds
+
+  - name: Hilbert verification
+    modules: [R04, R05]
+    depends_on: [R01, R02]
+    provides:
+      - Form (Bot, Imp)
+      - Axiom recognizers (is_K, is_S, is_EFQ)
+      - check : Proof -> Form -> bool
+      - Kernel soundness
+
+  - name: Formula coding
+    modules: [R06]
+    depends_on: [R01, R02]
+    provides:
+      - Recursive coding of formulas to nat via carryless pairing
+
+  - name: Constraint compilation
+    modules: [R08, R09, R10, R11]
+    depends_on: [R00, R04, R05, R06]
+    provides:
+      - Constraint types (C_Axiom, C_MP, C_Justification, C_Target)
+      - constraint_poly_semantics
+      - proof_equiv_poly_zero (checker <-> system sat)
+      - polynomial_system_forall_degree_le_3
+    degree_ceiling: 3
+
+  - name: Aggregation
+    modules: [R12]
+    depends_on: [R00, R01, R02, R08, R09, R10, R11]
+    provides:
+      - Two-channel decomposition (split_posneg)
+      - Mixed-radix banded aggregation
+      - Capacity constraints (Lagrange four-squares)
+      - aggregate_banded_correct
+      - aggregate_banded_degree_le_3
+      - proof_equiv_agg_sum_zero
+    degree_ceiling: 3
+
+  - name: Kernel API
+    modules: [R13]
+    depends_on: [R05, R11, R12]
+    provides:
+      - cubic_accepts : Proof -> Form -> bool
+      - emit_cubic_system / emit_single_cubic
+      - check_iff_emit_cubic_all_zero
+      - degree_three_threshold
+    degree_ceiling: 3
+
+  - name: Reduction core and code bridge
+    modules: [R14, R15]
+    depends_on: [R13]
+    provides:
+      - Reduction-core aliases
+      - Coded-instance boundary equivalence
+
+  - name: Sigma reduction
+    modules: [R16]
+    depends_on: [R14, R15]
+    provides:
+      - EvalRM / TotalRM
+      - compiler_primitive
+      - sigma_reduction (Prov <-> CubicSat)
+      - thm_reduces_to_cubic
+      - sigma1_hardness
+      - halting_reduces_to_cubic
+
+  - name: Extraction and API boundaries
+    modules: [R17, R18, R19]
+    depends_on: [R16]
+    provides:
+      - OCaml extraction (cubic_checker.ml, cubic_compiler.ml)
+      - Stable public API (Global Opaque sealing)
+
+  - name: Concrete provability
+    modules: [P00]
+    depends_on: [R18, R19]
+    provides:
+      - Prov, Thm, CubicSat (interface re-exports)
+      - DeciderCode, EvalCode, CorrectCode
+      - Prov_iff_Thm
+      - sigma_reduction_for_prov
+
+  - name: HBL derivability conditions
+    modules: [P01]
+    depends_on: [P00]
+    provides:
+      - HBL_1 (D1)
+      - HBL_2 (D2)
+      - HBL_3 (D3)
+      - Prov_MP
+      - Prov_subst
+      - Prov_representation
+
+  - name: Diagonal construction
+    modules: [P02]
+    depends_on: [P01]
+    provides:
+      - apply_template / diagonal_seed
+      - FixedPoint (Diagonal Lemma)
+      - fixed_point_code / fixed_point_code_unfold
+
+  - name: Undecidability
+    modules: [P03]
+    depends_on: [P02]
+    provides:
+      - no_total_correct_code_CubicSat
+      - no_total_correct_decider_CubicSat_computable
+      - CubicSat_undecidable_code
+
+  - name: RA certification
+    modules: [P04]
+    depends_on: [P03]
+    provides:
+      - no_RA_certified_decider_code
+
+  - name: Toggle contradiction core
+    modules: [P05, P06]
+    depends_on: [P00, P01]
+    provides:
+      - Source-point to witness bridge
+      - Contradiction collapsing CorrectCode e
+
+#  5. API SURFACES
+
+api_surfaces:
+
+  kernel_api:
+    file: R13__Kernel_API.v
+    exports:
+      - name: cubic_accepts
+        type: "Proof -> Form -> bool"
+        description: >-
+          Certified boolean proof-checking kernel.  Definitionally
+          equal to check.
+
+      - name: emit_cubic_system
+        type: "Proof -> Form -> list Polynomial"
+        description: >-
+          Emits pre-aggregation constraint list (each of degree <= 3).
+
+      - name: emit_single_cubic
+        type: "Proof -> Form -> Polynomial * Polynomial"
+        description: >-
+          Emits single banded cubic equality surface (P, Q)
+          representing P = Q after two-channel aggregation.
+
+      - name: check_iff_emit_cubic_all_zero
+        type: theorem
+        description: >-
+          check(pf, target) = true <-> exists a, all_zero(emit_cubic_system(pf, target), a).
+
+      - name: degree_three_threshold
+        type: theorem
+        description: >-
+          Every emitted polynomial has syntactic degree <= 3.
+
+  sigma_reduction_api:
+    file: R18__Sigma_Reduction_API.v
+    description: >-
+      Full reduction API boundary.  Re-exports stable definitions
+      from R16 and seals heavy internals via Global Opaque.
+
+  sigma_reduction_minimal_api:
+    file: R19__Sigma_Reduction_Minimal_API.v
+    description: >-
+      Minimal API.  Deliberately excludes evaluator-shape internals
+      such as code_output-style collapse lemmas.
+
+  provability_interface:
+    file: P00__Provability_Interface.v
+    exports:
+      - name: Prov
+        type: "nat -> Prop"
+      - name: Thm
+        type: "nat -> Prop"
+      - name: CubicSat
+        type: "nat -> Prop"
+      - name: f
+        type: "nat -> nat"
+        description: Compiler (identity on codes at the API level).
+      - name: DeciderCode
+        type: Type
+      - name: EvalCode
+        type: "nat -> nat -> bool -> Prop"
+      - name: CorrectCode
+        type: "DeciderCode -> Prop"
+      - name: Prov_iff_Thm
+        type: theorem
+      - name: sigma_reduction_for_prov
+        type: theorem
+
+#  6. EXTRACTED ARTIFACTS
+
+extracted_artifacts:
+
+  - file: cubic_checker.ml
+    interface: cubic_checker.mli
+    source_module: R17__Extraction_Interface.v
+    exports:
+      - cubic_accepts
+      - form_eqb
+      - is_K
+      - is_S
+      - is_EFQ
+      - mp_witness
+      - check_lines
+    dependencies: none (self-contained)
+    description: >-
+      Extracted OCaml proof-checking kernel.  Re-derives its own
+      bool, nat, list, and form types.
+
+  - file: cubic_compiler.ml
+    interface: cubic_compiler.mli
+    source_module: R17__Extraction_Interface.v
+    exports:
+      - emit_cubic_system
+      - emit_single_cubic
+      - degree
+      - Expr (Const, Var, Add, Sub, Mul)
+      - C_Axiom
+      - C_MP
+      - C_Justification
+      - C_Target
+    dependencies: none (self-contained)
+    description: >-
+      Extracted OCaml compiler surface for cubic-polynomial
+      generation and degree inspection.
+
+  - file: carryless_pairing.ml
+    interface: carryless_pairing.mli
+    source_module: R17__Extraction_Interface.v
+    exports:
+      - pair
+      - hd
+      - tl
+      - fib
+    dependencies: none (self-contained)
+    description: >-
+      Extracted OCaml carryless-pairing foundations (Fibonacci,
+      pairing, and unpairing utilities).
+
+  - file: smoketest.py
+    description: >-
+      Independent Python reference checker and smoke tests for
+      cross-checking extracted checker behavior.
+
+  - file: printassumptions
+    description: >-
+      Output log of Print Assumptions audit.  All endpoint theorems
+      report "Closed under the global context" (no axioms).
+
+  - file: v.context.txt
+    description: >-
+      Current concatenated source-context snapshot for provenance.
+
+#  7. DEGREE BUDGET
+
+degree_budget:
+  summary: >-
+    All syntactic/inference checks compile to degree <= 2.  The only
+    cubic terms come from degree-1 selector variables multiplying
+    quadratic obligations.  Mixed-radix aggregation preserves the
+    degree-3 bound (constant weights only, no squaring).
+  constraint_classes:
+    - name: Line extraction (carryless unpair)
+      degree: 2
+    - name: Tail initialization
+      degree: 1
+    - name: Line readout
+      degree: 1
+    - name: Boolean digits
+      degree: 2
+    - name: Non-adjacency (Zeckendorf)
+      degree: 2
+    - name: Zeckendorf sum
+      degree: 1
+    - name: Axiom matcher
+      degree: 2
+    - name: MP structural
+      degree: 2
+    - name: Justification (selector * quadratic)
+      degree: 3
+    - name: Target check
+      degree: 1
+    - name: Capacity (Lagrange slack)
+      degree: 2
+  ceiling: 3
+  certification_theorem: polynomial_system_forall_degree_le_3
+  aggregation_theorem: aggregate_banded_degree_le_3
+
+#  8. TRUST BASE
+
+trust_base:
+  - component: Rocq kernel
+    description: Core type checker of the Calculus of Inductive Constructions.
+  - component: Extraction mechanism
+    description: Rocq's code extraction to OCaml.
+  - component: OCaml compiler
+    description: Compilation of extracted OCaml artifacts.
+  notes: >-
+    No axioms, parameters, or Admitted obligations are introduced.
+    Print Assumptions on all endpoint theorems yields an empty context.

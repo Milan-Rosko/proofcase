@@ -1,0 +1,80 @@
+# root
+-docroot proofcase
+-arg -w
+-arg -abstract-large-number
+
+# Carryless Pairing
+
+-Q theories/T001 T001
+
+theories/T001/R01__Carryless_Pairing_Definitions.v
+theories/T001/R02__Carryless_Pairing_Correctness.v
+theories/T001/R03__Carryless_Pairing_Examples.v
+theories/T001/R04__Carryless_Pairing_Export.v
+
+# Cubic Diophantine Solver Impossibility
+
+-Q theories/T002/R_SigmaReduction T002
+-Q theories/T002/P__ProofTheory T002
+
+theories/T002/R_SigmaReduction/R00__Degree_Framework.v
+theories/T002/R_SigmaReduction/R01__Foundation_Fibonacci.v
+theories/T002/R_SigmaReduction/R02__Foundation_Zeckendorf.v
+theories/T002/R_SigmaReduction/R04__Verification_Hilbert_Syntax.v
+theories/T002/R_SigmaReduction/R05__Verification_Hilbert_Checker.v
+theories/T002/R_SigmaReduction/R06__Encoding_Formula_Coding.v
+theories/T002/R_SigmaReduction/R08__Constraints_Axiom.v
+theories/T002/R_SigmaReduction/R09__Constraints_MP.v
+theories/T002/R_SigmaReduction/R10__Constraints_Target.v
+theories/T002/R_SigmaReduction/R11__Constraints_Assembly.v
+theories/T002/R_SigmaReduction/R12__Aggregation_Fib_Banded_Equality.v
+theories/T002/R_SigmaReduction/R13__Kernel_API.v
+theories/T002/R_SigmaReduction/R14__Reduction_Core.v
+theories/T002/R_SigmaReduction/R15__Code_Bridge.v
+theories/T002/R_SigmaReduction/R16__Sigma_Reduction.v
+theories/T002/R_SigmaReduction/R17__Extraction_Interface.v
+theories/T002/R_SigmaReduction/R18__Sigma_Reduction_API.v
+theories/T002/R_SigmaReduction/R19__Sigma_Reduction_Minimal_API.v
+theories/T002/R_SigmaReduction/R22__Channel_Bounds.v
+theories/T002/R_SigmaReduction/R20__Aggregated_Evaluator.v
+theories/T002/R_SigmaReduction/R21__Pairing_Correctness_P0.v
+
+theories/T002/P__ProofTheory/P00__Concrete_Provability.v
+theories/T002/P__ProofTheory/P00__Provability_Interface.v
+theories/T002/P__ProofTheory/P01__HBL.v
+theories/T002/P__ProofTheory/P02__Diagonal.v
+theories/T002/P__ProofTheory/P05__Toggle_Contradiction.v
+theories/T002/P__ProofTheory/P06__SourceToggle_Generator.v
+theories/T002/P__ProofTheory/P03__Undecidability.v
+theories/T002/P__ProofTheory/P04__RA_Certification.v
+
+# Cubic aggregated polynomial certificate
+-Q theories/T003 T003
+theories/T003/R00__VarMap.v
+theories/T003/R01__Coeff_types.v
+theories/T003/Chunks/Coeff_chunk_0.v
+theories/T003/Chunks/Coeff_chunk_1.v
+theories/T003/Chunks/Coeff_chunk_2.v
+theories/T003/Chunks/Coeff_chunk_3.v
+theories/T003/Chunks/Coeff_chunk_4.v
+theories/T003/Chunks/Coeff_chunk_5.v
+theories/T003/Chunks/Coeff_chunk_6.v
+theories/T003/Chunks/Coeff_chunk_7.v
+theories/T003/Chunks/Coeff_chunk_8.v
+theories/T003/Chunks/Coeff_chunk_9.v
+theories/T003/Chunks/Coeff_chunk_10.v
+theories/T003/Chunks/Coeff_chunk_11.v
+theories/T003/Chunks/Coeff_chunk_12.v
+theories/T003/Chunks/Coeff_chunk_13.v
+theories/T003/Chunks/Coeff_chunk_14.v
+theories/T003/Chunks/Coeff_chunk_15.v
+theories/T003/Chunks/Coeff_chunk_16.v
+theories/T003/Chunks/Coeff_chunk_17.v
+theories/T003/Chunks/Coeff_chunk_18.v
+theories/T003/Chunks/Coeff_chunk_19.v
+theories/T003/R02__Coefficients.v
+theories/T003/R03__Degree.v
+theories/T003/R07__Table_Inspection.v
+theories/T003/R04__Universal.v
+theories/T003/R08__Bounded_Universality.v
+theories/T003/R05__Effectivity.v
