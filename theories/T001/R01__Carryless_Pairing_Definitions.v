@@ -1,6 +1,6 @@
 (* R01__Carryless_Pairing_Definitions.v *)
 
-From Coq Require Import Arith List Bool PeanoNat.
+From Coq Require Import Arith Bool List PeanoNat.
 Import ListNotations.
 
 (*************************************************************************)
@@ -28,6 +28,10 @@ Fixpoint fib_pair (n : nat) : nat * nat :=
       end
   end.
 
+(*
+  The n-th Fibonacci number.
+*)
+
 Definition F (n : nat) : nat := fst (fib_pair n).
 
 (*
@@ -40,19 +44,20 @@ Fixpoint sumF (xs : list nat) : nat :=
   | k :: xs' => F k + sumF xs'
   end.
 
-(*  
-  Basic arithmetic helpers, aligned with the carryless construction.
+(*
+  Double: two n = n + n.
 *)
 
 Definition two (n : nat) : nat := n + n.
 
 (*
-  2n
+  2j - 1, with Nat.pred 0 = 0.
 *)
 
-Definition two_j_minus1 (j : nat) : nat := Nat.pred (two j). 
+Definition two_j_minus1 (j : nat) : nat := Nat.pred (two j).
+
 (*
-  2j-1, with pred 0 = 0
+  Boolean even test by structural recursion.
 *)
 
 Fixpoint is_even (n : nat) : bool :=
@@ -62,7 +67,15 @@ Fixpoint is_even (n : nat) : bool :=
   | S (S k) => is_even k
   end.
 
+(*
+  Boolean odd test.
+*)
+
 Definition is_odd (n : nat) : bool := negb (is_even n).
+
+(*
+  Integer half, rounding down.
+*)
 
 Fixpoint div2 (n : nat) : nat :=
   match n with
@@ -112,20 +125,32 @@ Definition pair (P : Params) (x y : nat) : nat :=
   sumF (even_band P x ++ odd_band P x y).
 
 (*
-  Unpairing infrastructure.
+  Even-index halves from the Zeckendorf support.
 *)
 
 Definition half_even_indices (zn : list nat) : list nat :=
   map div2 (filter is_even zn).
 
+(*
+  Predicate: k is odd and k >= Bx + 1.
+*)
+
 Definition odd_ge_B1 (Bx k : nat) : bool :=
   match is_odd k with
   | false => false
-  | true => Nat.leb (S Bx) k (* k >= Bx + 1 *)
+  | true => Nat.leb (S Bx) k
   end.
+
+(*
+  Decode an odd-band index back to a Zeckendorf index.
+*)
 
 Definition decode_odd_index (Bx k : nat) : nat :=
   div2 (S (k - Bx)).
+
+(*
+  Odd-band indices decoded from the Zeckendorf support.
+*)
 
 Definition y_indices (Bx : nat) (zn : list nat) : list nat :=
   map (decode_odd_index Bx) (filter (odd_ge_B1 Bx) zn).

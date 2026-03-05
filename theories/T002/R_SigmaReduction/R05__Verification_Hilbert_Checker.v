@@ -1,6 +1,6 @@
 (* R05__Hilbert_Checker.v *)
 
-From Coq Require Import Init.Logic Arith List Bool.
+From Coq Require Import Arith Bool Init.Logic List.
 Import ListNotations.
 
 From T002 Require Import R04__Verification_Hilbert_Syntax.

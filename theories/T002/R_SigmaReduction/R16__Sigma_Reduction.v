@@ -1,6 +1,6 @@
 (* R16__Sigma_Reduction.v *)
 
-From Coq Require Import Arith List Lia.
+From Coq Require Import Arith Lia List.
 Import ListNotations.
 
 From T002 Require Import

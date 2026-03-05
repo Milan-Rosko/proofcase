@@ -1,4 +1,4 @@
-Date (UTC): 2026-02-18T19:50:16Z
+Date (UTC): 2026-03-03T14:53:53Z
 
 Welcome to Coq 8.20.1
 Skipping rcfile loading.
@@ -6,21 +6,27 @@ Skipping rcfile loading.
 [Loading ML file zify_plugin.cmxs (using legacy method) ... done]
 [Loading ML file micromega_core_plugin.cmxs (using legacy method) ... done]
 [Loading ML file micromega_plugin.cmxs (using legacy method) ... done]
-[Loading ML file btauto_plugin.cmxs (using legacy method) ... done]
-Fetching opaque proofs from disk for T003.P02__Diagonal
-Fetching opaque proofs from disk for T003.P00__Concrete_Provability
-Fetching opaque proofs from disk for Coq.micromega.ZifyClasses
+Fetching opaque proofs from disk for T002.R19__Sigma_Reduction_Minimal_API
+Fetching opaque proofs from disk for T002.R18__Sigma_Reduction_API
+Fetching opaque proofs from disk for T002.R16__Sigma_Reduction
 Fetching opaque proofs from disk for Coq.Init.Logic
+Fetching opaque proofs from disk for T002.R14__Reduction_Core
+Fetching opaque proofs from disk for T002.R13__Kernel_API
+Fetching opaque proofs from disk for T002.R12__Aggregation_Fib_Banded_Equality
+Fetching opaque proofs from disk for T002.R11__Constraints_Assembly
+Fetching opaque proofs from disk for T002.R09__Constraints_MP
+Fetching opaque proofs from disk for Coq.Bool.Bool
+Fetching opaque proofs from disk for Coq.Arith.PeanoNat
+Fetching opaque proofs from disk for Coq.Init.Peano
+Fetching opaque proofs from disk for Coq.Classes.Morphisms
+Fetching opaque proofs from disk for Coq.micromega.ZifyClasses
 Fetching opaque proofs from disk for Coq.ZArith.Znat
+Fetching opaque proofs from disk for Coq.Arith.Compare_dec
 Fetching opaque proofs from disk for Coq.NArith.Nnat
 Fetching opaque proofs from disk for Coq.PArith.Pnat
-Fetching opaque proofs from disk for Coq.Init.Peano
 Fetching opaque proofs from disk for Coq.PArith.BinPos
 Fetching opaque proofs from disk for Coq.Numbers.NatInt.NZAdd
-Fetching opaque proofs from disk for Coq.Arith.PeanoNat
-Fetching opaque proofs from disk for Coq.Classes.Morphisms
 Fetching opaque proofs from disk for Coq.Numbers.NatInt.NZBase
-Fetching opaque proofs from disk for Coq.Arith.Compare_dec
 Fetching opaque proofs from disk for Coq.Numbers.Natural.Abstract.NOrder
 Fetching opaque proofs from disk for Coq.Numbers.Natural.Abstract.NBase
 Fetching opaque proofs from disk for Coq.Numbers.NatInt.NZOrder
@@ -32,7 +38,6 @@ Fetching opaque proofs from disk for Coq.ZArith.BinInt
 Fetching opaque proofs from disk for Coq.micromega.ZMicromega
 Fetching opaque proofs from disk for Coq.micromega.Tauto
 Fetching opaque proofs from disk for Coq.micromega.Refl
-Fetching opaque proofs from disk for Coq.Bool.Bool
 Fetching opaque proofs from disk for Coq.micromega.RingMicromega
 Fetching opaque proofs from disk for Coq.micromega.OrderedRing
 Fetching opaque proofs from disk for Coq.setoid_ring.InitialRing
@@ -69,14 +74,18 @@ Fetching opaque proofs from disk for Coq.Numbers.Integer.Abstract.ZLt
 Fetching opaque proofs from disk for Coq.Numbers.Integer.Abstract.ZSgnAbs
 Fetching opaque proofs from disk for Coq.Structures.Equalities
 Fetching opaque proofs from disk for Coq.micromega.Ztac
+Fetching opaque proofs from disk for T002.R08__Constraints_Axiom
+Fetching opaque proofs from disk for T002.R02__Foundation_Zeckendorf
 Closed under the global context
 Closed under the global context
-Fetching opaque proofs from disk for T003.P01__HBL
-Closed under the global context
-Fetching opaque proofs from disk for T003.P05__Mirror_Contradiction
-Closed under the global context
-Fetching opaque proofs from disk for T003.P03__Undecidability
 Closed under the global context
 Closed under the global context
-Fetching opaque proofs from disk for T003.P04__RA_Certification
+Fetching opaque proofs from disk for T002.P03__Undecidability
+Fetching opaque proofs from disk for T002.P05__Toggle_Contradiction
+Fetching opaque proofs from disk for T002.P00__Provability_Interface
+Fetching opaque proofs from disk for T002.P00__Concrete_Provability
+Fetching opaque proofs from disk for T002.P06__SourceToggle_Generator
+Closed under the global context
+Closed under the global context
+Fetching opaque proofs from disk for T002.P04__RA_Certification
 Closed under the global context

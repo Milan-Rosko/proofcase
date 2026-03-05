@@ -95,6 +95,12 @@
     │         │      Main Zeckendorf layer: greedy constructor, correctness and
     │         │      uniqueness proofs, and odd/even split used by pairing.
     │         │
+    │         ├── R03__Carryless_Sequence_Indexing.v
+    │         │
+    │         │      Carryless sequence indexing shim: canonical projections
+    │         │      (`hd0`, `tl0`) and bounded unpair recursion (`tailn`,
+    │         │      `line0`) over the P0 pairing instance.
+    │         │
     │         ├── R04__Verification_Hilbert_Syntax.v
     │         │
     │         │      Hilbert formula syntax (`Bot`, `Imp`), boolean equality,
@@ -182,25 +188,24 @@
     │         │      Aggregated single-equation evaluator (`eval_agg`) and
     │         │      its correctness lemma (`aggregation_correct`).
     │         │
-    │         └── R21__Pairing_Correctness_P0.v
+    │         ├── R21__Pairing_Correctness_P0.v
+    │         │
+    │         │      `unpair_pair_P0` correctness for the P0 pairing instance.
+    │         │
+    │         └── R22__Channel_Bounds.v
     │
-    │                `unpair_pair_P0` correctness for the P0 pairing instance.
+    │                Channel-bound lemmas used by aggregation/capacity control.
     │
     └── artifacts
         │
-        ├── Carryless_Pairing.ml
+        ├── carryless_pairing.ml
         │
         │      Extracted OCaml implementation of the carryless-pairing
         │      foundations (Fibonacci, pairing, and unpairing utilities).
         │
-        ├── Carryless_Pairing.mli
+        ├── carryless_pairing.mli
         │
         │      Generated OCaml interface for the extracted pairing module.
-        │
-        ├── carryless_pairing_t003.ml
-        │
-        │      Extracted OCaml carryless-pairing artifact for the T003
-        │      pipeline/variant.
         │
         ├── cubic_checker.ml
         │

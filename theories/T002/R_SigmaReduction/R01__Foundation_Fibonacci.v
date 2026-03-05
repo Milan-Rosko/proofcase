@@ -1,6 +1,6 @@
 (* R01__Fibonacci.v *)
 
-From Coq Require Import Arith List Bool PeanoNat.
+From Coq Require Import Arith Bool List PeanoNat.
 Import ListNotations.
 
 (*************************************************************************)

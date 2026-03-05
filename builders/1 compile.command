@@ -4,6 +4,8 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 # Options:
 # - CLEAN=1  : force full rebuild (make clean before all)
+# - CACHE=1  : incremental cached build in shadow (default: 1)
+# - CACHE=0  : cold shadow sync (removes prior compiled artifacts)
 # - GUARD=1  : fail if any build artifacts (.glob/.vo/...) appear under repo theories/
 # - JOBS=N   : parallel jobs for make (default: auto-detect CPU count)
 # - CERT_HASHES=1 : include per-file SHA-256 hashes in success.txt (default: 0 for speed)
@@ -40,6 +42,7 @@ COQ_MAKEFILE="$(command -v coq_makefile || true)"
 COQC="$(command -v coqc || true)"
 
 CLEAN="${CLEAN:-0}"
+CACHE="${CACHE:-1}"
 GUARD="${GUARD:-1}"
 JOBS="${JOBS:-}"
 CERT_HASHES="${CERT_HASHES:-0}"
@@ -63,12 +66,29 @@ mkdir -p "${BUILD}" "${SHADOW}"
 # -----------------------------------------------------------------------------
 # Prepare shadow sources
 # -----------------------------------------------------------------------------
+RSYNC_CACHE_PROTECT=(
+  --filter='P *.vo'
+  --filter='P *.vos'
+  --filter='P *.vok'
+  --filter='P *.glob'
+  --filter='P .*.aux'
+)
+
 if command -v rsync >/dev/null 2>&1; then
   mkdir -p "${SHADOW}/theories"
-  rsync -a --delete "${ROOT}/theories/" "${SHADOW}/theories/" >/dev/null 2>&1 || true
+  if [ "${CACHE}" = "1" ]; then
+    rsync -a --delete "${RSYNC_CACHE_PROTECT[@]}" "${ROOT}/theories/" "${SHADOW}/theories/" >/dev/null 2>&1 || true
+  else
+    rsync -a --delete "${ROOT}/theories/" "${SHADOW}/theories/" >/dev/null 2>&1 || true
+  fi
 else
-  rm -rf "${SHADOW}/theories"
-  cp -R "${ROOT}/theories" "${SHADOW}/theories"
+  if [ "${CACHE}" = "1" ]; then
+    mkdir -p "${SHADOW}/theories"
+    cp -R "${ROOT}/theories/." "${SHADOW}/theories/"
+  else
+    rm -rf "${SHADOW}/theories"
+    cp -R "${ROOT}/theories" "${SHADOW}/theories"
+  fi
 fi
 
 cp -f "${COQPROJECT_SRC}" "${COQPROJECT_SHADOW}"
@@ -137,7 +157,11 @@ fi
   echo
   if [ -n "${COQC}" ]; then
   echo "                   Rocq version: $(${COQC} --version 2>/dev/null | head -n 1)"
-  echo "                   Method: isolated shadow, scratch folder"
+  if [ "${CACHE}" = "1" ]; then
+    echo "                   Method: isolated shadow, scratch folder (cached)"
+  else
+    echo "                   Method: isolated shadow, scratch folder (cold sync)"
+  fi
   echo "                   Build jobs: ${JOBS}"
   fi
   echo

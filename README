@@ -73,14 +73,12 @@
     │
     └── theories
          │
-         │      Root of all Rocq sources. Organized into numbered theory
-         │      subdirectories, each constituting an independent development.
+         │      Rocq sources and fiels Organized into numbered theory folders
          │
-         ├── T001
-         │
-         ├── T002
-         │
-         └── [...]
+         .
+         .
+         .
+
 
 4 - Contact
     -------

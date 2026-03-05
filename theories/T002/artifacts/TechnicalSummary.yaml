@@ -21,6 +21,7 @@ tiers:
       - R00__Degree_Framework
       - R01__Foundation_Fibonacci
       - R02__Foundation_Zeckendorf
+      - R03__Carryless_Sequence_Indexing
       - R04__Verification_Hilbert_Syntax
       - R05__Verification_Hilbert_Checker
       - R06__Encoding_Formula_Coding
@@ -36,6 +37,9 @@ tiers:
       - R17__Extraction_Interface
       - R18__Sigma_Reduction_API
       - R19__Sigma_Reduction_Minimal_API
+      - R20__Aggregated_Evaluator
+      - R21__Pairing_Correctness_P0
+      - R22__Channel_Bounds
 
   - id: 2
     name: Fixed-point logic
@@ -47,8 +51,8 @@ tiers:
     modules:
       - P00__Concrete_Provability
       - P00__Provability_Interface
-      - P01__HBL
       - P02__Diagonal
+      - P01__HBL
       - P03__Undecidability
       - P05__Toggle_Contradiction
       - P06__SourceToggle_Generator
@@ -69,15 +73,16 @@ tiers:
 module_layers:
   - layer: 1
     name: Foundations
-    range: R00 -- R02
+    range: R00 -- R03
     files:
       - R00__Degree_Framework.v
       - R01__Foundation_Fibonacci.v
       - R02__Foundation_Zeckendorf.v
+      - R03__Carryless_Sequence_Indexing.v
 
   - layer: 2
     name: Verification and constraint compilation
-    range: R04 -- R11
+    range: R04 -- R06, R08 -- R11
     files:
       - R04__Verification_Hilbert_Syntax.v
       - R05__Verification_Hilbert_Checker.v
@@ -96,7 +101,7 @@ module_layers:
 
   - layer: 4
     name: Reduction endpoint and proof theory
-    range: R14 -- R19, P00 -- P06
+    range: R14 -- R19, auxiliary R20 -- R22, P00 -- P06
     files:
       - R14__Reduction_Core.v
       - R15__Code_Bridge.v
@@ -104,10 +109,13 @@ module_layers:
       - R17__Extraction_Interface.v
       - R18__Sigma_Reduction_API.v
       - R19__Sigma_Reduction_Minimal_API.v
+      - R20__Aggregated_Evaluator.v
+      - R21__Pairing_Correctness_P0.v
+      - R22__Channel_Bounds.v
       - P00__Concrete_Provability.v
       - P00__Provability_Interface.v
-      - P01__HBL.v
       - P02__Diagonal.v
+      - P01__HBL.v
       - P03__Undecidability.v
       - P04__RA_Certification.v
       - P05__Toggle_Contradiction.v

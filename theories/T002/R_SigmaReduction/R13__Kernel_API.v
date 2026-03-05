@@ -11,11 +11,23 @@ From T002 Require Import
   R11__Constraints_Assembly
   R12__Aggregation_Fib_Banded_Equality.
 
+(*
+  Proof checker alias for the public API.
+*)
+
 Definition checker : Proof -> Form -> bool :=
   check.
 
+(*
+  Cubic acceptance predicate: checks a proof against a target formula.
+*)
+
 Definition cubic_accepts : Proof -> Form -> bool :=
   checker.
+
+(*
+  Canonical assignment built from a proof and target.
+*)
 
 Definition canonical_assignment (pf : Proof) (target : Form) : Assignment :=
   {| as_pf := pf;
@@ -23,26 +35,54 @@ Definition canonical_assignment (pf : Proof) (target : Form) : Assignment :=
      as_c := 0;
      as_d := 0 |}.
 
+(*
+  Emit the polynomial constraint system for a proof/target pair.
+*)
+
 Definition emit_cubic_system (pf : Proof) (target : Form) : list Polynomial :=
   polynomial_system (canonical_assignment pf target).
+
+(*
+  Aggregate the system into a single banded cubic equation.
+*)
 
 Definition emit_single_cubic (pf : Proof) (target : Form) : Polynomial * Polynomial :=
   banded_single_equation_for_system (emit_cubic_system pf target).
 
+(*
+  Compiler surface: synonym for emit_cubic_system.
+*)
+
 Definition compile (pf : Proof) (target : Form) : list Polynomial :=
   emit_cubic_system pf target.
+
+(*
+  All polynomials in a system evaluate to zero under an assignment.
+*)
 
 Definition all_zero (sys : list Polynomial) (a : Assignment) : Prop :=
   forall p, In p sys -> poly_eval p a = 0.
 
+(*
+  Both sides of a polynomial equation agree under an assignment.
+*)
+
 Definition equation_holds (eqn : Polynomial * Polynomial) (a : Assignment) : Prop :=
   poly_eval (fst eqn) a = poly_eval (snd eqn) a.
+
+(*
+  Existence of a satisfying assignment for the single cubic equation.
+*)
 
 Definition CubicWitness (pf : Proof) (target : Form) : Prop :=
   exists a,
     as_pf a = pf /\
     as_target a = target /\
     equation_holds (emit_single_cubic pf target) a.
+
+(*
+  System constraints depend only on the proof component.
+*)
 
 Lemma system_constraints_pf_only :
   forall a1 a2,
@@ -54,6 +94,10 @@ Proof.
   now rewrite Hpf.
 Qed.
 
+(*
+  Polynomial system depends only on the proof component.
+*)
+
 Lemma polynomial_system_pf_only :
   forall a1 a2,
     as_pf a1 = as_pf a2 ->
@@ -63,6 +107,10 @@ Proof.
   unfold polynomial_system.
   now rewrite (system_constraints_pf_only a1 a2 Hpf).
 Qed.
+
+(*
+  The single cubic equation depends only on the proof component.
+*)
 
 Lemma emit_single_cubic_pf_only :
   forall a pf target,
@@ -76,6 +124,10 @@ Proof.
   - reflexivity.
   - exact Hpf.
 Qed.
+
+(*
+  Cubic acceptance is equivalent to the existence of a cubic witness.
+*)
 
 Theorem cubic_accepts_iff_cubic_witness :
   forall pf target,
@@ -99,6 +151,10 @@ Proof.
     exact Heq.
 Qed.
 
+(*
+  Forward direction: acceptance implies a cubic witness.
+*)
+
 Theorem cubic_accepts_correct :
   forall pf target,
     cubic_accepts pf target = true ->
@@ -108,12 +164,20 @@ Proof.
   exact ((proj1 (cubic_accepts_iff_cubic_witness pf target)) Hacc).
 Qed.
 
+(*
+  Each individual constraint has total degree at most 3.
+*)
+
 Theorem kernel_constraint_degree_le_3 :
   forall c,
     total_degree (poly_of_constraint c) <= 3.
 Proof.
   exact poly_constraint_degree_le_3.
 Qed.
+
+(*
+  Every constraint in the system has total degree at most 3.
+*)
 
 Theorem kernel_system_degree_le_3 :
   forall a c,
@@ -122,6 +186,10 @@ Theorem kernel_system_degree_le_3 :
 Proof.
   exact constraints_degree_le_3.
 Qed.
+
+(*
+  The compiled polynomial system satisfies the degree-3 bound.
+*)
 
 Theorem compiler_degree_bound :
   forall pf target,
@@ -133,6 +201,10 @@ Proof.
   apply polynomial_system_forall_degree_le_3.
 Qed.
 
+(*
+  The compile output satisfies the degree-3 bound.
+*)
+
 Theorem degree_three_threshold :
   forall pf target,
     Forall (fun P => total_degree P <= 3)
@@ -142,6 +214,10 @@ Proof.
   unfold compile.
   apply compiler_degree_bound.
 Qed.
+
+(*
+  Both sides of the single cubic equation have degree at most 3.
+*)
 
 Theorem emit_single_cubic_degree_le_3 :
   forall pf target,
@@ -154,6 +230,10 @@ Proof.
   unfold emit_cubic_system.
   apply polynomial_system_forall_degree_le_3.
 Qed.
+
+(*
+  Checker acceptance iff the emitted cubic system has a zero assignment.
+*)
 
 Theorem check_iff_emit_cubic_all_zero :
   forall pf target,

@@ -5,7 +5,9 @@ Open Scope string_scope.
 
 From T003 Require Import R01__Coeff_types.
 
-(* Auto-generated public variable map for the pinned bounded cubic artifact. *)
+(*
+  Auto-generated public variable map for the pinned bounded cubic artifact.
+*)
 
 Definition ix_u : nat := 18711.
 Definition var_u : string := "trace_code".

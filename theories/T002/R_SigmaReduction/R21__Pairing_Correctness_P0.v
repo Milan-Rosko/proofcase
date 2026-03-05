@@ -1,6 +1,6 @@
 (* R21__Pairing_Correctness_P0.v *)
 
-From Coq Require Import Arith List Lia.
+From Coq Require Import Arith Lia List.
 Import ListNotations.
 
 From T002 Require Import

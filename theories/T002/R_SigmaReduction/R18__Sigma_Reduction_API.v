@@ -1,6 +1,6 @@
 (* R18__Sigma_Reduction_API.v *)
 
-From Coq Require Import List Lia.
+From Coq Require Import Lia List.
 Import ListNotations.
 
 From T002 Require Import

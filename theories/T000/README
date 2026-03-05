@@ -1,0 +1,40 @@
+(* README *)
+
+1 - Description
+    -----------
+
+    T000 provides a mechanized proof of the pigeonhole divisibility theorem
+    in Rocq.  The result states that any subset A of {1, ..., 2n} with
+    |A| = n + 1 contains two distinct elements a and b such that a | b or
+    b | a.
+
+    The proof factors into three parts: an odd-part decomposition showing
+    that each element of {1, ..., 2n} maps to one of n odd categories, a
+    pigeonhole argument producing two elements with the same odd part, and
+    an arithmetic lemma showing that shared odd parts force divisibility.
+
+    This development serves as the canonical style example for Proofcase.
+    The conventions follow the Canonicalization appendix.
+
+
+2 - Repository Tree
+    ---------------
+
+    .
+    ├── README
+    │
+    │      (This file.)
+    │
+    ├── R00__Odd_Part.v
+    │
+    │      Odd-part decomposition of positive integers.  We define the
+    │      odd_part and val2 functions, prove that odd_part is odd, divides
+    │      the original, and that same odd parts force divisibility.  We
+    │      also define odd_range n (the n odd numbers in {1, ..., 2n}) and
+    │      show it has length n and receives every odd_part image.
+    │
+    └── R01__Pigeonhole_Divisibility.v
+
+           Main theorem.  We state a list-based pigeonhole principle and
+           apply it with the odd-part map to conclude that any (n+1)-element
+           subset of {1, ..., 2n} contains a divisibility pair.

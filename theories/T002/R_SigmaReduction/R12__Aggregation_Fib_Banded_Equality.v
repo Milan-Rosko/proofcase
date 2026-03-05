@@ -1,6 +1,6 @@
 (* R12__Aggregation_Fib_Banded_Equality.v *)
 
-From Coq Require Import Arith List Lia PeanoNat.
+From Coq Require Import Arith Lia List PeanoNat.
 Import ListNotations.
 
 From T002 Require Import R00__Degree_Framework.
@@ -268,14 +268,14 @@ Proof.
         exact Hq.
     + simpl. intro H.
       assert (Hp0 : poly_eval p a = 0).
-      { apply H. left. reflexivity. }
-      assert (Htail : forall q : Polynomial, In q ps -> poly_eval q a = 0).
-      { intros q Hq. apply H. right. exact Hq. }
-      pose proof (proj2 (IH (S i) a) Htail) as Htail0.
-      rewrite Hp0.
-      simpl.
-      rewrite Htail0.
-      lia.
+      * apply H. left. reflexivity.
+      * assert (Htail : forall q : Polynomial, In q ps -> poly_eval q a = 0).
+        -- intros q Hq. apply H. right. exact Hq.
+        -- pose proof (proj2 (IH (S i) a) Htail) as Htail0.
+           rewrite Hp0.
+           simpl.
+           rewrite Htail0.
+           lia.
 Qed.
 
 Lemma banded_eq_aggregate_correct_zero_rhs_raw :

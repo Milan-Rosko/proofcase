@@ -2,12 +2,20 @@
 
 From Coq Require Import Arith Lia.
 
+(*
+  Polynomial expressions over natural-number variables.
+*)
+
 Inductive Expr : Type :=
   | Const : nat -> Expr
   | Var : nat -> Expr
   | Add : Expr -> Expr -> Expr
   | Sub : Expr -> Expr -> Expr
   | Mul : Expr -> Expr -> Expr.
+
+(*
+  Total degree of an expression.
+*)
 
 Fixpoint degree (e : Expr) : nat :=
   match e with
@@ -18,6 +26,10 @@ Fixpoint degree (e : Expr) : nat :=
   | Mul a b => degree a + degree b
   end.
 
+(*
+  Degree of a sum is bounded by the max of its operands.
+*)
+
 Lemma degree_add :
   forall a b,
     degree (Add a b) <= Nat.max (degree a) (degree b).
@@ -26,6 +38,10 @@ Proof.
   simpl.
   lia.
 Qed.
+
+(*
+  Degree of a difference is bounded by the max of its operands.
+*)
 
 Lemma degree_sub :
   forall a b,
@@ -36,12 +52,20 @@ Proof.
   lia.
 Qed.
 
+(*
+  Degree of a product is the sum of its operands' degrees.
+*)
+
 Lemma degree_mul :
   forall a b,
     degree (Mul a b) = degree a + degree b.
 Proof.
   reflexivity.
 Qed.
+
+(*
+  Degree of a square is twice the operand's degree.
+*)
 
 Lemma degree_square :
   forall a,
@@ -51,6 +75,10 @@ Proof.
   rewrite degree_mul.
   lia.
 Qed.
+
+(*
+  Multiplicative degree bound from individual bounds.
+*)
 
 Lemma degree_le_mul :
   forall a b k l,

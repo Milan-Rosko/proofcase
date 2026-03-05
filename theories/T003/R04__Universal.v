@@ -15,9 +15,9 @@ Definition env := nat -> Z.
 
 (*
   Trust boundary:
-  - U_table is the pinned bounded universal cubic polynomial artifact.
-  - The Python constructor + lockfile are the ground truth for this artifact.
-  - table_digest_ok is the kernel-checked inspection gate over the actual table.
+  (i)    U_table is the pinned bounded universal cubic polynomial artifact.
+  (ii)   The Python constructor + lockfile are the ground truth for this artifact.
+  (iii)  table_digest_ok is the kernel-checked inspection gate over the actual table.
 *)
 
 Definition U_table (rho : env) : Z := R02__Coefficients.U rho.

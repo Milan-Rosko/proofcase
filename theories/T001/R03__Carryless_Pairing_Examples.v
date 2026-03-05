@@ -1,6 +1,6 @@
 (* R03__Carryless_Pairing_Examples.v *)
 
-From Coq Require Import Arith List Bool PeanoNat.
+From Coq Require Import Arith Bool List PeanoNat.
 Import ListNotations.
 
 From T001 Require Import R01__Carryless_Pairing_Definitions.
@@ -33,6 +33,10 @@ Module Realization.
         else find_r_aux x (S k) fuel'
     end.
 
+  (*
+    Concrete rank: first Fibonacci index strictly above x.
+  *)
+
   Definition r0 (x : nat) : nat := find_r_aux x 0 (S (S x)).
 
   (*
@@ -53,6 +57,10 @@ Module Realization.
           else
             zeck_greedy_down k' rem false
     end.
+
+  (*
+    Concrete Zeckendorf support extractor via greedy decomposition.
+  *)
 
   Definition Z0 (x : nat) : list nat :=
     fst (zeck_greedy_down (r0 x) x false).

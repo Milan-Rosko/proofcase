@@ -1,6 +1,6 @@
 (* R02__Carryless_Pairing_Correctness.v *)
 
-From Coq Require Import Arith List Bool PeanoNat.
+From Coq Require Import Arith Bool List PeanoNat.
 Import ListNotations.
 
 From T001 Require Import R01__Carryless_Pairing_Definitions.
@@ -34,7 +34,7 @@ Section Carryless_Correctness.
   Opaque B.
 
   (*
-  Zeckendorf specification
+    Zeckendorf specification: Z represents numbers as Fibonacci sums.
   *)
 
   Hypothesis Z_sound : forall n, sumF (Z P n) = n.
@@ -56,7 +56,7 @@ Section Carryless_Correctness.
       filter (odd_ge_B1 (B P x)) (Z P (pair P x y)) = odd_band P x y.
 
   (*
-    Arithmetic decoding lemmas.
+    Successor step for two: two (S n) = S (S (two n)).
   *)
 
   Lemma two_S : forall n, two (S n) = S (S (two n)).
@@ -68,6 +68,10 @@ Section Carryless_Correctness.
     reflexivity.
   Qed.
 
+  (*
+    div2 is a left inverse of two.
+  *)
+
   Lemma div2_two : forall n, div2 (two n) = n.
   Proof.
     induction n as [|n IH].
@@ -75,12 +79,20 @@ Section Carryless_Correctness.
     - rewrite two_S. simpl. rewrite IH. reflexivity.
   Qed.
 
+  (*
+    Left-additive cancellation: a + b - a = b.
+  *)
+
   Lemma add_sub_cancel_l : forall a b, a + b - a = b.
   Proof.
     induction a as [|a IH]; intro b; simpl.
     - rewrite Nat.sub_0_r. reflexivity.
     - apply IH.
   Qed.
+
+  (*
+    Halving the even band recovers the Zeckendorf support.
+  *)
 
   Lemma map_div2_even_band :
     forall x, map div2 (even_band P x) = Z P x.
@@ -94,6 +106,10 @@ Section Carryless_Correctness.
     apply div2_two.
   Qed.
 
+  (*
+    Decoding an odd-band element recovers the original index.
+  *)
+
   Lemma decode_encode_odd :
     forall Bx j,
       decode_odd_index Bx (Bx + two_j_minus1 j) = j.
@@ -105,6 +121,10 @@ Section Carryless_Correctness.
     - simpl. reflexivity.
     - rewrite two_S. simpl. rewrite div2_two. reflexivity.
   Qed.
+
+  (*
+    Decoding the odd band recovers the Zeckendorf support of y.
+  *)
 
   Lemma map_decode_odd_band :
     forall x y,
@@ -120,7 +140,7 @@ Section Carryless_Correctness.
   Qed.
 
   (*
-    Summation lemmas.
+    The even-half sum of a paired value recovers x.
   *)
 
   Lemma sumF_half_even_pair :
@@ -133,6 +153,10 @@ Section Carryless_Correctness.
     rewrite map_div2_even_band.
     apply Z_sound.
   Qed.
+
+  (*
+    The odd-band sum of a paired value recovers y.
+  *)
 
   Lemma sumF_y_indices_pair :
     forall x y,

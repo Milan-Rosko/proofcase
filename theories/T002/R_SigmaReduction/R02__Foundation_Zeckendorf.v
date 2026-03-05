@@ -1,6 +1,6 @@
 (* R02__Zeckendorf.v *)
 
-From Coq Require Import Arith List Bool PeanoNat Lia.
+From Coq Require Import Arith Bool Lia List PeanoNat.
 Import ListNotations.
 From T002 Require Import R01__Foundation_Fibonacci.
 

@@ -1,0 +1,425 @@
+(* Canonicalization *)
+
+1 - Purpose
+    -------
+
+    This document records the canonical syntactic conventions adopted across
+    all Rocq developments under Proofcase/theories/T###/.  We derived these
+    conventions by surveying T001, T002, and T003, identifying the patterns
+    that appear most consistently, and resolving the points of divergence
+    into a single standard.
+
+
+2 - File Naming
+    -----------
+
+    2.1  Prefixes
+
+         We prefix construction and reduction files with R##__ and
+         proof-theory files with P##__.
+
+    2.2  Numbering
+
+         We begin numbering at 00 and increment sequentially.  When a file
+         is removed we note the gap in the README rather than reusing the
+         number.
+
+    2.3  Suffix
+
+         We write the descriptive portion of the filename in PascalCase,
+         with underscores separating logical words.
+
+             R00__Degree_Framework.v
+             R04__Verification_Hilbert_Syntax.v
+             P03__Undecidability.v
+
+         We give export and extraction files a numeric prefix like all
+         others, and never use a letter prefix such as RX.
+
+
+3 - Header Comment
+    --------------
+
+    We place a comment on line 1 of every .v file containing the exact
+    filename:
+
+        (* R04__Verification_Hilbert_Syntax.v *)
+
+    We require the string inside the comment to match the filename on disk
+    character-for-character, including the .v extension.
+
+        GOOD:  (* R05__Effectivity.v *)
+        BAD:   (* R05__Effectivity *)
+        BAD:   (* RX__Carryless_Pairing_Export.v *)  when file is R04__...
+
+
+4 - Imports
+    -------
+
+    4.1  Standard library
+
+         We write the standard-library imports on a single line, listing
+         modules in alphabetical order.
+
+             From Coq Require Import Arith Bool List PeanoNat.
+
+    4.2  Notation imports
+
+         We place notation imports on a separate line immediately after the
+         Require Import.
+
+             Import ListNotations.
+
+    4.3  Scope directives
+
+         We place scope directives on separate lines after notation imports.
+
+             Open Scope Z_scope.
+             Open Scope string_scope.
+
+    4.4  Project imports
+
+         We use From T### Require Import for project-internal modules.
+         When we import more than two modules, we use multi-line formatting
+         with two-space indentation:
+
+             From T002 Require Import
+               R01__Foundation_Fibonacci
+               R04__Verification_Hilbert_Syntax
+               R05__Verification_Hilbert_Checker.
+
+
+5 - Naming Conventions
+    ------------------
+
+    5.1  Types and inductives
+
+         We name types and inductives in PascalCase.
+
+             Form   Expr   Params   OForm
+
+    5.2  Constructors
+
+         We name constructors in PascalCase, optionally prefixed by the
+         type initial.
+
+             F_Bot   F_Imp   Ax_K   Ax_S   Ax_EFQ
+
+    5.3  Definitions and functions
+
+         We name definitions and computational functions in snake_case.
+
+             fib_pair   even_band   code_output   toggle_code
+
+    5.4  Propositions and predicates (Prop-valued)
+
+         We name Prop-valued definitions in PascalCase.
+
+             Thm   CubicSat   ClosedCode   CorrectCode   RepresentationBound
+
+    5.5  Boolean tests
+
+         We give boolean decision functions an is_ prefix and write the
+         remainder in snake_case.
+
+             is_even   is_odd   is_axiom   is_K
+
+    5.6  Lemma and theorem names
+
+         We follow a subject_property pattern in snake_case.
+
+             div2_two          (subject: div2, property: two)
+             form_eqb_refl     (subject: form_eqb, property: refl)
+             EvalRM_deterministic
+
+         When the subject is a PascalCase name we preserve its casing in
+         the lemma name.
+
+    5.7  Record fields
+
+         We name record fields with a consistent short prefix per record,
+         followed by the field name.
+
+             uc_poly   uc_U   uc_ix_u
+             as_pf     as_target
+
+    5.8  Single-letter names
+
+         We permit single-letter names only for Section variables.
+
+             Variable P : Params.
+
+         We do not use single-letter names for top-level Definitions.
+
+             BAD:   Definition F (n : nat) := ...
+             GOOD:  Definition fib (n : nat) := ...
+
+
+6 - Scoping Constructs
+    -------------------
+
+    6.1  Bare top-level
+
+         We place pure definitions that take no shared parameters at the
+         bare top level.
+
+             Definition degree (e : Expr) : nat := ...
+
+    6.2  Section
+
+         We use Sections for parameterized proof blocks whose definitions
+         and lemmas share Variables or Hypotheses.
+
+             Section Carryless_Correctness.
+               Variable P : Params.
+               Hypothesis Z_sound : forall n, sumF (Z P n) = n.
+               ...
+             End Carryless_Correctness.
+
+    6.3  Module
+
+         We reserve Modules for concrete instantiations and realizations.
+
+             Module Realization.
+               Definition P0 : Params := ...
+             End Realization.
+
+         We do not mix the two: if a file uses a Section for parameterized
+         proofs, we do not also wrap definitions in a Module unless those
+         definitions form a concrete instance.
+
+
+7 - Comment Style
+    -------------
+
+    7.1  Block banner
+
+         We use block banners only for major section separators and set
+         them at 73 characters wide:
+
+             (*****************************************************************)
+             (*                                                               *)
+             (*  Section Title                                                *)
+             (*                                                               *)
+             (*****************************************************************)
+
+    7.2  Doc comments
+
+         We place a doc comment directly above every top-level Definition,
+         Fixpoint, Lemma, and Theorem.  We write the comment in multi-line
+         form with the text indented inside the delimiters, and we leave a
+         blank line between the closing *) and the definition:
+
+             (*
+               Sum of Fibonacci values over a list of indices.
+             *)
+
+             Fixpoint sumF (xs : list nat) : nat := ...
+
+         We omit comments only for trivial re-exports in API files.
+
+    7.3  No trailing inline comments
+
+         We place explanatory comments on their own line above the
+         definition, not inline after the code.
+
+             BAD: Definition two_j_minus1 (j : nat) := Nat.pred (two j). (* 2j-1 *)
+             
+             BAD:
+             (* 2j - 1, with Nat.pred 0 = 0. *)
+             Definition two_j_minus1 (j : nat) := Nat.pred (two j).
+             
+             ALMOST:
+
+             (*
+             2j - 1, with Nat.pred 0 = 0. 
+             *)
+             Definition two_j_minus1 (j : nat) := Nat.pred (two j).
+
+             GOOD:
+
+             (*
+               2j - 1, with Nat.pred 0 = 0. 
+             *)
+             
+             Definition two_j_minus1 (j : nat) := Nat.pred (two j).
+
+
+
+
+8 - Proof Style
+    -----------
+
+    8.1  One-liner proofs
+
+         When a proof requires at most three tactic steps we write it on a
+         single line:
+
+             Proof. reflexivity. Qed.
+             Proof. vm_compute. reflexivity. Qed.
+             Proof. intro n. simpl. lia. Qed.
+
+    8.2  Multi-line proofs
+
+         We place Proof. on its own line and indent tactics by two spaces.
+
+             Proof.
+               intros x y.
+               unfold unpair.
+               rewrite Hx.
+               reflexivity.
+             Qed.
+
+    8.3  Sub-goal markers
+
+         We use bullets for sub-goals, never braces.
+
+             First level:   -
+             Second level:  +
+             Third level:   *
+             Fourth level:  --
+
+             GOOD:
+             - apply IH. lia.
+             - rewrite Hx.
+               + exact H1.
+               + exact H2.
+
+             BAD:
+             { apply IH. lia. }
+
+    8.4  Computational witnesses
+
+         We write vm_compute examples in one-liner form:
+
+             Proof. vm_compute. reflexivity. Qed.
+
+
+9 - API and Export Patterns
+    -----------------------
+
+    9.1  API boundary files
+
+         We re-export public definitions by aliasing them:
+
+             Definition Thm : nat -> Prop :=
+               R16__Sigma_Reduction.Thm.
+
+         We seal internals at the end of the file:
+
+             Global Opaque internal_lemma_1.
+             Global Opaque internal_lemma_2.
+
+    9.2  Numbered theorem aliases
+
+         We assign stable paper-facing labels with a short prefix, and
+         we place these only in API boundary files, not in working files.
+
+             Theorem SR01_sigma_reduction : ...
+             Theorem SR02_thm_reduces_to_cubic : ...
+
+    9.3  Extraction files
+
+         We give extraction files a numeric prefix and set the extraction
+         output directory to match the actual artifacts directory:
+
+             Extraction Language OCaml.
+             Set Extraction Output Directory "artifacts".
+
+             Extraction "output_name.ml" fn1 fn2 fn3.
+
+         We end with Print Assumptions for the principal theorems:
+
+             Print Assumptions unpair_pair.
+             Print Assumptions pair_inj.
+
+    9.4  Print Assumptions
+
+         We close every endpoint file (extraction, final theorem, bounded
+         universality) with Print Assumptions for each principal result.
+
+
+10 - README Structure
+     ----------------
+
+     10.1  Format
+
+           We write READMEs as plain text with a (* README *) header and
+           numbered sections.
+
+               (* README *)
+
+               1 - Description
+                   -----------
+                   ...
+
+               2 - Repository Tree
+                   ---------------
+                   .
+                   +-- README
+                   |      (This file.)
+                   +-- R00__First_File.v
+                   ...
+
+     10.2  Tree accuracy
+
+           We require every filename in the repository tree to match the
+           filename on disk character-for-character.  When we rename a
+           file, we update the README in the same change.
+
+     10.3  Additional sections
+
+           We add further sections as needed (Regeneration, Semantics, etc.)
+           and number them sequentially from 3 onward.
+
+
+11 - Known Deviations
+     ----------------
+
+     The following deviations from this guide exist in the current codebase.
+     We track them here for correction.
+
+     T001
+     ----
+
+     (i)    File numbering starts at R01, not R00.
+
+     (ii)   The README lists RX__Carryless_Pairing_Export.v but the file on
+            disk is R04__Carryless_Pairing_Export.v.
+
+     (iii)  The header comment in R04 reads (* RX__Carryless_Pairing_Export.v *)
+            instead of (* R04__Carryless_Pairing_Export.v *).
+
+     (iv)   R02 uses { } braces for sub-goals instead of bullets.
+
+     (v)    R01 has no Section despite all definitions sharing P : Params.
+
+     (vi)   The extraction output directory is set to "witness" instead of
+            "artifacts".
+
+     (vii)  Single-letter top-level definitions: F, B.
+
+     (viii) Mixed casing: sumF (camelCase) alongside fib_pair (snake_case).
+
+     T002
+     ----
+
+     (i)    R01__Foundation_Fibonacci.v inherits the T001 naming: F, sumF, B.
+
+     (ii)   R00__Degree_Framework.v has no doc comments above definitions.
+
+     (iii)  The header comment in R01 reads (* R01__Fibonacci.v *) instead of
+            (* R01__Foundation_Fibonacci.v *).
+
+     T003
+     ----
+
+     (i)    The header comment in R05 reads (* R05__Effectivity *), missing
+            the .v extension.
+
+     (ii)   R01__Coeff_types.v has no header comment.
+
+     (iii)  R00__VarMap.v has no doc comments (auto-generated, but we expect
+            them regardless).
+
+     (iv)   The numbering gap at R06 is not noted in the README.

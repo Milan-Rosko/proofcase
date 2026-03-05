@@ -1,17 +1,29 @@
 (* R04__Hilbert_Syntax.v *)
 
-From Coq Require Import Init.Logic Arith List Bool.
+From Coq Require Import Arith Bool Init.Logic List.
 Import ListNotations.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 
+(*
+  Hilbert-style formula type: bottom and implication.
+*)
+
 Inductive Form : Type :=
   | F_Bot : Form
   | F_Imp : Form -> Form -> Form.
 
+(*
+  Notation aliases for formula constructors.
+*)
+
 Definition Imp (A B : Form) : Form := F_Imp A B.
 Definition Bot : Form := F_Bot.
+
+(*
+  Boolean equality test for formulas.
+*)
 
 Fixpoint form_eqb (A B : Form) : bool :=
   match A, B with
@@ -21,12 +33,20 @@ Fixpoint form_eqb (A B : Form) : bool :=
   | _, _ => false
   end.
 
+(*
+  Reflexivity of boolean formula equality.
+*)
+
 Lemma form_eqb_refl : forall A, form_eqb A A = true.
 Proof.
   induction A as [|A1 IH1 A2 IH2].
   - reflexivity.
   - simpl. rewrite IH1. exact IH2.
 Qed.
+
+(*
+  Soundness of boolean formula equality.
+*)
 
 Lemma form_eqb_true_eq : forall A B, form_eqb A B = true -> A = B.
 Proof.
@@ -40,11 +60,19 @@ Proof.
     reflexivity.
 Qed.
 
+(*
+  Axiom schemes: K, S, and ex falso quodlibet.
+*)
+
 Inductive Ax : Form -> Prop :=
   | Ax_K   : forall A B, Ax (Imp A (Imp B A))
   | Ax_S   : forall A B C,
       Ax (Imp (Imp A (Imp B C)) (Imp (Imp A B) (Imp A C)))
   | Ax_EFQ : forall A, Ax (Imp Bot A).
+
+(*
+  Boolean recognizer for the K axiom scheme.
+*)
 
 Definition is_K (phi : Form) : bool :=
   match phi with
@@ -52,11 +80,19 @@ Definition is_K (phi : Form) : bool :=
   | _ => false
   end.
 
+(*
+  Boolean recognizer for the EFQ axiom scheme.
+*)
+
 Definition is_EFQ (phi : Form) : bool :=
   match phi with
   | F_Imp F_Bot _ => true
   | _ => false
   end.
+
+(*
+  Boolean recognizer for the S axiom scheme.
+*)
 
 Definition is_S (phi : Form) : bool :=
   match phi with
@@ -67,8 +103,16 @@ Definition is_S (phi : Form) : bool :=
   | _ => false
   end.
 
+(*
+  Boolean recognizer for any axiom scheme (K, S, or EFQ).
+*)
+
 Definition is_axiom (phi : Form) : bool :=
   orb (is_EFQ phi) (orb (is_K phi) (is_S phi)).
+
+(*
+  Soundness of the K recognizer.
+*)
 
 Lemma is_K_sound : forall phi, is_K phi = true -> Ax phi.
 Proof.
@@ -79,6 +123,10 @@ Proof.
   apply Ax_K.
 Qed.
 
+(*
+  Soundness of the EFQ recognizer.
+*)
+
 Lemma is_EFQ_sound : forall phi, is_EFQ phi = true -> Ax phi.
 Proof.
   intros phi H.
@@ -86,6 +134,10 @@ Proof.
   destruct L; simpl in H; try discriminate.
   apply Ax_EFQ.
 Qed.
+
+(*
+  Soundness of the S recognizer.
+*)
 
 Lemma is_S_sound : forall phi, is_S phi = true -> Ax phi.
 Proof.
@@ -105,6 +157,10 @@ Proof.
   apply form_eqb_true_eq in HC2; subst C2.
   apply Ax_S.
 Qed.
+
+(*
+  Soundness of the combined axiom recognizer.
+*)
 
 Lemma is_axiom_sound : forall phi, is_axiom phi = true -> Ax phi.
 Proof.

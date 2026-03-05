@@ -1,6 +1,6 @@
 (* P01__HBL.v *)
 
-From Coq Require Import List Bool.
+From Coq Require Import Bool List.
 Import ListNotations.
 
 From T002 Require Import P00__Concrete_Provability.

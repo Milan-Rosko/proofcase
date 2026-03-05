@@ -1,0 +1,39 @@
+(* README *)
+
+1 - Description
+    -----------
+
+    This directory contains all Rocq theory developments in Proofcase. Each
+    subdirectory T### is a self-contained theorem package with its own README,
+    source files, and artifacts.
+
+2 - Index
+    -----
+
+    T000    Pigeonhole Divisibility (Template)
+
+            Any (n+1)-element subset of {1, ..., 2n} contains two distinct
+            elements where one divides the other, popularized by an anecdote of
+            Erdős, cf. Aigner: Proofs from THE BOOK. The solution: A standard
+            pigeonhole argument via the odd-part decomposition. This our
+            canonical approach that fixes most of our notation and documentation
+            style, ideally.
+
+    T001    Carryless Pairing
+
+            Mechanized correctness proof of the “Carryless Pairing” function
+            over Zeckendorf representations.  Establishes unpair(pair x y)
+            = (x, y) and injectivity of pair.
+
+    T002    Cubic Diophantine Reduction
+
+            Minimal Hilbert-Ackermann proof checker, constraint assembly, and
+            reduction to cubic polynomial satisfiability.  Includes the
+            proof-theory layer (provability, diagonalization, undecidability) 
+            and stable API surfaces.
+
+    T003    Universal Cubic Diophantine
+
+            Pinned bounded universal cubic polynomial, generated from a
+            Python constructor pipeline. Coefficient table, degree certificates,
+            digest gate, and bounded universality endpoint.

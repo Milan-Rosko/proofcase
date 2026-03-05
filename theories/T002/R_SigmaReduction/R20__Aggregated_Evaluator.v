@@ -1,6 +1,6 @@
 (* R20__Aggregated_Evaluator.v *)
 
-From Coq Require Import Arith List Lia PeanoNat.
+From Coq Require Import Arith Lia List PeanoNat.
 Import ListNotations.
 
 From T002 Require Import
