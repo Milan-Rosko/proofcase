@@ -1,3 +1,66 @@
 (* README *)
+    
+1 - Disclaimer
+    ----------
 
-T004 is currently under a revision. Will be back soon.
+    More information will follow shortly.
+
+2 - Repository Tree
+    ---------------
+
+    .
+    ├── README
+    │
+    │      (This file.)
+    │
+    ├── R00__Base.v
+    │
+    │      Core Rule 30 dynamics on rows and spacetime, global stepping,
+    │      iteration, locality, and interval agreement.
+    │
+    ├── R01__Seed.v
+    │
+    │      Single-seed initial row, canonical trajectory, finite support,
+    │      progenitor, and Original Sin.
+    │
+    ├── R02__Local_Lemmas.v
+    │
+    │      Center-window extraction and local seeded-trajectory lemmas.
+    │
+    ├── R03__Periodicity.v
+    │
+    │      Observable periodicity, replay certificates, admissible
+    │      extensions, and the witness wrapper for upward admissibility.
+    │
+    ├── R04__Center_No_Pure_Periodicity.v
+    │
+    │      Candidate-row construction, progenitor bridge, and the
+    │      contradiction with Original Sin once admissibility is supplied.
+    │
+    ├── R05__Glitch_Compactness.v
+    │
+    │      Reverse-side finite layer: seeded prefixes, glitchprojections,
+    │      width restriction, finite-shadow profile classification, and
+    │      the compactness scaffold for inward glitch descent.
+    │
+    ├── R06__Mixed_Periodicity.v
+    │
+    │      Uniform eventual-periodicity transport, realizability-facing
+    │      tail predicates, and the strong impossibility endpoint.
+    │
+    ├── R07__Classic_Semantics.v
+    │
+    │      External semantic corollaries under the faithful window-growth
+    │      premise; this is the preferred assumption-isolating wrapper.
+    │
+    ├── T004_Proof.v
+    │
+    │      Audit-facing index for all three layers, including the strong
+    │      semantic endpoint and the external classical corollary.
+    │
+    └── T004_Extraction_Interface.v
+     
+           OCaml extraction surface for finite windows, seeded prefixes,
+           truncations, and assumption reporting.
+
+
