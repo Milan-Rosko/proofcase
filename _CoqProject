@@ -5,12 +5,15 @@
 -arg -abstract-large-number
 
 
-# Pigeonhole Divisibility
+# T000 Pigeonhole Divisibility (Canonical Project)
 
 -Q theories/T000 T000
 
-theories/T000/R00__Odd_Part.v
-theories/T000/R01__Pigeonhole_Divisibility.v
+theories/T000/R01__Odd_Part.v
+theories/T000/R02__Pigeonhole_Divisibility.v
+theories/T000/T000__Proof.v
+theories/T000/T000__Extraction_Interface.v
+
 
 
 # Carryless Pairing
@@ -94,20 +97,14 @@ theories/T003/R04__Universal.v
 theories/T003/R08__Bounded_Universality.v
 theories/T003/R05__Effectivity.v
 
-
 # T004 Rule 30 finite obstruction
 
 -Q theories/T004 T004
 
-theories/T004/R00__Base.v
-theories/T004/R01__Seed.v
-theories/T004/R02__Local_Lemmas.v
-theories/T004/R03__Periodicity.v
-theories/T004/R04__Witness.v
-theories/T004/R05__Refutation.v
-theories/T004/R06__No_Strip_Periodicity.v
-theories/T004/R07__Packed_Compression.v
-theories/T004/R08__Compression_From_Strip.v
-theories/T004/R09__Compressed_Not_Eventually_Periodic.v
-theories/T004/R10__Periodicity_Utilities.v
-theories/T004/R11__Extraction.v
+theories/T004/R01__Phase_One.v
+theories/T004/R02__Phase_Two.v
+theories/T004/R03__Phase_Three.v
+theories/T004/R04__First_Corollary.v
+theories/T004/R05__Second_Corollary.v
+theories/T004/T004__Proof.v
+theories/T004/T004__Extraction_Interface.v
