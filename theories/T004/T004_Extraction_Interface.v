@@ -1,28 +1,24 @@
 (* T004_Extraction_Interface.v *)
 
-From Coq Require Import Extraction List ZArith.
+From Coq Require Import Arith Bool Extraction List ZArith.
 Import ListNotations.
 
 From T004 Require Import
-  R00__Base
-  R01__Seed
-  R02__Local_Lemmas
-  R03__Periodicity
-  R04__Center_No_Pure_Periodicity
-  R05__Glitch_Compactness
-  R06__Mixed_Periodicity
-  R07__Classic_Semantics.
+  R01__Phase_One
+  R02__Phase_Two
+  R03__Phase_Three
+  R04__First_Corollary.
 
 Open Scope Z_scope.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Proofcase / Rule 30 Phase 1 -- OCaml extraction interface            *)
+(*  Proofcase / Rule 30 -- OCaml Extraction Interface                    *)
 (*                                                                       *)
-(*  Theorems erase under extraction, so this file exposes the concrete   *)
-(*  computational surface of T004: finite centered windows, seeded       *)
-(*  prefixes, truncations, and small numeric views that are practical    *)
-(*  to inspect from OCaml.                                               *)
+(*  Theorems  erase under extraction, so this file exposes the concrete  *)
+(*  computational  surface  of  T004:  finite centered windows,  seeded  *)
+(*  prefixes,   truncations,   and  small  numeric  views  that  remain  *)
+(*  practical to inspect from OCaml.                                     *)
 (*                                                                       *)
 (*************************************************************************)
 
@@ -258,86 +254,270 @@ Definition truncated_canonical_window_as_nat
 Definition extracted_finite_replay_radius (n horizon : nat) : nat :=
   finite_replay_radius n horizon.
 
+(*
+  (27)
+  Boolean equality on nat-coded finite windows.
+*)
+
+Fixpoint nat_list_eqb (xs ys : list nat) : bool :=
+  match xs, ys with
+  | [], [] => true
+  | x :: xs', y :: ys' => andb (Nat.eqb x y) (nat_list_eqb xs' ys')
+  | _, _ => false
+  end.
+
+(*
+  (28)
+  Result type for the simple observational refuter.
+*)
+
+Inductive ObservedPeriodRefuterResult : Type :=
+| Opr_invalid_period
+| Opr_refuted :
+    nat -> list nat -> list nat -> ObservedPeriodRefuterResult
+| Opr_not_refuted_upto :
+    nat -> ObservedPeriodRefuterResult.
+
+(*
+  (29)
+  Nat-coded centered windows agree at time t and lag period.
+*)
+
+Definition observed_windows_match
+    (radius period t : nat) : bool :=
+  nat_list_eqb
+    (canonical_window_as_nat radius t)
+    (canonical_window_as_nat radius (t + period)%nat).
+
+(*
+  (30)
+  Refutation object at a specific mismatch time.
+*)
+
+Definition observed_period_refutation_at
+    (radius period t : nat) : ObservedPeriodRefuterResult :=
+  Opr_refuted
+    t
+    (canonical_window_as_nat radius t)
+    (canonical_window_as_nat radius (t + period)%nat).
+
+(*
+  (31)
+  First observational mismatch from time t through the given horizon fuel.
+*)
+
+Fixpoint first_observed_period_refutation_from
+    (radius period t fuel : nat) : option ObservedPeriodRefuterResult :=
+  if observed_windows_match radius period t
+  then
+    match fuel with
+    | 0%nat => None
+    | S fuel' =>
+        first_observed_period_refutation_from radius period (S t) fuel'
+    end
+  else Some (observed_period_refutation_at radius period t).
+
+(*
+  (32)
+  Simple finite observational refuter.
+
+  A returned refutation is honest finite evidence against the proposed
+  period.  A non-refutation only says that no mismatch was found within
+  the supplied finite horizon.
+*)
+
+Definition refute_observed_period
+    (radius period horizon : nat) : ObservedPeriodRefuterResult :=
+  if Nat.eqb period 0%nat
+  then Opr_invalid_period
+  else
+    match first_observed_period_refutation_from radius period 0%nat horizon with
+    | Some result => result
+    | None => Opr_not_refuted_upto horizon
+    end.
+
+(*
+  (33)
+  Input object for the bounded uniform-tail witness checker.
+*)
+
+Record UniformTailWitnessCandidate : Type := {
+  utwc_radius : nat;
+  utwc_start : nat;
+  utwc_period : nat;
+  utwc_extra_bound : nat;
+  utwc_time_bound : nat
+}.
+
+(*
+  (34)
+  Result type for the bounded uniform-tail witness checker.
+*)
+
+Inductive UniformTailWitnessCheck : Type :=
+| Utwc_invalid_period
+| Utwc_rejected :
+    nat -> nat -> list nat -> list nat -> UniformTailWitnessCheck
+| Utwc_accepts_through :
+    nat -> nat -> UniformTailWitnessCheck.
+
+(*
+  (35)
+  Nat-coded window at one point of the bounded witness obligation grid.
+*)
+
+Definition uniform_tail_window_as_nat
+    (candidate : UniformTailWitnessCandidate)
+    (extra t lag : nat) : list nat :=
+  canonical_window_as_nat
+    (utwc_radius candidate + extra)%nat
+    (utwc_start candidate + t + lag)%nat.
+
+(*
+  (36)
+  One bounded witness obligation holds at (extra, t).
+*)
+
+Definition uniform_tail_witness_matches
+    (candidate : UniformTailWitnessCandidate)
+    (extra t : nat) : bool :=
+  nat_list_eqb
+    (uniform_tail_window_as_nat candidate extra t 0%nat)
+    (uniform_tail_window_as_nat candidate extra t (utwc_period candidate)).
+
+(*
+  (37)
+  First rejection object at one failed witness obligation.
+*)
+
+Definition uniform_tail_witness_rejection
+    (candidate : UniformTailWitnessCandidate)
+    (extra t : nat) : UniformTailWitnessCheck :=
+  Utwc_rejected
+    extra
+    t
+    (uniform_tail_window_as_nat candidate extra t 0%nat)
+    (uniform_tail_window_as_nat candidate extra t (utwc_period candidate)).
+
+(*
+  (38)
+  Scan one fixed extra-radius layer for the first failed witness time.
+*)
+
+Fixpoint first_uniform_tail_time_failure
+    (candidate : UniformTailWitnessCandidate)
+    (extra t fuel : nat) : option UniformTailWitnessCheck :=
+  if uniform_tail_witness_matches candidate extra t
+  then
+    match fuel with
+    | 0%nat => None
+    | S fuel' =>
+        first_uniform_tail_time_failure candidate extra (S t) fuel'
+    end
+  else Some (uniform_tail_witness_rejection candidate extra t).
+
+(*
+  (39)
+  Scan all bounded extra-radius layers for the first failed witness obligation.
+*)
+
+Fixpoint first_uniform_tail_extra_failure
+    (candidate : UniformTailWitnessCandidate)
+    (extra fuel : nat) : option UniformTailWitnessCheck :=
+  match first_uniform_tail_time_failure
+          candidate extra 0%nat (utwc_time_bound candidate) with
+  | Some failure => Some failure
+  | None =>
+      match fuel with
+      | 0%nat => None
+      | S fuel' =>
+          first_uniform_tail_extra_failure candidate (S extra) fuel'
+      end
+  end.
+
+(*
+  (40)
+  Best-practice bounded witness checker.
+
+  A rejection means that the supplied witness candidate fails the checked
+  uniform-tail obligations.  Acceptance is explicitly bounded by the
+  supplied extra/time limits carried by the candidate.
+*)
+
+Definition check_uniform_tail_witness_candidate
+    (candidate : UniformTailWitnessCandidate) : UniformTailWitnessCheck :=
+  if Nat.eqb (utwc_period candidate) 0%nat
+  then Utwc_invalid_period
+  else
+    match first_uniform_tail_extra_failure
+            candidate 0%nat (utwc_extra_bound candidate) with
+    | Some failure => failure
+    | None =>
+        Utwc_accepts_through
+          (utwc_extra_bound candidate)
+          (utwc_time_bound candidate)
+    end.
+
 End Extraction_Interface.
 
 Extraction Language OCaml.
-Set Extraction Output Directory "/Users/wuksh/Codex/Rul30/Proofcase/T004extraction".
+Set Extraction Output Directory "T004_Extraction".
 
-Extraction "Original_Sin.ml"
-  rule30
-  step_row
-  iter_row
-  centered_coords
+Extraction "UniformTailWitnessChecker.ml"
   bit_to_nat
   bit_list_to_nat_list
-  seed_row
-  seed_window
-  seed_window_as_nat
-  canonical_value
-  canonical_value_as_nat
-  canonical_row
-  canonical_window
   canonical_window_as_nat
-  canonical_prefix_windows
-  canonical_prefix_windows_as_nat
-  shifted_canonical_trajectory
-  shifted_canonical_window
-  shifted_canonical_window_as_nat
-  shifted_canonical_prefix_windows
-  shifted_canonical_prefix_windows_as_nat
-  local_seed_window_model
-  local_seed_window_model_window
-  local_seed_window_model_window_as_nat
-  truncate
-  truncated_canonical_window
-  truncated_canonical_window_as_nat
-  extracted_finite_replay_radius.
+  check_uniform_tail_witness_candidate.
+
+Extraction "ObservedPeriodRefuter.ml"
+  bit_to_nat
+  bit_list_to_nat_list
+  canonical_window_as_nat
+  refute_observed_period.
+
+(*
+  The  extraction surface above is purely computational. The commands below 
+  print  only  the  main  theorem endpoints and the  remaining explicit open
+  assumptions, so the build output stays readable.
+*)
 
 (*************************************************************************)
 (*                                                                       *)
-(*  KEY ASSUMPTION REPORT                                                *)
+(*                               ENDPOINT                                *)
 (*                                                                       *)
-(*  The extraction surface above is computational.  The commands below   *)
-(*  expose only the main theorem endpoints and the remaining explicit    *)
-(*  open assumptions, so the build output stays readable.                *)
-(*                                                                       *)
-(*************************************************************************)
-
-(*************************************************************************)
-(*                                                                       *)
-(*  PHASE 1 ENDPOINT                                                     *)
-(*                                                                       *)
-(*  Compactness-conditional Phase 1 corollary                            *)
+(*  Compactness-conditional Phase 1 corollary.                           *)
 (*                                                                       *)
 (*    replay_compactness_principle ->                                    *)
 (*      forall n, ~ purely_periodic_center_window n                      *)
 (*                                                                       *)
-(*  This is part of the package, but it is not the preferred             *)
-(*  semantic interface when discussing faithful realizers.               *)
+(*  This  is  part of the package, but it is not the preferred semantic  *)
+(*  interface when discussing faithful realizers.                        *)
 (*                                                                       *)
 (*************************************************************************)
 
-Print Assumptions original_sin.
+Print Assumptions the_fall.
 Print Assumptions no_pure_periodicity_of_centered_windows.
 Print Assumptions center_strip_not_purely_periodic.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  PHASE 2 ENDPOINT                                                     *)
+(*                               ENDPOINT                                *)
 (*                                                                       *)
-(*  Constructive cutoff-memory theorem                                   *)
+(*  Original Sin Theorem.                                                *)
 (*                                                                       *)
-(*    every_cutoff_still_remembers_seed                                  *)
+(*    original_sin_theorem                                               *)
 (*                                                                       *)
 (*************************************************************************)
 
-Print Assumptions every_cutoff_still_remembers_seed.
+Print Assumptions original_sin_theorem.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  PHASE 3 STRONG SEMANTIC ENDPOINT                                     *)
+(*                               ENDPOINT                                *)
 (*                                                                       *)
-(*  No faithful uniform periodic tail exists.                            *)
+(*  The  direct  endpoint  states that no uniform periodic tail exists.  *)
+(*  The  realizability  theorems printed below are packaged corollaries  *)
+(*  of that stronger statement.                                          *)
 (*                                                                       *)
 (*  This is the preferred semantic endpoint for the package.             *)
 (*                                                                       *)
@@ -349,23 +529,16 @@ Print Assumptions realizable_uniform_periodic_tail_from_impossible.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  R07 EXTERNAL CLASSICAL COROLLARY                                     *)
+(*                               ENDPOINT                                *)
 (*                                                                       *)
-(*  Under the external semantic-faithfulness premise, eventual           *)
-(*  periodicity of centered windows is excluded.  This is the cleanest   *)
+(*  Under   the   external   semantic-faithfulness   premise,  eventual  *)
+(*  periodicity  of  centered windows is excluded. This is the cleanest  *)
 (*  assumption-isolating wrapper exported by the package.                *)
+(*                                                                       *)
+(*  The  non-closed  ingredients  appear  as  explicit theorem premises  *)
+(*  rather than hidden global axioms on the live package surface.        *)
 (*                                                                       *)
 (*************************************************************************)
 
 Print Assumptions classical_semantics_excludes_eventual_periodic_windows.
 Print Assumptions classical_semantics_excludes_any_eventual_periodic_window.
-
-(*************************************************************************)
-(*                                                                       *)
-(*  EXTERNAL PREMISES                                                    *)
-(*                                                                       *)
-(*  The non-closed ingredients appear as explicit theorem                *)
-(*  premises rather than hidden global axioms on the live package        *)
-(*  surface.                                                             *)
-(*                                                                       *)
-(*************************************************************************)

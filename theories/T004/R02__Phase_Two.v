@@ -1,26 +1,42 @@
-(* R05__Glitch_Compactness.v *)
+(* R02__Phase_Two.v *)
 
 From Coq Require Import Arith Bool Classical Lia List ZArith.
 Import ListNotations.
 
-From T004 Require Import
-  R00__Base
-  R01__Seed
-  R02__Local_Lemmas
-  R03__Periodicity
-  R04__Center_No_Pure_Periodicity.
+From T004 Require Import R01__Phase_One.
 
 Open Scope Z_scope.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Proofcase / Rule 30 Phase 1 — Glitch Compactness Scaffold            *)
+(*  Proofcase / Rule 30 Phase 2                                          *)
 (*                                                                       *)
-(*  This file does not yet prove the compactness theorem.  It fixes the  *)
-(*  vocabulary for the intended argument: a bounded periodic replay      *)
-(*  carries duplicated seed-forcing glitches, those glitches move        *)
-(*  inward under replay, and after finitely many cycles they overlap in  *)
-(*  a compact middle region where Original Sin applies.                  *)
+(*  Consolidated Phase 2 theory unit.                                    *)
+(*                                                                       *)
+(*  Phase 2 is the constructive cutoff-memory layer of T004.  Its        *)
+(*  central question is: if a bounded predecessor row already realizes   *)
+(*  the seed window on [-R, R], what forced asymmetry remains visible    *)
+(*  in that row?                                                         *)
+(*                                                                       *)
+(*  The file has three main strands.                                     *)
+(*                                                                       *)
+(*    1. Local seed-window realization and outer-shell emission.         *)
+(*                                                                       *)
+(*       Bounded realization of the seed window cannot remain confined   *)
+(*       to a too-small support; it must emit visible shell data.        *)
+(*                                                                       *)
+(*    2. Recursive left/right pressure transport.                        *)
+(*                                                                       *)
+(*       The shell equations force either persistent far-left pressure   *)
+(*       or repeated right-side compactification inward, until left      *)
+(*       memory is recovered.                                            *)
+(*                                                                       *)
+(*    3. Phase 2 endpoint and auxiliary reverse vocabulary.              *)
+(*                                                                       *)
+(*       The endpoint original_sin_theorem packages this left-memory     *)
+(*       residue as a bounded certificate.  The later auxiliary objects  *)
+(*       expose seeded-prefix and glitchprojection language used by the  *)
+(*       reverse-side finite analysis.                                   *)
 (*                                                                       *)
 (*************************************************************************)
 
@@ -56,7 +72,7 @@ Definition truncate (N : nat) (u : row) : row :=
     else false.
 
 (*
-  The compact center trap already visible inside Original Sin.
+  The compact center trap already visible inside “the Fall.”
 
   A seed-creation triplet is the local 3-cell configuration that forces a
   center output of true from two leading zeros.  Once the successor output is
@@ -69,7 +85,7 @@ Definition seed_creation_triplet (r : row) (c : Z) : Prop :=
   r c = false /\
   step r c = true.
 
-Definition compact_original_sin_trap (r : row) (c : Z) : Prop :=
+Definition compact_fall_trap (r : row) (c : Z) : Prop :=
   seed_creation_triplet r c /\
   step r (c + 1)%Z = false.
 
@@ -84,9 +100,9 @@ Proof.
   exact Hstep.
 Qed.
 
-Lemma compact_original_sin_trap_impossible :
+Lemma compact_fall_trap_impossible :
   forall r c,
-    compact_original_sin_trap r c ->
+    compact_fall_trap r c ->
     False.
 Proof.
   intros r c [[Hleft [Hmid Hstepc]] Hstepnext].
@@ -332,7 +348,7 @@ Proof.
       rewrite Hstep_false, Hseed_false.
       reflexivity.
   }
-  apply original_sin.
+  apply the_fall.
   exists u.
   split.
   - exists N.
@@ -1279,7 +1295,41 @@ Record phase2_memory_certificate (N : nat) (u : row) : Type := {
     ~ left_cold_slab N u
 }.
 
-Theorem every_cutoff_still_remembers_seed :
+(*************************************************************************)
+(*                                                                       *)
+(*                                THEOREM                                *)
+(*                                                                       *)
+(*    Original Sin Theorem                                               *)
+(*                                                                       *)
+(*                              PROOF ROUTE                              *)
+(*                                                                       *)
+(*    A. Start from a bounded realization of the seed window at radius   *)
+(*       S (S N).                                                        *)
+(*                                                                       *)
+(*    B. Use the shell-emission and compactification lemmas to produce   *)
+(*       forced left pressure at some bounded levels.                    *)
+(*                                                                       *)
+(*    C. Package those witnesses as a bounded left-coordinate family.    *)
+(*                                                                       *)
+(*    D. Deduce that the left slab [-N-3, -3] cannot be identically      *)
+(*       cold, and store both facts in phase2_memory_certificate.        *)
+(*                                                                       *)
+(*                              REALIZATION                              *)
+(*                                                                       *)
+(*    forall N u,                                                        *)
+(*      local_seed_window_realization (S (S N)) u ->                     *)
+(*      phase2_memory_certificate N u                                    *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    Every bounded local replay of the seed already carries a finite    *)
+(*    left-memory certificate.  The predecessor cannot be semantically   *)
+(*    neutral on the left slab: some bounded left coordinate is forced   *)
+(*    to remain hot.                                                     *)
+(*                                                                       *)
+(*************************************************************************)
+
+Theorem original_sin_theorem :
   forall N u,
     local_seed_window_realization (S (S N)) u ->
     phase2_memory_certificate N u.
@@ -1293,7 +1343,7 @@ Proof.
 Qed.
 
 (*
-  Reverse-side finite object: the first h lines of the canonical seeded run.
+  Reverse-side finite seeded-prefix layer.
 
   If a seed reappears after period P, then the shifted canonical trajectory
   starting at time P must match the original seeded prefix for every bounded
@@ -1352,9 +1402,13 @@ Proof.
 Qed.
 
 (*
+  Glitchprojection layer.
+
   A glitchprojection is a bounded backward cone above the centered seed word.
   Row 0 is the seed row itself.  Each higher row steps to the row below on the
-  bounded cone of the appropriate width.
+  bounded cone of the appropriate width.  These objects are auxiliary to the
+  main Phase 2 endpoint, but they provide the finite reverse-time language used
+  to organize compact-trap and hidden-support arguments.
 *)
 
 Record glitchprojection (n k : nat) : Type := {
@@ -1564,7 +1618,7 @@ Definition seed_forcing_glitch
 
 Definition compact_center_trap_on_fragment
     (n P H : nat) (F : bounded_periodic_replay_fragment n P H) (g : glitch_site) : Prop :=
-  compact_original_sin_trap
+  compact_fall_trap
     (bprf_space_time n P H F (gs_time g))
     (gs_center g).
 
@@ -1703,7 +1757,7 @@ Lemma compact_center_trap_on_fragment_impossible :
     False.
 Proof.
   intros n P H F g.
-  apply compact_original_sin_trap_impossible.
+  apply compact_fall_trap_impossible.
 Qed.
 
 End Glitch_Compactness.

@@ -1,57 +1,165 @@
 (* README *)
-    
-1 - Disclaimer
-    ----------
 
-    More information will follow shortly.
+1 - Description
+    -----------
 
-2 - Repository Tree
-    ---------------
+    T004 is the seeded Rule 30 package. Its final public structure is:
+
+      - Main Constructive Framework
+      - Corollary 1
+      - Corollary 2
+
+    The Main Constructive Framework consists of the first three phases:
+
+      - Phase 1: the seeded orbit, the Fall / No Progenitor obstruction,
+        and the compactness-facing replay scaffold for
+        `replay_compactness_principle -> forall n, ~ purely_periodic_center_window n`,
+      - Phase 2: the constructive cutoff-memory theorem, together with
+        the auxiliary compact-trap / hidden-support vocabulary,
+      - Phase 3: the mixed-periodicity transport layer and its direct
+        semantic impossibility theorem
+
+    The two corollary layers are:
+
+      - Corollary 1: the external classical wrapper under faithful
+        semantics,
+      - Corollary 2: the finite provenance / observation-only layer,
+        including the center-strip-free shell question and the
+        observation-only tamper-checking impossibility theorem
+
+    It separates:
+
+      - observable periodicity of the actual centered window,
+      - replay data witnessing that this observable package can be restated
+        as a closed periodic object,
+      - admissibility data above the seed,
+      - and the contradiction obtained once admissibility is present.
+
+    The present Phase 1 compactness corollary is:
+
+      no_pure_periodicity_of_centered_windows :
+        replay_compactness_principle ->
+        forall n, ~ purely_periodic_center_window n
+
+    The package also exposes the stronger direct semantic endpoint proved
+    in the mixed-periodicity layer:
+
+      uniformly_eventually_periodic_from_impossible :
+        forall R T P,
+          uniformly_eventually_periodic_from R T P ->
+          False
+
+    together with the packaged realizability corollary:
+
+      realizable_uniform_periodic_tail_from_impossible :
+        forall R, ~ realizable_uniform_periodic_tail_from R
+
+    and the external classical corollary:
+
+      classical_semantics_excludes_eventual_periodic_windows :
+        classical_semantic_faithfulness ->
+        forall R, ~ eventually_periodic_center_window R
+
+    The package also exposes the finite shell question:
+
+      manipulation_question_decidable_without_center_strip :
+        forall N u,
+          { center_strip_free_manipulated N u } +
+          { ~ center_strip_free_manipulated N u }
+
+    together with the Phase 2 consequence:
+
+      local_seed_window_realization_forces_center_strip_free_manipulation :
+        forall N u,
+          local_seed_window_realization (S N) u ->
+          center_strip_free_manipulated N u
+
+    and the stronger observation-only impossibility statement:
+
+      no_observation_only_tamper_checker :
+        forall R T checker,
+          ~ observation_only_tamper_checker R T checker
+
+    This is the recommended semantic reading of the package: no closed
+    uniform periodic tail exists for the seeded Rule 30 center, and in
+    particular no faithful realizer can package such a tail.
+
+    The compactness route is kept explicit:
+
+      observable periodicity
+        + upward admissibility
+        -> False
+
+    T004 also proves that the bare finite seed-window matching problem is
+    satisfiable at every radius.  So any future compactness obstruction must
+    include replay or closure equations, not merely one-step agreement with the
+    seed on a bounded interval.
+
+    For that reason the compactness-facing finite object is now:
+
+      finite_replay_problem n horizon
+
+    which keeps the replay equations together with a genuinely bounded
+    admissibility witness: the upward step legitimacy is required only on the
+    finite radius n + horizon.
+
+    The package also isolates the compactness step explicitly as a premise:
+
+      replay_compactness_principle :
+        Prop
+
+    It also proves the bounded periodicity bridge:
+
+      purely_periodic_implies_finite_replay_problem :
+        forall n horizon,
+          purely_periodic_center_window n ->
+          finite_replay_problem n horizon
+
+    Combining that bridge with the compactness premise and the Fall / No
+    Progenitor Theorem yields the Phase 1 compactness corollary, while the
+    primary semantic interface is
+    the direct Phase 3 impossibility theorem together with its realizability
+    corollaries and the final faithful-semantics corollary wrapper.
+
+
+2 - Public Compilation Surface
+    --------------------------
 
     .
     ├── README
     │
     │      (This file.)
     │
-    ├── R00__Base.v
+    ├── R01__Phase_One.v
     │
-    │      Core Rule 30 dynamics on rows and spacetime, global stepping,
-    │      iteration, locality, and interval agreement.
+    │      Consolidated Phase 1 theory unit: base dynamics, the seed,
+    │      local lemmas, replay/admissibility data, and the
+    │      compactness-conditional no-pure-periodicity route.
     │
-    ├── R01__Seed.v
+    ├── R02__Phase_Two.v
     │
-    │      Single-seed initial row, canonical trajectory, finite support,
-    │      progenitor, and Original Sin.
+    │      Consolidated Phase 2 theory unit: bounded seed-window
+    │      realizations, the Original Sin Theorem, and the auxiliary
+    │      reverse-side compact-trap / hidden-support vocabulary.
     │
-    ├── R02__Local_Lemmas.v
+    ├── R03__Phase_Three.v
     │
-    │      Center-window extraction and local seeded-trajectory lemmas.
+    │      Consolidated Phase 3 theory unit: mixed-periodicity
+    │      impossibility and realizability-facing corollaries.
     │
-    ├── R03__Periodicity.v
+    ├── R04__First_Corollary.v
     │
-    │      Observable periodicity, replay certificates, admissible
-    │      extensions, and the witness wrapper for upward admissibility.
+    │      First external corollary layer under faithful semantics.
     │
-    ├── R04__Center_No_Pure_Periodicity.v
+    ├── R05__Second_Corollary.v
     │
-    │      Candidate-row construction, progenitor bridge, and the
-    │      contradiction with Original Sin once admissibility is supplied.
-    │
-    ├── R05__Glitch_Compactness.v
-    │
-    │      Reverse-side finite layer: seeded prefixes, glitchprojections,
-    │      width restriction, finite-shadow profile classification, and
-    │      the compactness scaffold for inward glitch descent.
-    │
-    ├── R06__Mixed_Periodicity.v
-    │
-    │      Uniform eventual-periodicity transport, realizability-facing
-    │      tail predicates, and the strong impossibility endpoint.
-    │
-    ├── R07__Classic_Semantics.v
-    │
-    │      External semantic corollaries under the faithful window-growth
-    │      premise; this is the preferred assumption-isolating wrapper.
+    │      Second corollary layer.  It removes the center strip from
+    │      view, asks the residual four-bit syntactic question
+    │      "was this manipulated?", proves that question decidable,
+    │      classifies the finite reverse ambiguity of the visible
+    │      canonical observation, and proves that no checker seeing only
+    │      that visible observation can decide canonical versus
+    │      tampered predecessor syntax.
     │
     ├── T004_Proof.v
     │
@@ -63,4 +171,57 @@
            OCaml extraction surface for finite windows, seeded prefixes,
            truncations, and assumption reporting.
 
+    The legacy split files `R00__Base.v` through `R07__Classic_Semantics.v`
+    remain in the directory as reference components, but `_CoqProject`
+    now compiles the five public units above.  `T004_Proof.v` audits the
+    full public pipeline, with `R01__Phase_One.v` through
+    `R03__Phase_Three.v` forming the constructive framework and
+    `R04__First_Corollary.v` plus `R05__Second_Corollary.v` forming the
+    two corollary layers.
 
+
+5 - Notes
+    -----
+
+    (i)    A progenitor is a finitely supported predecessor.
+
+    (ii)   The Fall / No Progenitor Theorem does not say the seed has no
+           arbitrary predecessor. It says the seed has no finitely supported
+           predecessor.
+
+    (iii)  The audit layer exposes the full public structure explicitly:
+           the three constructive phases together with both corollaries.
+
+    (iv)   Bare finite seed-window matching is too weak: T004 proves it is
+           satisfiable for every radius.
+
+    (v)    The correct finite target for compactness is a bounded replay
+           problem, not the bare local predecessor window.
+
+    (vi)   The classical step is explicit: periodicity yields the bounded
+           replay problem at every horizon; if every such bounded problem is
+           satisfiable, compactness yields admissibility; combined with
+           the Fall this gives a finite replay obstruction.
+
+    (vii)  The Phase 2 unit carries both the closed cutoff-memory theorem
+           `original_sin_theorem` and the auxiliary compact-trap /
+           hidden-support vocabulary used to organize reverse-side descent
+           arguments.
+
+    (viii) T004_Proof.v is the audit entry point for the package.
+
+    (ix)   The recommended semantic endpoint is not the Phase 1 compactness
+           theorem but the direct uniform-tail impossibility theorem in
+           Phase 3, together with its realizability corollaries and the
+           first faithful-semantics wrapper in R04__First_Corollary.
+
+    (x)    The compactness language remains mathematically meaningful as a
+           contrapositive packaging of finite replay obstruction; it is not
+           the only semantic reading carried by the package.
+
+    (xi)   `R05__Second_Corollary.v` still does not settle full semantic
+           provenance.  It does, however, prove a stronger impossibility:
+           once tampering is phrased at the finite predecessor-syntax
+           level, no checker that only sees the visible canonical
+           observation can decide canonical versus tampered hidden
+           predecessor data.

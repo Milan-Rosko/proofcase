@@ -1,27 +1,41 @@
-(* R06__Mixed_Periodicity.v *)
+(* R03__Phase_Three.v *)
 
 From Coq Require Import Arith Bool Classical_Prop Lia List ZArith.
 Import ListNotations.
 
-From T004 Require Import
-  R00__Base
-  R01__Seed
-  R02__Local_Lemmas.
+From T004 Require Import R01__Phase_One.
 
 Open Scope Z_scope.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Proofcase / Rule 30 Phase 3 — Mixed Periodicity                      *)
+(*  Proofcase / Rule 30 Phase 3                                          *)
 (*                                                                       *)
-(*  Phase 3 starts from eventual repetition after a finite cutoff.       *)
-(*  The first bridge is finite and local: an eventual-periodicity        *)
-(*  witness yields an infinite family of repeated local predecessor      *)
-(*  problems at one fixed cutoff phase.                                  *)
+(*  Phase 3 is the mixed-periodicity transport layer.  It starts from    *)
+(*  eventual repetition after a finite cutoff and pushes that hypothesis *)
+(*  backward through local predecessor carriers until it becomes         *)
+(*  incompatible with the canonical orbit itself.                        *)
+(*                                                                       *)
+(*  The route has four steps.                                            *)
+(*                                                                       *)
+(*    1. Eventual periodicity is frozen at a cutoff phase and converted  *)
+(*       into repeated local predecessor-realization problems.           *)
+(*                                                                       *)
+(*    2. Those predecessor carriers live in a finite pool, so            *)
+(*       pigeonhole arguments force repeated carriers or even repeated    *)
+(*       boundary signatures.                                            *)
+(*                                                                       *)
+(*    3. The repeated-carrier data transports backward and sharpens to   *)
+(*       small backward pairs, then to bounded eventual periodicity at   *)
+(*       larger radius.                                                  *)
+(*                                                                       *)
+(*    4. Iterating that transport yields uniform eventual periodicity,   *)
+(*       which then implies full-row eventual periodicity and contradicts*)
+(*       pointwise non-repetition of the canonical row.                  *)
 (*                                                                       *)
 (*************************************************************************)
 
-Section Mixed_Periodicity.
+Section No_Mixed_Periodicity.
 
 Definition row_window (r : row) (radius : nat) : list bit :=
   map r (centered_coords radius).
@@ -2333,6 +2347,37 @@ Proof.
       R T P Hunif).
 Qed.
 
+(*************************************************************************)
+(*                                                                       *)
+(*                                THEOREM                                *)
+(*                                                                       *)
+(*    No Uniform Eventual-Periodicity Witness                            *)
+(*                                                                       *)
+(*                              PROOF ROUTE                              *)
+(*                                                                       *)
+(*    A. Start from a uniform eventual-periodicity witness at radius R.  *)
+(*                                                                       *)
+(*    B. Upgrade it to eventual periodicity of the full canonical rows.  *)
+(*                                                                       *)
+(*    C. Invoke canonical_row_no_repetition_pointwise at the same        *)
+(*       positive lag.                                                   *)
+(*                                                                       *)
+(*    D. Contradict the supposed full-row periodicity.                   *)
+(*                                                                       *)
+(*                              REALIZATION                              *)
+(*                                                                       *)
+(*    forall R T P,                                                      *)
+(*      uniformly_eventually_periodic_from R T P -> False                *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    No closed, uniform eventual-periodicity witness exists for the     *)
+(*    seeded Rule 30 orbit.  Finite repeating evidence can occur, but it *)
+(*    cannot be promoted to a genuine periodic tail across all larger    *)
+(*    radii.                                                             *)
+(*                                                                       *)
+(*************************************************************************)
+
 Theorem realizable_uniform_periodic_tail_from_impossible :
   forall R,
     ~ realizable_uniform_periodic_tail_from R.
@@ -2420,4 +2465,4 @@ Proof.
   - exact Hobs.
 Qed.
 
-End Mixed_Periodicity.
+End No_Mixed_Periodicity.

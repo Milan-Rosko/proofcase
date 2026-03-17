@@ -1,65 +1,83 @@
-(* T004_Proof.v *)
+(* `T004_Proof.v` *)
 
 From Coq Require Import List ZArith.
 Import ListNotations.
 
 From T004 Require Import
-  R00__Base
-  R01__Seed
-  R02__Local_Lemmas
-  R03__Periodicity
-  R04__Center_No_Pure_Periodicity
-  R05__Glitch_Compactness
-  R06__Mixed_Periodicity
-  R07__Classic_Semantics.
+  R01__Phase_One
+  R02__Phase_Two
+  R03__Phase_Three
+  R04__First_Corollary
+  R05__Second_Corollary.
 
 Open Scope Z_scope.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  This file serves as the proof-theoretic synopsis of T004.  It        *)
-(*  introduces no new mathematical content.  Rather, it organizes the    *)
-(*  derivational architecture of the development and re-exports its      *)
-(*  principal objects, interfaces, and endpoint theorems in a single     *)
-(*  module.                                                              *)
+(*  Proofcase / Rule 30 -- Audit Layer                                   *)
 (*                                                                       *)
-(*  T004 is organized into four tracks.                                  *)
-(*                                                                       *)
-(*    1. The Phase 1 compactness corollary:                              *)
-(*                                                                       *)
-(*         replay_compactness_principle ->                               *)
-(*           forall n, ~ purely_periodic_center_window n                 *)
-(*                                                                       *)
-(*       This uses bounded replay and Original Sin under an explicit     *)
-(*       compactness premise.                                            *)
-(*                                                                       *)
-(*    2. The reverse-side syntactic route in R05.                        *)
-(*                                                                       *)
-(*       This contains closed local theorems about seed return,          *)
-(*       support shells, bounded seed-window realizations, and the       *)
-(*       first obligation-compactification pressure.  Its principal      *)
-(*       Phase 2 endpoint is the bounded cutoff theorem:                 *)
-(*                                                                       *)
-(*         every_cutoff_still_remembers_seed.                            *)
-(*                                                                       *)
-(*       A separate hidden-support descent vocabulary remains in R05,    *)
-(*       but it is not used by the live package interface.               *)
-(*                                                                       *)
-(*    3. The initial Phase 3 bridge in R06.                              *)
-(*                                                                       *)
-(*       This packages eventual periodicity as an infinite family        *)
-(*       of repeated local predecessor problems at one fixed cutoff      *)
-(*       phase.  Its strong semantic endpoint states that no faithful    *)
-(*       uniform periodic tail exists.  The unresolved issue is the      *)
-(*       bridge from bare fixed-width observation to that stronger       *)
-(*       semantic notion.                                                *)
-(*                                                                       *)
-(*    4. The external classical corollary layer in R07.                  *)
-(*                                                                       *)
-(*       This packages what follows under a single external semantic     *)
-(*       faithfulness premise.                                           *)
+(*  This file serves as the proof-theoretic synopsis of `T004`.  It      *)
+(*  introduces no new mathematical content.  Rather, it reorganizes      *)
+(*  the development's public objects, its replay/compactness interface,  *)
+(*  its closed cutoff-memory certificate, its direct semantic endpoint,  *)
+(*  its external faithful-semantics corollary, and its finite            *)
+(*  observation-only provenance corollary in one place.                  *)
 (*                                                                       *)
 (*************************************************************************)
+
+Section Proof_Index.
+
+(*
+  Overview
+  --------
+
+  `T004` has one main constructive framework and two corollaries. The first
+  three files `R01`-`R03` are the constructive spine of the package. `R04`
+  and `R05` are corollary layers built on top of that framework rather than
+  additional proof phases inside it.
+
+
+    (i) Main Constructive Framework: Phase 1
+
+        (a) Seed orbit, the Fall / No Progenitor Theorem, and the local
+            obstruction layer.
+
+        (b) Replay / admissibility / compactness route culminating in
+            `no_pure_periodicity_of_centered_windows`.
+
+    (ii) Main Constructive Framework: Phase 2
+
+        (a) Seed return and cutoff-memory analysis culminating in
+            `original_sin_theorem`.
+
+        (b) Auxiliary finite reverse-side vocabulary for compact traps,
+            hidden support, and glitchprojection structure.
+
+    (iii) Main Constructive Framework: Phase 3
+
+        (a) Periodicity and semantic interfaces.
+
+        (b) Carrier-window and backward-transport toolkit.
+
+        (c) Phase 3 internal corollaries culminating in
+            `eventually_periodic_center_window_impossible_under_bhk_upgrade`.
+
+    (iv) 1st Corollary
+
+        (a) `R04__First_Corollary` packages the external faithful-semantics
+            bridge and yields
+            `classical_semantics_excludes_eventual_periodic_windows`.
+
+    (v) 2nd Corollary
+
+        (a) `R05__Second_Corollary` packages finite provenance ambiguity:
+            the shell-level manipulation question, the exact four-point reverse
+            predecessor family above a visible canonical observation, and
+            `no_observation_only_tamper_checker`.
+
+        (b) Audit-level complexity plausibility consequence for the nth center
+            bit under a standard local-semantic model.
+*)
 
 (*************************************************************************)
 (*                                                                       *)
@@ -67,11 +85,20 @@ Open Scope Z_scope.
 (*                                                                       *)
 (*************************************************************************)
 
-Section Proof_Index.
+(*
+  (i)
+  MAIN CONSTRUCTIVE FRAMEWORK: PHASE ONE
+*)
+
+(*
+  (a)
+  SEEDED ORBIT AND LOCAL OBSTRUCTION
+*)
 
 (*
   (1)
-  Canonical single-seed initial row.
+  Canonical single-seed initial row i.e. true at the origin and false everywhere
+  else.
 *)
 
 Definition audit_seed_row : row :=
@@ -79,7 +106,7 @@ Definition audit_seed_row : row :=
 
 (*
   (2)
-  Canonical Rule 30 trajectory generated from the seed.
+  Canonical Rule 30 trajectory generated from the seed by forward iteration.
 *)
 
 Definition audit_canonical_row : nat -> row :=
@@ -87,7 +114,8 @@ Definition audit_canonical_row : nat -> row :=
 
 (*
   (3)
-  Centered finite window cut from the canonical trajectory.
+  Centered finite window cut from the canonical trajectory at a chosen radius
+  and time.
 *)
 
 Definition audit_center_window : nat -> nat -> list bit :=
@@ -103,7 +131,8 @@ Definition audit_center_strip : nat -> bit :=
 
 (*
   (5)
-  Pure periodicity predicate for the centered window.
+  Pure periodicity predicate for the centered window, with repetition required
+  from time 0 rather than merely after a cutoff.
 *)
 
 Definition audit_purely_periodic_center_window : nat -> Prop :=
@@ -111,7 +140,9 @@ Definition audit_purely_periodic_center_window : nat -> Prop :=
 
 (*
   (6)
-  Bounded seed-window realization predicate used in Phase 2.
+  Phase 2 seed-window realization predicate, re-exported early because it is
+  formulated directly in the seed/local-step geometry fixed above and is used
+  throughout the later cutoff-memory route.
 *)
 
 Definition audit_local_seed_window_realization : nat -> row -> Prop :=
@@ -119,7 +150,8 @@ Definition audit_local_seed_window_realization : nat -> row -> Prop :=
 
 (*
   (7)
-  Progenitor relation between predecessor rows and outputs.
+  Progenitor relation between finitely supported predecessor rows and their
+  one-step outputs.
 *)
 
 Definition audit_progenitor : row -> row -> Prop :=
@@ -127,36 +159,51 @@ Definition audit_progenitor : row -> row -> Prop :=
 
 (*
   (8)
-  Original Sin.
+  The Fall / No Progenitor Theorem:
+  the centered seed row admits no finitely supported progenitor.
 *)
 
-Definition audit_original_sin :
+Definition audit_the_fall :
   ~ exists u, progenitor u seed_row :=
-  original_sin.
+  the_fall.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  No Progenitor Theorem                                                *)
+(*                                THEOREM                                *)
 (*                                                                       *)
-(*  Term                                                                 *)
+(*    The Fall / No Progenitor Theorem                                   *)
 (*                                                                       *)
-(*    ~ exists u, progenitor u seed_row                                  *)
+(*                            PROOF IN STEPS                             *)
 (*                                                                       *)
-(*  Syntactic content.                                                   *)
+(*    Step 1. Assume a finitely supported progenitor `u` of the seed,    *)
+(*            with support bound N.                                      *)
 (*                                                                       *)
-(*    There is no finitely supported row u whose one-step Rule 30 image  *)
-(*    is exactly the centered seed row.                                  *)
+(*    Step 2. Use the boundary-propagation lemmas to force               *)
+(*            `u(-1) = false` and `u(0) = false.`                        *)
 (*                                                                       *)
-(*  Semantic reading.                                                    *)
+(*    Step 3. Evaluate the step equation at `x = 0` to force             *)
+(*            `u(1) = true`.                                             *)
 (*                                                                       *)
-(*    The single seeded defect cannot be created in one forward step by  *)
-(*    a finitely supported predecessor.  The seed has no progenitor.     *)
+(*    Step 4. Evaluate again at `x = 1`, where `seed_row 1 = false`,     *)
+(*            to obtain a contradiction.                                 *)
 (*                                                                       *)
-(*  Qualification.                                                       *)
+(*                              REALIZATION                              *)
 (*                                                                       *)
-(*    This theorem is compiled and closed under the global context.      *)
-(*    It is the rigid local obstruction later used by both the           *)
-(*    compactness route and the bounded cutoff-memory route.             *)
+(*    `~ exists u, progenitor u seed_row`                                *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    There is no finitely supported row `u` whose one-step Rule 30 image*)
+(*    is exactly the centered seed row. The single seeded defect cannot  *)
+(*    be created in one forward step by a finitely supported             *)
+(*    predecessor.                                                       *)
+(*                                                                       *)
+(*                             QUALIFICATION                             *)
+(*                                                                       *)
+(*    This theorem is closed under the global context. It is the rigid   *)
+(*    local obstruction used by both the compactness route and the       *)
+(*    bounded cutoff-memory route. In Phase 1, every higher-level        *)
+(*    contradiction is organized to collapse back to this point.         *)
 (*                                                                       *)
 (*************************************************************************)
 
@@ -214,7 +261,12 @@ Definition audit_canonical_row_successor_not_seed :
   canonical_row_successor_not_seed.
 
 (*
-  (14)
+  (b)
+  REPLAY / ADMISSIBILITY / COMPACTNESS ROUTE
+*)
+
+(*
+  (1)
   Window data extracted from an arbitrary spacetime tableau.
 *)
 
@@ -222,24 +274,27 @@ Definition audit_window_data : space_time -> nat -> nat -> list bit :=
   window_data.
 
 (*
-  (15)
-  Finite replay radius attached to each horizon.
+  (2)
+  Finite replay radius attached to each horizon; this is the bounded inspection
+  width used by the compactness-facing replay problem.
 *)
 
 Definition audit_finite_replay_radius : nat -> nat -> nat :=
   finite_replay_radius.
 
 (*
-  (16)
-  Finite replay problem used by the compactness route.
+  (3)
+  Finite replay problem used by the compactness route: periodic data together
+  with bounded admissibility equations.
 *)
 
 Definition audit_finite_replay_problem : nat -> nat -> Prop :=
   finite_replay_problem.
 
 (*
-  (17)
-  The local seed-window predecessor problem is always satisfiable.
+  (4)
+  The bare local seed-window predecessor problem is always satisfiable, so
+  one-step local agreement alone cannot yield the contradiction.
 *)
 
 Definition audit_local_seed_window_predecessor_is_always_satisfiable :
@@ -248,8 +303,9 @@ Definition audit_local_seed_window_predecessor_is_always_satisfiable :
   local_seed_window_predecessor_is_always_satisfiable.
 
 (*
-  (18)
-  Pure periodicity yields finite replay at every horizon.
+  (5)
+  Pure periodicity yields finite replay at every horizon, providing the bridge
+  from observation to the compactness-facing finite object.
 *)
 
 Definition audit_purely_periodic_implies_finite_replay_problem :
@@ -259,31 +315,34 @@ Definition audit_purely_periodic_implies_finite_replay_problem :
   purely_periodic_implies_finite_replay_problem.
 
 (*
-  (19)
-  Upward admissibility as the infinite replay object.
+  (6)
+  Upward admissibility as the infinite replay object extracted from all bounded
+  replay data under compactness.
 *)
 
 Definition audit_upward_admissible : nat -> Prop :=
   upward_admissible.
 
 (*
-  (20)
-  Compactness premise turning all finite replay data into admissibility.
+  (7)
+  Compactness premise turning all finite replay data into admissibility. This is
+  the sole explicit Phase 1 openness on the proof spine.
 *)
 
 Definition audit_replay_compactness_principle : Prop :=
   replay_compactness_principle.
 
 (*
-  (21)
-  Candidate rows sitting above the seed in an admissible replay.
+  (8)
+  Candidate rows sitting above the seed in an admissible replay. These are the
+  objects that eventually become progenitors.
 *)
 
 Definition audit_candidate_above_seed : row -> Prop :=
   candidate_above_seed.
 
 (*
-  (22)
+  (9)
   Admissibility produces such a candidate row.
 *)
 
@@ -294,7 +353,7 @@ Definition audit_upward_admissibility_implies_candidate_row :
   upward_admissibility_implies_candidate_row.
 
 (*
-  (23)
+  (10)
   Every candidate row steps exactly to the seed.
 *)
 
@@ -306,7 +365,7 @@ Definition audit_candidate_row_respects_step :
   candidate_row_respects_step.
 
 (*
-  (24)
+  (11)
   Every admissible candidate row has finite support.
 *)
 
@@ -317,7 +376,7 @@ Definition audit_candidate_row_has_finite_support :
   candidate_row_has_finite_support.
 
 (*
-  (25)
+  (12)
   Every admissible candidate row is a progenitor of the seed.
 *)
 
@@ -328,7 +387,7 @@ Definition audit_candidate_row_is_progenitor :
   candidate_row_is_progenitor.
 
 (*
-  (26)
+  (13)
   Admissibility forces the seed to have a progenitor.
 *)
 
@@ -339,7 +398,7 @@ Definition audit_upward_admissibility_implies_seed_has_progenitor :
   upward_admissibility_implies_seed_has_progenitor.
 
 (*
-  (27)
+  (14)
   Contradiction packaged with periodic observation and upward admissibility.
 *)
 
@@ -351,19 +410,19 @@ Definition audit_observable_periodicity_plus_upward_admissibility_contradict :
   observable_periodicity_plus_upward_admissibility_contradict.
 
 (*
-  (28)
-  Under the compactness premise, Original Sin and classical nonadmissibility
+  (15)
+  Under the compactness premise, the Fall and classical nonadmissibility
   yield a finite replay obstruction.
 *)
 
-Definition audit_original_sin_implies_finite_replay_obstruction :
+Definition audit_the_fall_implies_finite_replay_obstruction :
   audit_replay_compactness_principle ->
   forall n,
     exists horizon, ~ audit_finite_replay_problem n horizon :=
-  original_sin_implies_finite_replay_obstruction.
+  the_fall_implies_finite_replay_obstruction.
 
 (*
-  (29)
+  (16)
   Phase 1 compactness corollary: no centered window is purely periodic.
 *)
 
@@ -374,7 +433,7 @@ Definition audit_no_pure_periodicity_of_centered_windows :
   no_pure_periodicity_of_centered_windows.
 
 (*
-  (30)
+  (17)
   Width-zero instance of the same compactness corollary.
 *)
 
@@ -384,7 +443,7 @@ Definition audit_center_strip_not_purely_periodic :
   center_strip_not_purely_periodic.
 
 (*
-  (31)
+  (18)
   Canonical audit alias for the Phase 1 compactness corollary.
 *)
 
@@ -396,31 +455,44 @@ Definition audit_phase1_endpoint :
 
 (*************************************************************************)
 (*                                                                       *)
-(*  No Pure Periodicity Theorem                                          *)
+(*                                THEOREM                                *)
 (*                                                                       *)
-(*  Term                                                                 *)
+(*    Absurdity of Pure Periodicity                                      *)
 (*                                                                       *)
-(*    replay_compactness_principle ->                                    *)
-(*      forall n, ~ purely_periodic_center_window n                      *)
+(*                            PROOF IN STEPS                             *)
 (*                                                                       *)
-(*  Syntactic content.                                                   *)
+(*    Step 1. Convert pure periodicity of the radius-n centered window   *)
+(*            into a bounded replay problem at every finite horizon.     *)
 (*                                                                       *)
-(*    Under the compactness premise, every finite observation radius n   *)
-(*    has the property that the centered width-(2n+1) window of the      *)
-(*    seeded Rule 30 evolution fails to be purely periodic from time 0.  *)
+(*    Step 2. Apply `replay_compactness_principle` to obtain upward      *)
+(*            admissibility above the seed.                              *)
 (*                                                                       *)
-(*  Semantic reading.                                                    *)
+(*    Step 3. Turn upward admissibility into a candidate row, hence      *)
+(*            into a finitely supported `progenitor` of the seed.        *)
 (*                                                                       *)
-(*    If every finitely satisfiable replay problem extended to a full     *)
-(*    admissible replay, then any putative pure centered periodicity     *)
-(*    would force the seed into the forbidden interior configuration.    *)
-(*    Hence pure centered periodicity is excluded under that premise.    *)
+(*    Step 4. Contradict the Fall / No Progenitor Theorem.               *)
 (*                                                                       *)
-(*  Qualification.                                                       *)
+(*                              REALIZATION                              *)
+(*                                                                       *)
+(*    `replay_compactness_principle ->`                                  *)
+(*    `  forall n, ~ purely_periodic_center_window n`                    *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    Under the compactness premise, every finite radius n has the       *)
+(*    property that the centered width-(2n+1) window of the seeded       *)
+(*    Rule 30 evolution fails to be purely periodic from time 0.  Any    *)
+(*    such periodicity hypothesis would generate bounded replay data at  *)
+(*    every horizon; compactness would then produce an admissible row    *)
+(*    above the seed, i.e. a forbidden `progenitor`.                     *)
+(*                                                                       *)
+(*                             QUALIFICATION                             *)
 (*                                                                       *)
 (*    This is an explicit compactness-conditional corollary assembled    *)
-(*    in R04 from bounded replay, the compactness premise, and          *)
-(*    Original Sin.                                                      *)
+(*    inside the Phase 1 package from bounded replay, the compactness    *)
+(*    premise, and the Fall. It is therefore a genuine Phase 1           *)
+(*    endpoint, but                                                      *)
+(*    not yet the strongest semantic endpoint of the overall package.    *)
 (*                                                                       *)
 (*************************************************************************)
 
@@ -431,40 +503,52 @@ Definition audit_phase1_endpoint :
 (*************************************************************************)
 
 (*
-  (32)
-  We define truncation to a bounded radius.
+  (ii)
+  MAIN CONSTRUCTIVE FRAMEWORK: PHASE TWO
+*)
+
+(*
+  (a)
+  SEED RETURN AND CUTOFF MEMORY
+*)
+
+(*
+  (1)
+  Truncation of a row to the radius-N window.  This is the basic finite
+  carrier used throughout the Phase 2 reverse-side analysis.
 *)
 
 Definition audit_truncate : nat -> row -> row :=
   truncate.
 
 (*
-  (33)
-  We define the canonical bounded-time seeded prefix predicate.
+  (2)
+  Finite-height prefix predicate asserting that a spacetime tableau agrees
+  with the canonical seeded run up to level h.
 *)
 
 Definition audit_seeded_prefix : nat -> space_time -> Prop :=
   seeded_prefix.
 
 (*
-  (34)
-  We define the canonical trajectory shifted in time.
+  (3)
+  Time-shifted canonical spacetime, used to express seed return after a lag.
 *)
 
 Definition audit_shifted_canonical_trajectory : nat -> space_time :=
   shifted_canonical_trajectory.
 
 (*
-  (35)
-  We define repetition of a seeded prefix after a lag.
+  (4)
+  Predicate saying that the canonical seeded prefix reappears after lag P.
 *)
 
 Definition audit_seeded_prefix_repeats_after : nat -> nat -> Prop :=
   seeded_prefix_repeats_after.
 
 (*
-  (36)
-  We record that repeated seeded prefixes force literal seed return.
+  (5)
+  Any such prefix repetition forces literal return to the seed at time P.
 *)
 
 Definition audit_seeded_prefix_repeats_after_implies_seed_return :
@@ -474,8 +558,8 @@ Definition audit_seeded_prefix_repeats_after_implies_seed_return :
   seeded_prefix_repeats_after_implies_seed_return.
 
 (*
-  (37)
-  We record that positive-period seeded-prefix repetition is impossible.
+  (6)
+  Positive-lag seeded-prefix repetition is therefore impossible.
 *)
 
 Definition audit_seeded_prefix_repeats_after_positive_period_impossible :
@@ -485,8 +569,9 @@ Definition audit_seeded_prefix_repeats_after_positive_period_impossible :
   seeded_prefix_repeats_after_positive_period_impossible.
 
 (*
-  (38)
-  We record that a seed window cannot be realized inside too small a support.
+  (7)
+  A radius-(S N) seed window cannot be realized inside support [-N, N];
+  some outer-shell activity is forced.
 *)
 
 Definition audit_local_seed_window_realization_with_small_support_impossible :
@@ -499,8 +584,8 @@ Definition audit_local_seed_window_realization_with_small_support_impossible :
   local_seed_window_realization_with_small_support_impossible.
 
 (*
-  (39)
-  We record the support-bound version of the same cutoff impossibility.
+  (8)
+  Support-bound reformulation of the same cutoff impossibility.
 *)
 
 Definition audit_local_seed_window_realization_with_support_bound_impossible :
@@ -514,40 +599,44 @@ Definition audit_local_seed_window_realization_with_support_bound_impossible :
   local_seed_window_realization_with_support_bound_impossible.
 
 (*
-  (40)
-  We define the four distinguished sites of the outer shell.
+  Outer-shell and shell-obligation interface.
+*)
+
+(*
+  (9)
+  Outer-shell sites.
 *)
 
 Definition audit_outer_shell_site : Type :=
   outer_shell_site.
 
 (*
-  (41)
-  We define the coordinate of each outer-shell site.
+  (10)
+  Outer-shell coordinates.
 *)
 
 Definition audit_outer_shell_coord : nat -> audit_outer_shell_site -> Z :=
   outer_shell_coord.
 
 (*
-  (42)
-  We define nonemptiness of the outer shell.
+  (11)
+  Outer-shell nonemptiness.
 *)
 
 Definition audit_outer_shell_nonempty : nat -> row -> Prop :=
   outer_shell_nonempty.
 
 (*
-  (43)
-  We define the four-bit outer-shell signature.
+  (12)
+  Outer-shell signature.
 *)
 
 Definition audit_outer_shell_signature : nat -> row -> list bit :=
   outer_shell_signature.
 
 (*
-  (44)
-  We record that every seed-window realization emits outer-shell support.
+  (13)
+  Seed-window realization emits outer-shell support.
 *)
 
 Definition audit_local_seed_window_realization_requires_outer_shell :
@@ -559,8 +648,8 @@ Definition audit_local_seed_window_realization_requires_outer_shell :
   local_seed_window_realization_requires_outer_shell.
 
 (*
-  (45)
-  We record the nonempty-shell reformulation of that emission fact.
+  (14)
+  Nonempty-shell reformulation of the emission fact.
 *)
 
 Definition audit_local_seed_window_realization_requires_outer_shell_nonempty :
@@ -570,8 +659,8 @@ Definition audit_local_seed_window_realization_requires_outer_shell_nonempty :
   local_seed_window_realization_requires_outer_shell_nonempty.
 
 (*
-  (46)
-  We record that the emitted shell signature is never the all-zero signature.
+  (15)
+  The emitted shell signature is never all zero.
 *)
 
 Definition audit_local_seed_window_realization_requires_nonzero_shell_signature :
@@ -581,16 +670,22 @@ Definition audit_local_seed_window_realization_requires_nonzero_shell_signature 
   local_seed_window_realization_requires_nonzero_shell_signature.
 
 (*
-  (47)
-  We define the finite shell-obligation type.
+  (16)
+  Finite obligation type carried by the outer shell.
+
+  The three cases isolate whether the forced support sits on the left,
+  on the right, or on both sides simultaneously.
 *)
 
 Definition audit_shell_obligation : Type :=
   shell_obligation.
 
 (*
-  (48)
-  We define realization of the left shell obligation.
+  (17)
+  Realization predicate for the left shell obligation.
+
+  This says that the bounded realization already exhibits a hot witness
+  at one of the two distinguished left shell sites.
 *)
 
 Definition audit_realizes_left_shell_obligation :
@@ -598,8 +693,11 @@ Definition audit_realizes_left_shell_obligation :
   realizes_left_shell_obligation.
 
 (*
-  (49)
-  We define realization of the right shell obligation.
+  (18)
+  Realization predicate for the right shell obligation.
+
+  This is the right-hand analogue of the preceding left-shell theorem: one of the two designated
+  right shell sites is already forced to be hot.
 *)
 
 Definition audit_realizes_right_shell_obligation :
@@ -607,8 +705,11 @@ Definition audit_realizes_right_shell_obligation :
   realizes_right_shell_obligation.
 
 (*
-  (50)
-  We define realization of a shell obligation in general.
+  (19)
+  Uniform realization predicate for any shell obligation.
+
+  It dispatches by obligation type and packages the bilateral case as
+  simultaneous realization of both the left and right obligations.
 *)
 
 Definition audit_realizes_shell_obligation :
@@ -616,40 +717,55 @@ Definition audit_realizes_shell_obligation :
   realizes_shell_obligation.
 
 (*
-  (51)
-  We define the far-left hotness predicate.
+  (20)
+  Far-left persistence marker.
+
+  This is the strongest left-facing shell witness: the outermost left
+  shell coordinate itself is forced to be hot.
 *)
 
 Definition audit_far_left_hot : nat -> row -> Prop :=
   far_left_hot.
 
 (*
-  (52)
-  We define the inner-right hotness predicate.
+  (21)
+  Inner-right compactification marker.
+
+  Instead of living on the outer shell, this witness says the truncated
+  row is already hot at the inner right boundary coordinate `+N`.
 *)
 
 Definition audit_inner_right_hot : nat -> row -> Prop :=
   inner_right_hot.
 
 (*
-  (53)
-  We define the right edge zero equation.
+  (22)
+  Right boundary zero-output equation.
+
+  This is the local Rule 30 equation saying that the truncated row must
+  produce `0` at the right boundary site of the seeded window.
 *)
 
 Definition audit_right_edge_zero_equation : nat -> row -> Prop :=
   right_edge_zero_equation.
 
 (*
-  (54)
-  We define the left edge zero equation.
+  (23)
+  Left boundary zero-output equation.
+
+  This is the symmetric left-hand version of the preceding right-boundary equation, again enforced by
+  the requirement that the seeded successor vanish there.
 *)
 
 Definition audit_left_edge_zero_equation : nat -> row -> Prop :=
   left_edge_zero_equation.
 
 (*
-  (55)
-  We record that seed-window realization forces the right edge equation.
+  (24)
+  Seed-window realization forces the right boundary equation.
+
+  Because the bounded successor must match `seed_row` on that boundary,
+  the right edge output is compelled to be zero.
 *)
 
 Definition audit_right_edge_zero_equation_from_seed_window :
@@ -659,8 +775,11 @@ Definition audit_right_edge_zero_equation_from_seed_window :
   right_edge_zero_equation_from_seed_window.
 
 (*
-  (56)
-  We record that seed-window realization forces the left edge equation.
+  (25)
+  Seed-window realization forces the left boundary equation.
+
+  This is the left-hand companion of the preceding right-boundary theorem: legal realization of the seed
+  window automatically imposes the zero-output equation there as well.
 *)
 
 Definition audit_left_edge_zero_equation_from_seed_window :
@@ -670,9 +789,13 @@ Definition audit_left_edge_zero_equation_from_seed_window :
   left_edge_zero_equation_from_seed_window.
 
 (*
-  (57)
-  We unfold the right edge equation into its explicit inclusive-OR
-  obligation.
+  (26)
+  Audit-facing OR form of the right edge equation.
+  The imported source theorem still uses `_xor_obligation` in its name.
+
+  Semantically, the vanishing right boundary output rewrites as an
+  inclusive-OR constraint relating the inner right bit to the two right
+  shell bits.
 *)
 
 Definition audit_right_edge_zero_equation_unfolds_to_or_obligation :
@@ -684,9 +807,13 @@ Definition audit_right_edge_zero_equation_unfolds_to_or_obligation :
   right_edge_zero_equation_unfolds_to_xor_obligation.
 
 (*
-  (58)
-  We unfold the left edge equation into its explicit inclusive-OR
-  obligation.
+  (27)
+  Audit-facing OR form of the left edge equation.
+  The imported source theorem still uses `_xor_obligation` in its name.
+
+  Here the left boundary zero equation rewrites as an inclusive-OR
+  relation that determines the far-left shell bit from the nearer left
+  shell bit and the inner truncated coordinate `-N`.
 *)
 
 Definition audit_left_edge_zero_equation_unfolds_to_or_obligation :
@@ -698,8 +825,11 @@ Definition audit_left_edge_zero_equation_unfolds_to_or_obligation :
   left_edge_zero_equation_unfolds_to_xor_obligation.
 
 (*
-  (59)
-  We record that every seed-window realization emits a left or right shell obligation.
+  (28)
+  Every legal seed-window realization emits a shell obligation.
+
+  The point is that nontrivial support cannot disappear completely:
+  some forced witness must appear on either the left or right shell.
 *)
 
 Definition audit_local_seed_window_realization_emits_shell_obligation :
@@ -710,9 +840,11 @@ Definition audit_local_seed_window_realization_emits_shell_obligation :
   local_seed_window_realization_emits_shell_obligation.
 
 (*
-  (60)
-  We record that the left shell obligation, under the left edge equation,
-  forces far-left pressure.
+  (29)
+  Left shell obligation plus the left edge equation yields far-left pressure.
+
+  Any left-side witness is enough: once the boundary equation is unfolded,
+  the near-left case collapses to the stronger far-left hotness predicate.
 *)
 
 Definition audit_left_shell_obligation_forces_far_left_hot :
@@ -723,8 +855,11 @@ Definition audit_left_shell_obligation_forces_far_left_hot :
   left_shell_obligation_forces_far_left_hot.
 
 (*
-  (61)
-  We record that the right shell obligation forces inner-right pressure.
+  (30)
+  Right shell obligation yields inward pressure on the right.
+
+  Using the right edge equation, any right-shell witness is transported
+  from the shell into the inner-right hotness predicate.
 *)
 
 Definition audit_right_shell_obligation_forces_inner_right_hot :
@@ -735,8 +870,11 @@ Definition audit_right_shell_obligation_forces_inner_right_hot :
   right_shell_obligation_forces_inner_right_hot.
 
 (*
-  (62)
-  We record the first shell dichotomy: far-left persistence or inner-right pressure.
+  (31)
+  First shell dichotomy for a legal bounded realization.
+
+  A seeded realization of width `S N` cannot stay neutral: it already
+  forces either left persistence or a right-side inward witness.
 *)
 
 Definition audit_local_seed_window_realization_forces_far_left_or_inner_right :
@@ -746,8 +884,11 @@ Definition audit_local_seed_window_realization_forces_far_left_or_inner_right :
   local_seed_window_realization_forces_far_left_or_inner_right.
 
 (*
-  (63)
-  We record that inner-right pressure compactifies to a smaller right obligation.
+  (32)
+  Inner-right pressure compactifies to a smaller right obligation.
+
+  A hot inner-right boundary bit at radius `S N` becomes a genuine
+  right-shell obligation one radius lower, at radius `N`.
 *)
 
 Definition audit_inner_right_hot_compactifies_to_smaller_right_obligation :
@@ -757,8 +898,11 @@ Definition audit_inner_right_hot_compactifies_to_smaller_right_obligation :
   inner_right_hot_compactifies_to_smaller_right_obligation.
 
 (*
-  (64)
-  We record the first compactification dichotomy at the next radius.
+  (33)
+  First recursive compactification dichotomy.
+
+  At radius `S (S N)`, a legal realization either preserves left pressure
+  at the wider shell or pushes the right-side obligation one step inward.
 *)
 
 Definition audit_local_seed_window_realization_forces_left_persistence_or_right_compactification :
@@ -768,8 +912,11 @@ Definition audit_local_seed_window_realization_forces_left_persistence_or_right_
   local_seed_window_realization_forces_left_persistence_or_right_compactification.
 
 (*
-  (65)
-  We record one-step compactification of a right shell obligation.
+  (34)
+  One-step inward transport of a right shell obligation.
+
+  Under the seed-window equations at radius `S (S N)`, a right
+  obligation on the wider shell descends to radius `N`.
 *)
 
 Definition audit_right_shell_obligation_compactifies_one_step :
@@ -780,8 +927,11 @@ Definition audit_right_shell_obligation_compactifies_one_step :
   right_shell_obligation_compactifies_one_step.
 
 (*
-  (66)
-  We record many-step compactification of a right shell obligation.
+  (35)
+  Many-step inward transport of a right shell obligation.
+
+  This iterates the preceding one-step compactification theorem: a right-side witness at radius `k + m` can be
+  compactified all the way down to the smaller radius `k`.
 *)
 
 Definition audit_right_shell_obligation_compactifies_to_smaller_radius :
@@ -792,8 +942,11 @@ Definition audit_right_shell_obligation_compactifies_to_smaller_radius :
   right_shell_obligation_compactifies_to_smaller_radius.
 
 (*
-  (67)
-  We record the core compactification dichotomy.
+  (36)
+  Core-reaching compactification dichotomy.
+
+  Starting from any radius `S (S N)`, the process ends in one of two ways:
+  left persistence survives, or the right obligation reaches core radius `0`.
 *)
 
 Definition audit_local_seed_window_realization_either_left_persists_or_right_compactifies_to_core :
@@ -803,8 +956,11 @@ Definition audit_local_seed_window_realization_either_left_persists_or_right_com
   local_seed_window_realization_either_left_persists_or_right_compactifies_to_core.
 
 (*
-  (68)
-  We record the core compactification theorem under failure of left persistence.
+  (37)
+  Core compactification under failure of left persistence.
+
+  If the left branch of the preceding dichotomy is ruled out, the theorem extracts the
+  right-core obligation as the only remaining possibility.
 *)
 
 Definition audit_local_seed_window_realization_without_left_persistence_compactifies_right_to_core :
@@ -815,9 +971,11 @@ Definition audit_local_seed_window_realization_without_left_persistence_compacti
   local_seed_window_realization_without_left_persistence_compactifies_right_to_core.
 
 (*
-  (69)
-  We record that a core right obligation, under radius-two seed-window
-  realization, forces left pressure at radius one.
+  (38)
+  Radius-two base case converting right-core pressure into left pressure.
+
+  This is the decisive local bridge: once a right obligation reaches the
+  core, the radius-two equations force far-left hotness at radius one.
 *)
 
 Definition audit_right_shell_obligation_at_core_forces_far_left_hot_one :
@@ -828,8 +986,11 @@ Definition audit_right_shell_obligation_at_core_forces_far_left_hot_one :
   right_shell_obligation_at_core_forces_far_left_hot_one.
 
 (*
-  (70)
-  We record the radius-two corollary of that core pressure theorem.
+  (39)
+  Radius-two corollary of the core bridge.
+
+  Every legal radius-two realization already carries left pressure at
+  radius one, whether it arrives there directly or through the core route.
 *)
 
 Definition audit_local_seed_window_realization_radius_two_forces_far_left_hot_one :
@@ -839,8 +1000,11 @@ Definition audit_local_seed_window_realization_radius_two_forces_far_left_hot_on
   local_seed_window_realization_radius_two_forces_far_left_hot_one.
 
 (*
-  (71)
-  We define bounded avoidance of left pressure up to level N.
+  (40)
+  Hypothetical bounded right-avoidance pattern.
+
+  This packages the forbidden scenario where a legal realization persists
+  through all levels `0..N` while avoiding left pressure everywhere.
 *)
 
 Definition audit_bounded_right_avoidance_chain :
@@ -848,8 +1012,11 @@ Definition audit_bounded_right_avoidance_chain :
   bounded_right_avoidance_chain.
 
 (*
-  (72)
-  We record that bounded right avoidance is impossible.
+  (41)
+  Impossibility of bounded right avoidance.
+
+  Combining the recursive compactification with the radius-two base case
+  shows that the preceding avoidance-chain scenario cannot occur.
 *)
 
 Definition audit_bounded_right_avoidance_chain_impossible :
@@ -859,8 +1026,11 @@ Definition audit_bounded_right_avoidance_chain_impossible :
   bounded_right_avoidance_chain_impossible.
 
 (*
-  (73)
-  We record a constructive extraction of a left-persistence level.
+  (42)
+  Constructive extraction of a left-persistence level.
+
+  Instead of a bare negation, this theorem returns an explicit shell
+  level `k <= N` where left pressure is forced.
 *)
 
 Definition audit_local_seed_window_realization_forces_left_persistence_level :
@@ -870,8 +1040,11 @@ Definition audit_local_seed_window_realization_forces_left_persistence_level :
   local_seed_window_realization_forces_left_persistence_level.
 
 (*
-  (74)
-  We record the existential version of that left-persistence extraction.
+  (43)
+  Existential version of the constructive extraction.
+
+  This forgets the sigma-type witness of the preceding theorem and packages the result as
+  an ordinary existence statement.
 *)
 
 Definition audit_local_seed_window_realization_forces_left_persistence_somewhere :
@@ -882,8 +1055,11 @@ Definition audit_local_seed_window_realization_forces_left_persistence_somewhere
   local_seed_window_realization_forces_left_persistence_somewhere.
 
 (*
-  (75)
-  We define the bounded left-obligation site type.
+  (44)
+  Finite index type for left-obligation sites.
+
+  An inhabitant is exactly a shell level `k` together with the proof
+  that `k` lies in the bounded range `0..N`.
 *)
 
 Definition audit_bounded_left_obligation_site :
@@ -891,8 +1067,11 @@ Definition audit_bounded_left_obligation_site :
   bounded_left_obligation_site.
 
 (*
-  (76)
-  We define the coordinate attached to a bounded left-obligation site.
+  (45)
+  Concrete coordinate attached to a bounded left-obligation site.
+
+  This turns the abstract shell index from the previous bounded-obligation definition into the negative spatial
+  coordinate where the corresponding hot witness will later be extracted.
 *)
 
 Definition audit_bounded_left_obligation_coord :
@@ -901,7 +1080,7 @@ Definition audit_bounded_left_obligation_coord :
   @bounded_left_obligation_coord.
 
 (*
-  (77)
+  (46)
   We define the bounded obligation replay object.
 *)
 
@@ -910,7 +1089,7 @@ Definition audit_bounded_obligation_replay :
   bounded_obligation_replay.
 
 (*
-  (78)
+  (47)
   We record that every large enough seed-window realization builds a bounded obligation replay.
 *)
 
@@ -921,7 +1100,7 @@ Definition audit_local_seed_window_realization_builds_bounded_obligation_replay 
   local_seed_window_realization_builds_bounded_obligation_replay.
 
 (*
-  (79)
+  (48)
   We record that a bounded obligation replay forces a hot left coordinate.
 *)
 
@@ -934,7 +1113,7 @@ Definition audit_bounded_obligation_replay_forces_left_hot_coordinate :
   bounded_obligation_replay_forces_left_hot_coordinate.
 
 (*
-  (80)
+  (49)
   We record the seed-window corollary of that forced left coordinate.
 *)
 
@@ -947,7 +1126,7 @@ Definition audit_local_seed_window_realization_forces_left_hot_coordinate :
   local_seed_window_realization_forces_left_hot_coordinate.
 
 (*
-  (81)
+  (50)
   We define the bounded left-obligation chain.
 *)
 
@@ -956,7 +1135,7 @@ Definition audit_bounded_left_obligation_chain :
   bounded_left_obligation_chain.
 
 (*
-  (82)
+  (51)
   We record that every seed-window realization builds such a chain.
 *)
 
@@ -967,7 +1146,7 @@ Definition audit_local_seed_window_realization_builds_bounded_left_obligation_ch
   local_seed_window_realization_builds_bounded_left_obligation_chain.
 
 (*
-  (83)
+  (52)
   We record that each level of the chain forces a hot coordinate.
 *)
 
@@ -980,7 +1159,7 @@ Definition audit_bounded_left_obligation_chain_forces_coordinate_at_level :
   bounded_left_obligation_chain_forces_coordinate_at_level.
 
 (*
-  (84)
+  (53)
   We record the seed-window version of the levelwise left-coordinate forcing.
 *)
 
@@ -994,7 +1173,7 @@ Definition audit_local_seed_window_realization_forces_left_hot_coordinate_at_eac
   local_seed_window_realization_forces_left_hot_coordinate_at_each_level.
 
 (*
-  (85)
+  (54)
   We define the bounded left-coordinate family.
 *)
 
@@ -1003,7 +1182,7 @@ Definition audit_bounded_left_coordinate_family :
   bounded_left_coordinate_family.
 
 (*
-  (86)
+  (55)
   We record that every seed-window realization builds a bounded left-coordinate family.
 *)
 
@@ -1014,7 +1193,7 @@ Definition audit_local_seed_window_realization_builds_bounded_left_coordinate_fa
   local_seed_window_realization_builds_bounded_left_coordinate_family.
 
 (*
-  (87)
+  (56)
   We define the left cold slab predicate.
 *)
 
@@ -1023,7 +1202,7 @@ Definition audit_left_cold_slab :
   left_cold_slab.
 
 (*
-  (88)
+  (57)
   We record that a bounded left-coordinate family forbids a cold left slab.
 *)
 
@@ -1034,7 +1213,7 @@ Definition audit_bounded_left_coordinate_family_implies_left_slab_nonzero :
   bounded_left_coordinate_family_implies_left_slab_nonzero.
 
 (*
-  (89)
+  (58)
   We record the direct seed-window impossibility of a cold left slab.
 *)
 
@@ -1045,7 +1224,7 @@ Definition audit_local_seed_window_realization_left_cold_slab_impossible :
   local_seed_window_realization_left_cold_slab_impossible.
 
 (*
-  (90)
+  (59)
   We define the packaged Phase 2 memory certificate.
 *)
 
@@ -1054,58 +1233,88 @@ Definition audit_phase2_memory_certificate :
   phase2_memory_certificate.
 
 (*
-  (91)
-  We record the Phase 2 endpoint: every cutoff still remembers the seed.
+  (60)
+  We record the Phase 2 endpoint: the Original Sin Theorem.
 *)
 
 Definition audit_phase2_endpoint :
   forall N u,
     audit_local_seed_window_realization (S (S N)) u ->
     audit_phase2_memory_certificate N u :=
-  every_cutoff_still_remembers_seed.
+  original_sin_theorem.
+
+(*
+  (60a)
+  Canonical audit alias for the Phase 2 endpoint.
+*)
+
+Definition audit_original_sin_theorem :
+  forall N u,
+    audit_local_seed_window_realization (S (S N)) u ->
+    audit_phase2_memory_certificate N u :=
+  original_sin_theorem.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Phase 2 Memory Theorem                                               *)
+(*                                THEOREM                                *)
 (*                                                                       *)
-(*  Term.                                                                *)
+(*    Original Sin Theorem                                               *)
+(*                                                                       *)
+(*                            PROOF IN STEPS                             *)
+(*                                                                       *)
+(*    Step 1. Start with a bounded realization of the seed window at     *)
+(*            radius S (S N).                                            *)
+(*                                                                       *)
+(*    Step 2. Use the Phase 2 shell and obligation transport lemmas to   *)
+(*            build a bounded left-coordinate family.                    *)
+(*                                                                       *)
+(*    Step 3. Deduce that the left slab [-N-3, -3] cannot be             *)
+(*            identically cold.                                          *)
+(*                                                                       *)
+(*    Step 4. Package the coordinate family and the non-coldness         *)
+(*            statement as `phase2_memory_certificate N u`.              *)
+(*                                                                       *)
+(*                              REALIZATION                              *)
 (*                                                                       *)
 (*    forall N u,                                                        *)
-(*      local_seed_window_realization (S (S N)) u ->                     *)
-(*      phase2_memory_certificate N u                                    *)
+(*      `local_seed_window_realization (S (S N)) u ->`                   *)
+(*      `phase2_memory_certificate N u`                                  *)
 (*                                                                       *)
-(*  Semantic reading.                                                    *)
+(*                                READING                                *)
 (*                                                                       *)
-(*    Every bounded cutoff still remembers the seed.  A local replay     *)
-(*    of the centered seed cannot become semantically neutral: Rule 30   *)
-(*    forces a bounded asymmetry certificate on the left slab.           *)
+(*    Every bounded replay of the centered seed window already carries   *)
+(*    a concrete left-memory certificate: a bounded family of forced     *)
+(*    left coordinates, and therefore a proof that the left slab         *)
+(*    [-N-3, -3] is not entirely false.                                  *)
 (*                                                                       *)
-(*  Qualification.                                                       *)
+(*                             QUALIFICATION                             *)
 (*                                                                       *)
-(*    This endpoint is established fact inside T004.  The dependency     *)
-(*    chain of every_cutoff_still_remembers_seed is closed under the     *)
-(*    global context: no axioms and no admitted steps remain in this     *)
-(*    Phase 2 package.                                                   *)
+(*    This is a closed Phase 2 endpoint inside `T004`. The dependency    *)
+(*    chain of `original_sin_theorem` is closed under the global context:*)
+(*    no axioms and no admitted steps remain in this package.            *)
 (*                                                                       *)
 (*************************************************************************)
 
-(*************************************************************************)
-(*                                                                       *)
-(*                            PHASE THREE                                *)
-(*                                                                       *)
-(*************************************************************************)
+(*
+  (b)
+  AUXILIARY VOCABULARY
+*)
 
 
 (*
-  (92)
-  We define the finite glitchprojection object.
+  (1)
+  The objects below still belong to the finite Phase 2 package. They expose
+  the compact-trap and hidden-support language used to organize
+  reverse-side pressure, but they remain auxiliary to the closed Phase 2
+  cutoff-memory endpoint above. We define the finite glitchprojection
+  object first.
 *)
 
 Definition audit_glitchprojection (n k : nat) : Type :=
   glitchprojection n k.
 
 (*
-  (93)
+  (2)
   We define restriction of a glitchprojection to smaller width.
 *)
 
@@ -1117,7 +1326,7 @@ Definition audit_glitchprojection_restrict_width :
   glitchprojection_restrict_width.
 
 (*
-  (94)
+  (3)
   We define the profile predicate of a glitchprojection.
 *)
 
@@ -1126,7 +1335,7 @@ Definition audit_glitchprojection_profile
   glitchprojection_profile G.
 
 (*
-  (95)
+  (4)
   We record classification of every glitchprojection profile.
 *)
 
@@ -1136,9 +1345,9 @@ Definition audit_glitchprojection_profile_classification :
   glitchprojection_profile_classification.
 
 (*
-  (96)
-  We record that left/right extra-side conditions force bilaterality at
-  smaller width.
+  (5)
+  We record that left/right extra-side conditions force bilaterality at smaller
+  width.
 *)
 
 Definition audit_glitchprojection_opposite_sides_force_bilateral_on_smaller_width :
@@ -1151,18 +1360,18 @@ Definition audit_glitchprojection_opposite_sides_force_bilateral_on_smaller_widt
   glitchprojection_opposite_sides_force_bilateral_on_smaller_width.
 
 (*
-  (97)
-  We record impossibility of the compact Original Sin trap.
+  (6)
+  We record impossibility of the compact Fall trap.
 *)
 
-Definition audit_compact_original_sin_trap_impossible :
+Definition audit_compact_fall_trap_impossible :
   forall r c,
-    compact_original_sin_trap r c ->
+    compact_fall_trap r c ->
     False :=
-  compact_original_sin_trap_impossible.
+  compact_fall_trap_impossible.
 
 (*
-  (98)
+  (7)
   Bounded periodic replay fragment used by the auxiliary compact-trap
   vocabulary.
 *)
@@ -1172,7 +1381,7 @@ Definition audit_bounded_periodic_replay_fragment
   bounded_periodic_replay_fragment n P H.
 
 (*
-  (99)
+  (8)
   We define the seed-forcing glitch predicate on a bounded replay fragment.
 *)
 
@@ -1182,7 +1391,7 @@ Definition audit_seed_forcing_glitch
   seed_forcing_glitch n P H F.
 
 (*
-  (100)
+  (9)
   We define the compact center trap on a bounded replay fragment.
 *)
 
@@ -1191,12 +1400,55 @@ Definition audit_compact_center_trap_on_fragment
     (g : glitch_site) : Prop :=
   compact_center_trap_on_fragment n P H F g.
 
-(*  The hidden-support descent route is omitted from the live package    *)
-(*  surface.  The remaining Phase 3 development begins with eventual     *)
-(*  periodicity and its semantic reformulations.                         *)
+(*
+  (10)
+  We define hidden support away from the compact center trap.
+*)
+
+Definition audit_hidden_support_at :
+  row -> Z -> Z -> Prop :=
+  hidden_support_at.
 
 (*
-  (104)
+  (11)
+  We define causally relevant hidden support on a bounded replay fragment.
+*)
+
+Definition audit_causally_relevant_hidden_support
+    (n P H : nat) (F : audit_bounded_periodic_replay_fragment n P H)
+    (g : glitch_site) (x : Z) : Prop :=
+  causally_relevant_hidden_support n P H F g x.
+
+(*
+  (12)
+  We record that minimal relevant hidden support stays at distance at
+  least two from the compact trap center.
+*)
+
+Definition audit_minimal_relevant_hidden_support_distance_ge_2 :
+  forall n P H (F : audit_bounded_periodic_replay_fragment n P H) g d,
+    minimal_relevant_hidden_support_distance n P H F g d ->
+    (2 <= d)%nat :=
+  minimal_relevant_hidden_support_distance_ge_2.
+
+(*************************************************************************)
+(*                                                                       *)
+(*                              PHASE THREE                              *)
+(*                                                                       *)
+(*************************************************************************)
+
+(*
+  (iii)
+  MAIN CONSTRUCTIVE FRAMEWORK: PHASE THREE
+*)
+
+(*
+  (a)
+  PERIODICITY AND SEMANTIC INTERFACES
+*)
+
+(*
+  (1)
   We define eventual periodicity of the centered window.
 *)
 
@@ -1205,7 +1457,7 @@ Definition audit_eventually_periodic_center_window :
   eventually_periodic_center_window.
 
 (*
-  (105)
+  (2)
   We define observational periodicity from a specific cutoff and period.
 *)
 
@@ -1214,7 +1466,7 @@ Definition audit_observational_periodic_tail_from :
   observational_periodic_tail_from.
 
 (*
-  (106)
+  (3)
   We define the BHK-style upgrade principle from observation to uniformity.
 *)
 
@@ -1222,15 +1474,16 @@ Definition audit_bhk_window_upgrade_principle : Prop :=
   bhk_window_upgrade_principle.
 
 (*
-  (107)
-  We define the one-step semantic faithfulness principle of outward window growth.
+  (4)
+  We define the one-step semantic faithfulness principle of outward window
+  growth.
 *)
 
 Definition audit_faithful_window_growth_principle : Prop :=
   faithful_window_growth_principle.
 
 (*
-  (108)
+  (5)
   We define a faithful observational periodic-tail realizer.
 *)
 
@@ -1239,7 +1492,7 @@ Definition audit_faithful_observational_periodic_tail_realizer :
   faithful_observational_periodic_tail_realizer.
 
 (*
-  (109)
+  (6)
   We define realizable observational periodic tails at fixed width.
 *)
 
@@ -1248,7 +1501,7 @@ Definition audit_realizable_observational_periodic_tail_from :
   realizable_observational_periodic_tail_from.
 
 (*
-  (110)
+  (7)
   We define uniform eventual periodicity across all larger widths.
 *)
 
@@ -1257,8 +1510,10 @@ Definition audit_uniformly_eventually_periodic_from :
   uniformly_eventually_periodic_from.
 
 (*
-  (111)
-  We define realizable uniform periodic tails.
+  (8)
+  Radius-indexed realizability predicate for uniform periodic tails: there
+  exists some cutoff and period witnessing uniform eventual periodicity at
+  width R.
 *)
 
 Definition audit_realizable_uniform_periodic_tail_from :
@@ -1266,7 +1521,7 @@ Definition audit_realizable_uniform_periodic_tail_from :
   realizable_uniform_periodic_tail_from.
 
 (*
-  (112)
+  (9)
   We define eventual periodicity of full rows from a cutoff.
 *)
 
@@ -1275,7 +1530,7 @@ Definition audit_eventually_periodic_full_rows_from :
   eventually_periodic_full_rows_from.
 
 (*
-  (113)
+  (10)
   We define a finite periodic orbit block.
 *)
 
@@ -1284,7 +1539,7 @@ Definition audit_finite_periodic_orbit :
   finite_periodic_orbit.
 
 (*
-  (114)
+  (11)
   We define a finite repeat block.
 *)
 
@@ -1293,8 +1548,13 @@ Definition audit_finite_repeat_block :
   finite_repeat_block.
 
 (*
-  (115)
-  We define the centered finite window of an arbitrary row.
+  (b)
+  CARRIER-WINDOW AND BACKWARD-TRANSPORT TOOLKIT
+*)
+
+(*
+  (1)
+  Centered finite window of an arbitrary row.
 *)
 
 Definition audit_row_window :
@@ -1302,8 +1562,8 @@ Definition audit_row_window :
   row_window.
 
 (*
-  (116)
-  We define local realization of a target window by a predecessor row.
+  (2)
+  Local realization of a target window by a predecessor row.
 *)
 
 Definition audit_local_target_window_realization :
@@ -1311,8 +1571,8 @@ Definition audit_local_target_window_realization :
   local_target_window_realization.
 
 (*
-  (117)
-  We define the predecessor carrier window at one larger radius.
+  (3)
+  Predecessor carrier window at one larger radius.
 *)
 
 Definition audit_predecessor_carrier_window :
@@ -1320,8 +1580,8 @@ Definition audit_predecessor_carrier_window :
   predecessor_carrier_window.
 
 (*
-  (118)
-  We define the length of a predecessor carrier window.
+  (4)
+  Length of a predecessor carrier window.
 *)
 
 Definition audit_predecessor_carrier_length :
@@ -1329,8 +1589,8 @@ Definition audit_predecessor_carrier_length :
   predecessor_carrier_length.
 
 (*
-  (119)
-  We define the finite Rule 30 window operator on carriers.
+  (5)
+  Finite Rule 30 window operator on carriers.
 *)
 
 Definition audit_rule30_window :
@@ -1338,8 +1598,8 @@ Definition audit_rule30_window :
   rule30_window.
 
 (*
-  (120)
-  We define recovery of the missing left bit from the Rule 30 output.
+  (6)
+  Recovery of the missing left bit from the Rule 30 output.
 *)
 
 Definition audit_recover_left_bit :
@@ -1347,8 +1607,8 @@ Definition audit_recover_left_bit :
   recover_left_bit.
 
 (*
-  (121)
-  We define the cutoff predecessor row indexed along a periodic orbit.
+  (7)
+  Cutoff predecessor row indexed along a periodic orbit.
 *)
 
 Definition audit_cutoff_predecessor :
@@ -1356,8 +1616,8 @@ Definition audit_cutoff_predecessor :
   cutoff_predecessor.
 
 (*
-  (122)
-  We define the predecessor carrier of a cutoff predecessor row.
+  (8)
+  Predecessor carrier of a cutoff predecessor row.
 *)
 
 Definition audit_cutoff_predecessor_carrier :
@@ -1365,8 +1625,8 @@ Definition audit_cutoff_predecessor_carrier :
   cutoff_predecessor_carrier.
 
 (*
-  (123)
-  We define the reversed Rule 30 window operator.
+  (9)
+  Reversed Rule 30 window operator.
 *)
 
 Definition audit_rule30_window_rev :
@@ -1374,8 +1634,8 @@ Definition audit_rule30_window_rev :
   rule30_window_rev.
 
 (*
-  (124)
-  We define reverse reconstruction of a carrier from boundary data.
+  (10)
+  Reverse reconstruction of a carrier from boundary data.
 *)
 
 Definition audit_reconstruct_carrier_rev :
@@ -1383,8 +1643,8 @@ Definition audit_reconstruct_carrier_rev :
   reconstruct_carrier_rev.
 
 (*
-  (125)
-  We define when a carrier realizes a target window.
+  (11)
+  When a carrier realizes a target window.
 *)
 
 Definition audit_carrier_realizes_window :
@@ -1392,8 +1652,8 @@ Definition audit_carrier_realizes_window :
   carrier_realizes_window.
 
 (*
-  (126)
-  We define the canonical cutoff window at phase T.
+  (12)
+  Canonical cutoff window at phase T.
 *)
 
 Definition audit_canonical_cutoff_window :
@@ -1401,7 +1661,7 @@ Definition audit_canonical_cutoff_window :
   canonical_cutoff_window.
 
 (*
-  (127)
+  (13)
   We define the finite carrier-memory orbit attached to a periodic block.
 *)
 
@@ -1410,7 +1670,7 @@ Definition audit_finite_carrier_memory_orbit :
   finite_carrier_memory_orbit.
 
 (*
-  (128)
+  (14)
   We define the one-step backward transport carrier orbit.
 *)
 
@@ -1419,7 +1679,7 @@ Definition audit_backward_transport_carrier_orbit :
   backward_transport_carrier_orbit.
 
 (*
-  (129)
+  (15)
   We define repeated predecessor carriers inside a finite orbit.
 *)
 
@@ -1428,7 +1688,7 @@ Definition audit_repeated_cutoff_predecessor_carrier :
   repeated_cutoff_predecessor_carrier.
 
 (*
-  (130)
+  (16)
   We define the finite carrier pool at a given radius.
 *)
 
@@ -1437,7 +1697,7 @@ Definition audit_carrier_pool :
   carrier_pool.
 
 (*
-  (131)
+  (17)
   We record the size of the finite carrier pool.
 *)
 
@@ -1448,7 +1708,7 @@ Definition audit_carrier_pool_length :
   carrier_pool_length.
 
 (*
-  (132)
+  (18)
   We record the fixed length of every predecessor carrier window.
 *)
 
@@ -1459,7 +1719,7 @@ Definition audit_predecessor_carrier_window_length :
   predecessor_carrier_window_length.
 
 (*
-  (133)
+  (19)
   We record that the recovered left bit reproduces the given Rule 30 output.
 *)
 
@@ -1469,7 +1729,7 @@ Definition audit_rule30_recovers_left_bit :
   rule30_recovers_left_bit.
 
 (*
-  (134)
+  (20)
   We record uniqueness of that recovered left bit.
 *)
 
@@ -1480,7 +1740,7 @@ Definition audit_recover_left_bit_unique :
   recover_left_bit_unique.
 
 (*
-  (135)
+  (21)
   We record the length of reverse carrier reconstruction.
 *)
 
@@ -1491,7 +1751,7 @@ Definition audit_reconstruct_carrier_rev_from_length :
   reconstruct_carrier_rev_from_length.
 
 (*
-  (136)
+  (22)
   We record that reverse reconstruction reproduces the prescribed outputs.
 *)
 
@@ -1502,7 +1762,7 @@ Definition audit_rule30_window_rev_reconstructs_outputs :
   rule30_window_rev_reconstructs_outputs.
 
 (*
-  (137)
+  (23)
   We record boundary-based determination of the reverse carrier.
 *)
 
@@ -1513,7 +1773,7 @@ Definition audit_rule30_window_rev_determined_by_boundary :
   rule30_window_rev_determined_by_boundary.
 
 (*
-  (138)
+  (24)
   We define the two-bit right-boundary signature of a carrier.
 *)
 
@@ -1522,7 +1782,7 @@ Definition audit_carrier_right_boundary_signature :
   carrier_right_boundary_signature.
 
 (*
-  (139)
+  (25)
   We record additivity of iterated row evolution.
 *)
 
@@ -1532,7 +1792,7 @@ Definition audit_iter_row_plus :
   iter_row_plus.
 
 (*
-  (140)
+  (26)
   We record the canonical row as a shifted iterate of the automaton.
 *)
 
@@ -1542,7 +1802,7 @@ Definition audit_canonical_row_after :
   canonical_row_after.
 
 (*
-  (141)
+  (27)
   We record Rule 30 evaluation on a centered predecessor carrier.
 *)
 
@@ -1553,7 +1813,7 @@ Definition audit_rule30_window_on_centered_carrier :
   rule30_window_on_centered_carrier.
 
 (*
-  (142)
+  (28)
   We record weakening of centered-window equality to smaller radius.
 *)
 
@@ -1565,7 +1825,7 @@ Definition audit_center_window_eq_weaken :
   center_window_eq_weaken.
 
 (*
-  (143)
+  (29)
   We record forward transport of a repeated larger window.
 *)
 
@@ -1577,7 +1837,7 @@ Definition audit_center_window_repeat_transports_forward :
   center_window_repeat_transports_forward.
 
 (*
-  (144)
+  (30)
   We record blockwise forward transport of repeated larger windows.
 *)
 
@@ -1590,7 +1850,7 @@ Definition audit_center_window_repeat_transports_forward_block :
   center_window_repeat_transports_forward_block.
 
 (*
-  (145)
+  (31)
   We record that eventual periodicity freezes the cutoff phase.
 *)
 
@@ -1605,7 +1865,7 @@ Definition audit_eventual_periodicity_freezes_cutoff_phase :
   eventual_periodicity_freezes_cutoff_phase.
 
 (*
-  (146)
+  (32)
   We record that cutoff predecessors realize the fixed cutoff target window.
 *)
 
@@ -1620,7 +1880,7 @@ Definition audit_cutoff_predecessor_realizes_cutoff_target_window :
   cutoff_predecessor_realizes_cutoff_target_window.
 
 (*
-  (147)
+  (33)
   We record the repeated local predecessor formulation of eventual periodicity.
 *)
 
@@ -1635,7 +1895,7 @@ Definition audit_eventual_periodicity_yields_repeated_cutoff_predecessors :
   eventual_periodicity_yields_repeated_cutoff_predecessors.
 
 (*
-  (148)
+  (34)
   We record tail trimming for a finite periodic orbit block.
 *)
 
@@ -1646,7 +1906,7 @@ Definition audit_finite_periodic_orbit_tail_trim :
   finite_periodic_orbit_tail_trim.
 
 (*
-  (149)
+  (35)
   We record the successor-step equality inside a finite periodic orbit.
 *)
 
@@ -1658,7 +1918,7 @@ Definition audit_finite_periodic_orbit_successor_step :
   finite_periodic_orbit_successor_step.
 
 (*
-  (150)
+  (36)
   We record that eventual periodicity yields finite periodic orbit blocks of every length.
 *)
 
@@ -1671,7 +1931,7 @@ Definition audit_eventual_periodicity_implies_finite_periodic_orbit :
   eventual_periodicity_implies_finite_periodic_orbit.
 
 (*
-  (151)
+  (37)
   We record the finite-orbit version of cutoff-predecessor realization.
 *)
 
@@ -1684,7 +1944,7 @@ Definition audit_cutoff_predecessor_realizes_cutoff_target_window_from_finite_or
   cutoff_predecessor_realizes_cutoff_target_window_from_finite_orbit.
 
 (*
-  (152)
+  (38)
   We record the cutoff predecessor carrier orbit extracted from eventual periodicity.
 *)
 
@@ -1701,7 +1961,7 @@ Definition audit_eventual_periodicity_yields_cutoff_predecessor_carrier_orbit :
   eventual_periodicity_yields_cutoff_predecessor_carrier_orbit.
 
 (*
-  (153)
+  (39)
   We record that each cutoff predecessor carrier realizes the fixed cutoff window.
 *)
 
@@ -1717,8 +1977,8 @@ Definition audit_cutoff_predecessor_carrier_realizes_cutoff_window :
   cutoff_predecessor_carrier_realizes_cutoff_window.
 
 (*
-  (154)
-  We record the finite carrier-memory orbit extracted from eventual periodicity.
+  (40)
+  We record the carrier-memory orbit extracted from eventual periodicity.
 *)
 
 Definition audit_eventual_periodicity_yields_carrier_memory_orbit :
@@ -1733,7 +1993,7 @@ Definition audit_eventual_periodicity_yields_carrier_memory_orbit :
   eventual_periodicity_yields_carrier_memory_orbit.
 
 (*
-  (155)
+  (41)
   We record that finite periodic orbits induce finite carrier-memory orbits.
 *)
 
@@ -1744,7 +2004,7 @@ Definition audit_finite_periodic_orbit_implies_finite_carrier_memory_orbit :
   finite_periodic_orbit_implies_finite_carrier_memory_orbit.
 
 (*
-  (156)
+  (42)
   We record one-step backward transport from a finite periodic orbit.
 *)
 
@@ -1755,7 +2015,7 @@ Definition audit_finite_periodic_orbit_transports_backward_one_step :
   finite_periodic_orbit_transports_backward_one_step.
 
 (*
-  (157)
+  (43)
   We record that equal predecessor carriers at the successor cutoff transport backward.
 *)
 
@@ -1769,7 +2029,7 @@ Definition audit_equal_cutoff_predecessor_carriers_at_successor_cutoff_transport
   equal_cutoff_predecessor_carriers_at_successor_cutoff_transport_backward.
 
 (*
-  (158)
+  (44)
   We record the repeated-carrier version of that backward transport.
 *)
 
@@ -1785,7 +2045,7 @@ Definition audit_repeated_cutoff_predecessor_carrier_at_successor_cutoff_transpo
   repeated_cutoff_predecessor_carrier_at_successor_cutoff_transports_backward.
 
 (*
-  (159)
+  (45)
   We record backward transport from finite periodicity plus a repeated carrier.
 *)
 
@@ -1801,7 +2061,7 @@ Definition audit_finite_periodic_orbit_plus_repeated_carrier_transports_backward
   finite_periodic_orbit_plus_repeated_carrier_transports_backward.
 
 (*
-  (160)
+  (46)
   We record the pigeonhole step on long finite carrier-memory orbits.
 *)
 
@@ -1813,7 +2073,7 @@ Definition audit_long_finite_carrier_memory_orbit_has_repeated_carrier :
   long_finite_carrier_memory_orbit_has_repeated_carrier.
 
 (*
-  (161)
+  (47)
   We record the repeated-carrier corollary for long finite periodic orbits.
 *)
 
@@ -1825,7 +2085,7 @@ Definition audit_long_finite_periodic_orbit_has_repeated_carrier :
   long_finite_periodic_orbit_has_repeated_carrier.
 
 (*
-  (162)
+  (48)
   We record backward transport from sufficiently long finite periodic orbits.
 *)
 
@@ -1841,7 +2101,7 @@ Definition audit_long_finite_periodic_orbit_transports_backward :
   long_finite_periodic_orbit_transports_backward.
 
 (*
-  (163)
+  (49)
   We record the exponential-size pigeonhole bound on finite carrier-memory orbits.
 *)
 
@@ -1853,7 +2113,7 @@ Definition audit_large_finite_carrier_memory_orbit_has_repeated_carrier :
   large_finite_carrier_memory_orbit_has_repeated_carrier.
 
 (*
-  (164)
+  (50)
   We record the exponential-size repeated-carrier corollary for finite periodic orbits.
 *)
 
@@ -1865,7 +2125,7 @@ Definition audit_large_finite_periodic_orbit_has_repeated_carrier :
   large_finite_periodic_orbit_has_repeated_carrier.
 
 (*
-  (165)
+  (51)
   We record exponential-size backward transport for finite periodic orbits.
 *)
 
@@ -1881,7 +2141,7 @@ Definition audit_large_finite_periodic_orbit_transports_backward :
   large_finite_periodic_orbit_transports_backward.
 
 (*
-  (166)
+  (52)
   We record a first backward-repeat theorem for a periodic tail at the successor cutoff.
 *)
 
@@ -1899,7 +2159,7 @@ Definition audit_periodic_tail_at_successor_cutoff_has_backward_repeat :
   periodic_tail_at_successor_cutoff_has_backward_repeat.
 
 (*
-  (167)
+  (53)
   We record the blockwise version of that backward-repeat theorem.
 *)
 
@@ -1919,7 +2179,7 @@ Definition audit_periodic_tail_at_successor_cutoff_has_backward_repeat_block :
   periodic_tail_at_successor_cutoff_has_backward_repeat_block.
 
 (*
-  (168)
+  (54)
   We record that the predecessor carrier determines the target window.
 *)
 
@@ -1931,7 +2191,7 @@ Definition audit_predecessor_carrier_window_determines_target_window :
   predecessor_carrier_window_determines_target_window.
 
 (*
-  (169)
+  (55)
   We record the exact equivalence between local target realization and Rule 30 carrier evaluation.
 *)
 
@@ -1943,7 +2203,7 @@ Definition audit_local_target_window_realization_iff_rule30_window :
   local_target_window_realization_iff_rule30_window.
 
 (*
-  (170)
+  (56)
   We record that local target realization respects equality of predecessor carriers.
 *)
 
@@ -1956,7 +2216,7 @@ Definition audit_local_target_window_realization_respects_predecessor_carrier :
   local_target_window_realization_respects_predecessor_carrier.
 
 (*
-  (171)
+  (57)
   We record boundary-signature determination of local target realization.
 *)
 
@@ -1973,7 +2233,7 @@ Definition audit_local_target_window_realization_determined_by_boundary_signatur
   local_target_window_realization_determined_by_boundary_signature.
 
 (*
-  (172)
+  (58)
   We record the four-state pigeonhole step on finite carrier-memory orbits.
 *)
 
@@ -1985,7 +2245,7 @@ Definition audit_small_finite_carrier_memory_orbit_has_repeated_carrier :
   small_finite_carrier_memory_orbit_has_repeated_carrier.
 
 (*
-  (173)
+  (59)
   We record the four-state repeated-carrier corollary for finite periodic orbits.
 *)
 
@@ -1997,7 +2257,7 @@ Definition audit_small_finite_periodic_orbit_has_repeated_carrier :
   small_finite_periodic_orbit_has_repeated_carrier.
 
 (*
-  (174)
+  (60)
   We record the four-state backward transport theorem for finite periodic orbits.
 *)
 
@@ -2013,7 +2273,7 @@ Definition audit_small_finite_periodic_orbit_transports_backward :
   small_finite_periodic_orbit_transports_backward.
 
 (*
-  (175)
+  (61)
   We record the sharpened small backward-repeat theorem for periodic tails.
 *)
 
@@ -2031,7 +2291,7 @@ Definition audit_periodic_tail_at_successor_cutoff_has_small_backward_repeat :
   periodic_tail_at_successor_cutoff_has_small_backward_repeat.
 
 (*
-  (176)
+  (62)
   We record the blockwise sharpened small backward-repeat theorem.
 *)
 
@@ -2051,7 +2311,7 @@ Definition audit_periodic_tail_at_successor_cutoff_has_small_backward_repeat_blo
   periodic_tail_at_successor_cutoff_has_small_backward_repeat_block.
 
 (*
-  (177)
+  (63)
   We record conversion of a small backward-repeat block into a finite repeat block.
 *)
 
@@ -2069,7 +2329,7 @@ Definition audit_periodic_tail_at_successor_cutoff_has_small_backward_finite_rep
   periodic_tail_at_successor_cutoff_has_small_backward_finite_repeat_block.
 
 (*
-  (178)
+  (64)
   We record extraction of an unbounded small backward pair from a uniform periodic tail.
 *)
 
@@ -2088,7 +2348,7 @@ Definition audit_periodic_tail_at_successor_cutoff_has_unbounded_small_backward_
   periodic_tail_at_successor_cutoff_has_unbounded_small_backward_pair.
 
 (*
-  (179)
+  (65)
   We record transport of a uniform periodic tail to bounded eventual periodicity at larger radius.
 *)
 
@@ -2108,7 +2368,7 @@ Definition audit_periodic_tail_at_successor_cutoff_transports_to_bounded_eventua
   periodic_tail_at_successor_cutoff_transports_to_bounded_eventual_periodicity.
 
 (*
-  (180)
+  (66)
   We record one-step transport of uniform eventual periodicity to larger radius.
 *)
 
@@ -2123,7 +2383,7 @@ Definition audit_uniformly_eventually_periodic_from_transports_to_larger_radius 
   uniformly_eventually_periodic_from_transports_to_larger_radius.
 
 (*
-  (181)
+  (67)
   We record the positive-cutoff version of that one-step transport theorem.
 *)
 
@@ -2137,7 +2397,7 @@ Definition audit_positive_uniformly_eventually_periodic_from_transports_to_large
   positive_uniformly_eventually_periodic_from_transports_to_larger_radius.
 
 (*
-  (182)
+  (68)
   We record iteration of positive-cutoff uniform transport to arbitrary larger radius.
 *)
 
@@ -2151,7 +2411,7 @@ Definition audit_positive_uniformly_eventually_periodic_from_iterates :
   positive_uniformly_eventually_periodic_from_iterates.
 
 (*
-  (183)
+  (69)
   We record that uniform window periodicity implies full-row eventual periodicity.
 *)
 
@@ -2162,7 +2422,7 @@ Definition audit_uniformly_eventually_periodic_from_implies_full_row_eventual_pe
   uniformly_eventually_periodic_from_implies_full_row_eventual_periodicity.
 
 (*
-  (184)
+  (70)
   We record impossibility of eventual periodicity for full canonical rows.
 *)
 
@@ -2173,13 +2433,11 @@ Definition audit_eventually_periodic_full_rows_from_impossible :
   eventually_periodic_full_rows_from_impossible.
 
 (*
-  (185)
-  Fixed-radius uniform eventual periodicity is impossible.
-
-  Under a BHK reading, a periodicity claim is semantically significant only
-  when it is given by a closed, uniform, terminating witness.  The theorem
-  below denies exactly such a witness for a periodic tail.  It therefore
-  does not deny that long finite stretches of repeating signatures may be
+  (71)
+  On fixed-radius uniform eventual periodicity impossibility.
+  Consider how under BHK a periodicity claim is semantically significant only
+  when it is given by a closed, uniform, terminating witness. The theorem below
+  denies exactly such a witness for a periodic tail. It therefore does not deny that long finite stretches of repeating signatures may be
   observed empirically; rather, it says that no such finite evidence can be
   promoted to certainty that the repetition is final rather than transient.
 *)
@@ -2192,47 +2450,66 @@ Definition audit_uniformly_eventually_periodic_from_impossible :
 
 (*************************************************************************)
 (*                                                                       *)
-(*  No mixed center periodicity witness                                  *)
+(*                                THEOREM                                *)
 (*                                                                       *)
-(*  Term.                                                                *)
+(*    No Uniform Periodic Tail Witness                                   *)
 (*                                                                       *)
-(*    forall R T P,                                                      *)
-(*      uniformly_eventually_periodic_from R T P -> False                *)
+(*                            PROOF IN STEPS                             *)
 (*                                                                       *)
-(*  Semantic reading.                                                    *)
+(*    Step 1. Assume a uniform eventual-periodicity witness at           *)
+(*            radius R.                                                  *)
 (*                                                                       *)
-(*    No faithful, closed, uniform periodic tail exists for the seeded   *)
-(*    Rule 30 center.  Long finite or quasi-periodic behavior may be     *)
-(*    observed empirically, but it cannot be promoted to a genuine       *)
-(*    infinite periodic tail by a uniform terminating witness.           *)
+(*    Step 2. Promote it to eventual periodicity of the full canonical   *)
+(*            rows.                                                      *)
 (*                                                                       *)
-(*  Qualification.                                                       *)
+(*    Step 3. Invoke pointwise non-repetition of `canonical_row` at every*)
+(*            positive lag.                                              *)
 (*                                                                       *)
-(*    This is the strong semantic endpoint proved in R06.                *)
-(*    It is the recommended semantic interface for the package.  It      *)
-(*    does not use replay_compactness_principle.  The unresolved         *)
-(*    conceptual step is the bridge from bare fixed-width observational  *)
-(*    periodicity to this stronger uniform semantic notion.              *)
+(*    Step 4. Conclude contradiction.                                    *)
+(*                                                                       *)
+(*                              REALIZATION                              *)
+(*                                                                       *)
+(*    `forall R T P,`                                                    *)
+(*    `  uniformly_eventually_periodic_from R T P -> False`              *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    No closed uniform eventual-periodicity witness can exist for the   *)
+(*    seeded Rule 30 orbit. Long finite or quasi-periodic behavior may   *)
+(*    still be observed empirically, but it cannot be promoted to a      *)
+(*    genuine infinite periodic tail by a uniform terminating witness.   *)
+(*                                                                       *)
+(*                             QUALIFICATION                             *)
+(*                                                                       *)
+(*    This is the strong semantic endpoint proved in Phase 3. It is the  *)
+(*    recommended semantic interface for the package. It does not use    *)
+(*    `replay_compactness_principle`. The unresolved conceptual step is  *)
+(*    the bridge from bare fixed-width observational periodicity to      *)
+(*    this stronger uniform semantic notion.                             *)
 (*                                                                       *)
 (*************************************************************************)
 
 (*************************************************************************)
 (*                                                                       *)
-(*                             PHASE FOUR                                *)
+(*                       PHASE THREE COROLLARIES                         *)
 (*                                                                       *)
 (*************************************************************************)
 
 (*
-  (186)
-  Local realizability-theoretic form of aperiodicity.
+  (c)
+  PHASE THREE COROLLARIES
+*)
+
+(*
+  (1)
+  Local realizability-theoretic corollary of the Phase 3 endpoint.
 
   This is the radius-indexed version of the semantic endpoint.  For each
-  observation width R, the realizability predicate for a faithful uniform
-  periodic tail is empty.  The subsequent items are not cosmetic restatements
-  but changes of logical form: they pass from the pointwise statement to
-  canonical endpoint naming, global existential negation, observational
-  counterparts, and finally the external bridge from semantic faithfulness to
-  eventual aperiodicity.
+  observation width R, the realizability predicate for a uniform periodic
+  tail is empty.  The subsequent items are changes of logical form: they pass
+  from the direct pointwise theorem to packaged corollaries, global
+  existential negation, observational counterparts, and then the external
+  bridge from semantic faithfulness to eventual aperiodicity.
 *)
 
 Definition audit_realizable_uniform_periodic_tail_from_impossible :
@@ -2241,21 +2518,22 @@ Definition audit_realizable_uniform_periodic_tail_from_impossible :
   realizable_uniform_periodic_tail_from_impossible.
 
 (*
-  (186a)
+  (1a)
   Canonical audit alias for the preferred semantic endpoint.
 *)
 
 Definition audit_phase3_semantic_endpoint :
-  forall R,
-    ~ audit_realizable_uniform_periodic_tail_from R :=
-  realizable_uniform_periodic_tail_from_impossible.
+  forall R T P,
+    audit_uniformly_eventually_periodic_from R T P ->
+    False :=
+  uniformly_eventually_periodic_from_impossible.
 
 (*
-  (187)
+  (2)
   Existentially closed form of the same impossibility statement.
 
   Instead of fixing a radius first, this version says that there is no tuple
-  of parameters witnessing any realizable uniform periodic tail at all.
+  of parameters witnessing any uniform eventual-periodicity claim at all.
 *)
 
 Definition audit_realizable_uniform_periodic_tail_impossible :
@@ -2263,7 +2541,7 @@ Definition audit_realizable_uniform_periodic_tail_impossible :
   realizable_uniform_periodic_tail_impossible.
 
 (*
-  (188)
+  (3)
   The faithful observational interface is already inconsistent.
 
   At this level the tail is phrased observationally, but the witness is
@@ -2277,7 +2555,7 @@ Definition audit_faithful_observational_periodic_tail_realizer_impossible :
   faithful_observational_periodic_tail_realizer_impossible.
 
 (*
-  (189)
+  (4)
   Observational realizability is therefore empty as well.
 
   This is the modal/existential counterpart of the previous item: once the
@@ -2291,7 +2569,7 @@ Definition audit_realizable_observational_periodic_tail_from_impossible :
   realizable_observational_periodic_tail_from_impossible.
 
 (*
-  (190)
+  (5)
   Faithful outward growth may be iterated across finitely many radius steps.
 
   This is the transport mechanism that carries a local observational witness
@@ -2306,7 +2584,7 @@ Definition audit_faithful_window_growth_iterates :
   faithful_window_growth_iterates.
 
 (*
-  (191)
+  (6)
   Faithful window growth induces the BHK upgrade principle.
 
   In proof-theoretic terms, the growth law is the semantic engine that turns
@@ -2320,12 +2598,12 @@ Definition audit_faithful_window_growth_implies_bhk_window_upgrade :
   faithful_window_growth_implies_bhk_window_upgrade.
 
 (*
-  (192)
+  (7)
   Once the BHK upgrade is available, observational periodic tails collapse.
 
   The point here is that observational periodicity is not ruled out directly;
   it is ruled out after being shown to entail the stronger uniform object that
-  Phase Four has already excluded.
+  the Phase 3 semantic endpoint has already excluded.
 *)
 
 Definition audit_observational_periodic_tail_from_impossible_under_bhk_upgrade :
@@ -2336,7 +2614,7 @@ Definition audit_observational_periodic_tail_from_impossible_under_bhk_upgrade :
   observational_periodic_tail_from_impossible_under_bhk_upgrade.
 
 (*
-  (193)
+  (8)
   Corresponding exclusion of eventual periodic center windows.
 
   This is the fixed-radius corollary obtained by packaging the previous tail
@@ -2349,8 +2627,24 @@ Definition audit_eventually_periodic_center_window_impossible_under_bhk_upgrade 
     ~ audit_eventually_periodic_center_window R :=
   eventually_periodic_center_window_impossible_under_bhk_upgrade.
 
+(*************************************************************************)
+(*                                                                       *)
+(*                             1st COROLLARY                             *)
+(*                                                                       *)
+(*************************************************************************)
+
 (*
-  (194)
+  (iv)
+  1ST COROLLARY
+*)
+
+(*
+  (a)
+  EXTERNAL FAITHFUL-SEMANTICS WRAPPER
+*)
+
+(*
+  (1)
   External premise isolating the semantic bridge.
 
   Rather than burying this assumption inside the proof spine, the development
@@ -2361,7 +2655,7 @@ Definition audit_classical_semantic_faithfulness : Prop :=
   classical_semantic_faithfulness.
 
 (*
-  (195)
+  (2)
   Under the external premise, the BHK upgrade principle follows.
 *)
 
@@ -2371,7 +2665,7 @@ Definition audit_classical_semantic_faithfulness_implies_bhk_upgrade :
   classical_semantic_faithfulness_implies_bhk_upgrade.
 
 (*
-  (196)
+  (3)
   External classical corollary at the observational-tail level.
 *)
 
@@ -2382,7 +2676,7 @@ Definition audit_classical_semantics_excludes_observational_periodic_tails :
   classical_semantics_excludes_observational_periodic_tails.
 
 (*
-  (197)
+  (4)
   External classical corollary at the eventual-periodicity level.
 *)
 
@@ -2393,7 +2687,7 @@ Definition audit_classical_semantics_excludes_eventual_periodic_windows :
   classical_semantics_excludes_eventual_periodic_windows.
 
 (*
-  (197a)
+  (4a)
   Canonical audit alias for the preferred external corollary.
 *)
 
@@ -2404,7 +2698,7 @@ Definition audit_phase3_external_corollary :
   classical_semantics_excludes_eventual_periodic_windows.
 
 (*
-  (198)
+  (5)
   Global classical exclusion of eventual periodic center windows.
 
   This is the existential closure of the preceding fixed-radius statement.
@@ -2417,32 +2711,49 @@ Definition audit_classical_semantics_excludes_any_eventual_periodic_window :
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Rule 30 center is not eventually periodic                            *)
+(*                                THEOREM                                *)
 (*                                                                       *)
-(*  Term.                                                                *)
+(*    No Eventually Periodic Center Window Under Faithful Semantics      *)
 (*                                                                       *)
-(*    classical_semantic_faithfulness ->                                 *)
-(*      forall R, ~ eventually_periodic_center_window R                  *)
+(*                            PROOF IN STEPS                             *)
 (*                                                                       *)
-(*  Semantic reading.                                                    *)
+(*    Step 1. Assume `classical_semantic_faithfulness`, i.e. faithful    *)
+(*            window growth for observational periodic tails.            *)
 (*                                                                       *)
-(*    If one accepts the external semantic-faithfulness premise that a   *)
-(*    genuine periodic tail must grow outward faithfully with the Rule   *)
-(*    30 semantics, then eventual periodicity of any centered window is  *)
-(*    excluded.                                                          *)
+(*    Step 2. Use Phase 3 to derive `bhk_window_upgrade_principle`.      *)
 (*                                                                       *)
-(*  Qualification.                                                       *)
+(*    Step 3. Convert any eventual periodic center window into an        *)
+(*            observational periodic tail.                               *)
 (*                                                                       *)
-(*    This lives deliberately in R07 as the recommended assumption-      *)
-(*    isolating wrapper.  The premise classical_semantic_faithfulness is *)
-(*    not proved internally in T004; it packages the semantic bridge     *)
-(*    cleanly instead of hiding it inside the core proof spine.          *)
+(*    Step 4. Eliminate that tail via the upgrade principle and the      *)
+(*            Phase 3 semantic impossibility theorem.                    *)
+(*                                                                       *)
+(*                              REALIZATION                              *)
+(*                                                                       *)
+(*    `classical_semantic_faithfulness ->`                               *)
+(*    `  forall R, ~ eventually_periodic_center_window R`                *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    If  one  accepts  the  external  semantic-faithfulness  premise    *)
+(*    that  a genuine periodic tail must grow outward faithfully with    *)
+(*    Rule 30  semantics,  then  eventual periodicity of any centered    *)
+(*    window is excluded.                                                *)
+(*                                                                       *)
+(*                             QUALIFICATION                             *)
+(*                                                                       *)
+(*    This lives deliberately in the external wrapper section of         *)
+(*    `R04__First_Corollary` as the recommended wrapper. The premise     *)
+(*    `classical_semantic_faithfulness` is not proved internally in      *)
+(*    `T004`, it packages the semantic bridge cleanly instead of         *)
+(*    hiding it inside the core proof spine.                             *)
 (*                                                                       *)
 (*************************************************************************)
 
 (*
-  (199)
-  Re-export of the faithful observational realizer impossibility.
+  (6)
+  Re-export of the emptiness of the faithful observational-tail
+  realizability predicate.
 *)
 
 Definition audit_faithful_observational_realizers_already_impossible :
@@ -2451,8 +2762,9 @@ Definition audit_faithful_observational_realizers_already_impossible :
   faithful_observational_realizers_already_impossible.
 
 (*
-  (200)
-  Re-export of the faithful uniform realizer impossibility.
+  (7)
+  Re-export of the emptiness of the uniform periodic-tail realizability
+  predicate.
 *)
 
 Definition audit_faithful_uniform_realizers_already_impossible :
@@ -2460,4 +2772,133 @@ Definition audit_faithful_uniform_realizers_already_impossible :
     ~ audit_realizable_uniform_periodic_tail_from R :=
   faithful_uniform_realizers_already_impossible.
 
+(*************************************************************************)
+(*                                                                       *)
+(*                             2nd COROLLARY                             *)
+(*                                                                       *)
+(*************************************************************************)
+
+(*
+  (v)
+  2ND COROLLARY
+*)
+
+(*
+  (a)
+  FINITE PROVENANCE AMBIGUITY
+*)
+
+(*
+  (1)
+  Finite visible shell question with the center strip removed.
+*)
+
+Definition audit_center_strip_free_manipulated :
+  nat -> row -> Prop :=
+  center_strip_free_manipulated.
+
+(*
+  (2)
+  Decidable shell-level manipulation question.
+*)
+
+Definition audit_manipulation_question_decidable_without_center_strip :
+  forall N u,
+    { audit_center_strip_free_manipulated N u } +
+    { ~ audit_center_strip_free_manipulated N u } :=
+  manipulation_question_decidable_without_center_strip.
+
+(*
+  (3)
+  Exact four-point reverse-predecessor family above a visible canonical
+  observation.
+*)
+
+Definition audit_canonical_observation_has_exactly_four_reverse_predecessors :
+  forall R T,
+    length (canonical_reverse_predecessor_family R T) = 4%nat /\
+    NoDup (canonical_reverse_predecessor_family R T) /\
+    forall carrier_rev,
+      reverse_predecessor_realizes_canonical_observation R T carrier_rev <->
+      In carrier_rev (canonical_reverse_predecessor_family R T) :=
+  canonical_observation_has_exactly_four_reverse_predecessors.
+
+(*
+  (4)
+  Observation-only provenance checking is impossible.
+*)
+
+Definition audit_no_observation_only_tamper_checker :
+  forall R T checker,
+    ~ observation_only_tamper_checker R T checker :=
+  no_observation_only_tamper_checker.
+
+(*
+  (b)
+  PLAUSIBILITY
+*)
+
+(*************************************************************************)
+(*                                                                       *)
+(*                                RESULT                                 *)
+(*                                                                       *)
+(*    Linear-Effort Plausibility For The Nth Center Bit                  *)
+(*                                                                       *)
+(*                            PROOF IN STEPS                             *)
+(*                                                                       *)
+(*    Step 1. The target value is `canonical_row n 0`, i.e. the “n-th”   *)
+(*            bit of the center column. Its backward light cone has      *)
+(*            depth n, so any standard local Rule 30 computation must    *)
+(*            account for n layers of semantic dependence.               *)
+(*                                                                       *)
+(*    Step 2. A sublinear shortcut would need a bounded observational    *)
+(*            summary that compresses many of those layers at once.      *)
+(*                                                                       *)
+(*    Step 3. The finite provenance corollary rules out exactly that     *)
+(*            kind of collapse: one visible canonical observation still  *)
+(*            supports an exact four-point family of hidden reverse      *)
+(*            predecessors, and no checker seeing only that visible      *)
+(*            observation can decide canonical versus tampered hidden    *)
+(*            predecessor syntax.                                        *)
+(*                                                                       *)
+(*    Step 4. The earlier non-periodicity endpoints reinforce the same   *)
+(*            message globally: the center strip does not collapse to a  *)
+(*            closed repeating summary, and under faithful semantics     *)
+(*            even eventual periodic centered windows are excluded.      *)
+(*                                                                       *)
+(*    Step 5. Therefore, under a standard local-semantic model of Rule   *)
+(*            30 computation, the nth center bit plausibly requires      *)
+(*            at least linear effort `Omega(n)`.                         *)
+(*                                                                       *)
+(*                              REALIZATION                              *)
+(*                                                                       *)
+(*    Under a standard local-semantic model of Rule 30 computation,      *)
+(*    the nth center bit plausibly requires at least linear effort       *)
+(*    `Omega(n)`.                                                        *)
+(*                                                                       *)
+(*                                READING                                *)
+(*                                                                       *)
+(*    The finite semantic corollaries do not by themselves prove a       *)
+(*    machine lower bound, but they do show that bounded observational   *)
+(*    summaries fail to collapse the hidden causal structure. That is    *)
+(*    the audit-level reason linear effort is the natural complexity     *)
+(*    expectation for the center column.                                 *)
+(*                                                                       *)
+(*                             QUALIFICATION                             *)
+(*                                                                       *)
+(*    This is intentionally an audit-level plausibility result rather    *)
+(*    than a fully formal machine lower bound. `T004` does not define a  *)
+(*    complete complexity model for arbitrary algorithms.  What it does  *)
+(*    establish is the semantic obstruction to bounded-summary collapse  *)
+(*    on which the linear-effort plausibility claim rests.               *)
+(*                                                                       *)
+(*************************************************************************)
+
 End Proof_Index.
+
+Print Assumptions the_fall.
+Print Assumptions no_pure_periodicity_of_centered_windows.
+Print Assumptions original_sin_theorem.
+Print Assumptions uniformly_eventually_periodic_from_impossible.
+Print Assumptions classical_semantics_excludes_eventual_periodic_windows.
+Print Assumptions no_observation_only_tamper_checker.

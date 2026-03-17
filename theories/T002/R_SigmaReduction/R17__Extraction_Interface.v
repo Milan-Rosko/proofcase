@@ -8,7 +8,7 @@ From T002 Require Import
   R01__Foundation_Fibonacci.
 
 Extraction Language OCaml.
-Set Extraction Output Directory "T002extraction".
+Set Extraction Output Directory "T002_Extraction".
 
 (*************************************************************************)
 (*                                                                       *)

@@ -8,13 +8,18 @@
     |A| = n + 1 contains two distinct elements a and b such that a | b or
     b | a.
 
-    The proof factors into three parts: an odd-part decomposition showing
-    that each element of {1, ..., 2n} maps to one of n odd categories, a
-    pigeonhole argument producing two elements with the same odd part, and
-    an arithmetic lemma showing that shared odd parts force divisibility.
+    The development relies only on the standard libraries Arith, Bool, Lia,
+    List, and PeanoNat.  The proof factors into three parts: an odd-part
+    decomposition sending each element of {1, ..., 2n} to one of n odd
+    categories, a list-based pigeonhole argument producing two elements
+    with the same odd part, and an arithmetic lemma showing that shared odd
+    parts force divisibility.
 
-    This development serves as the canonical style example for Proofcase.
-    The conventions follow the Canonicalization appendix.
+    T000 is the canonical template package for Proofcase.  Its appendix/
+    directory contains the extracted OCaml artifacts for the executable
+    arithmetic surface, together with the Canonicalization note describing
+    the packaging and naming conventions that later T### developments are
+    expected to follow.
 
 
 2 - Repository Tree
@@ -29,12 +34,55 @@
     │
     │      Odd-part decomposition of positive integers.  We define the
     │      odd_part and val2 functions, prove that odd_part is odd, divides
-    │      the original, and that same odd parts force divisibility.  We
-    │      also define odd_range n (the n odd numbers in {1, ..., 2n}) and
-    │      show it has length n and receives every odd_part image.
+    │      the original input, and supports the decomposition
+    │      n = 2^(val2 n) * odd_part n.  We also define odd_range n, the n
+    │      odd numbers in {1, ..., 2n}, and show it has length n and
+    │      receives every odd_part image from that interval.
     │
-    └── R01__Pigeonhole_Divisibility.v
-
-           Main theorem.  We state a list-based pigeonhole principle and
-           apply it with the odd-part map to conclude that any (n+1)-element
-           subset of {1, ..., 2n} contains a divisibility pair.
+    ├── R01__Pigeonhole_Divisibility.v
+    │
+    │      Main theorem.  We state a list-based pigeonhole principle and
+    │      apply it with the odd-part map to conclude that any
+    │      (n+1)-element subset of {1, ..., 2n} contains a divisibility
+    │      pair.
+    │
+    ├── T000__Proof.v
+    │
+    │      Audit-facing proof index for the public T000 surface:
+    │      arithmetic normalization, finite odd-codomain control, the
+    │      abstract pigeonhole principle, and the final divisibility
+    │      endpoint.
+    │
+    ├── T000_Extraction_Interface.v
+    │
+    │      OCaml extraction surface for odd-part computations, odd-range
+    │      inspection, finite witness search, and assumption reporting for
+    │      the principal theorems.
+    │
+    └── appendix
+           ├── Canonicalization
+           │
+           │      Canonical style memorandum for template-level Proofcase
+           │      packaging: file naming, headers, imports, naming
+           │      conventions, and structural organization.
+           │
+           ├── OddPartComputations.ml
+           │
+           │      Extracted OCaml implementation of the odd-part and 2-adic
+           │      valuation computations, together with odd-range and
+           │      profiling utilities.
+           │
+           ├── OddPartComputations.mli
+           │
+           │      Generated OCaml interface exposing the extracted odd-part
+           │      computation surface.
+           │
+           ├── PigeonholeDivisibilityWitness.ml
+           │
+           │      Extracted OCaml implementation of finite witness search for
+           │      same-odd-part collisions and divisibility classification.
+           │
+           └── PigeonholeDivisibilityWitness.mli
+           
+                  Generated OCaml interface for the extracted witness-search
+                  surface.

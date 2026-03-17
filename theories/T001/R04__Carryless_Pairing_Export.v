@@ -17,7 +17,7 @@ From T001 Require Import R02__Carryless_Pairing_Correctness.
 (*************************************************************************)
 
 Extraction Language OCaml.
-Set Extraction Output Directory "T001extraction".
+Set Extraction Output Directory "T001_Extraction".
 
 Extraction "carryless_pairing.ml"
   fib_pair
