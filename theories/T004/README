@@ -12,7 +12,7 @@
 
     The Main Constructive Framework consists of the first three phases:
 
-      - Phase 1: the seeded orbit, the Fall / No Progenitor obstruction,
+      - Phase 1: the seeded orbit, the No Progenitor Theorem,
         and the compactness-facing replay scaffold for
         `replay_compactness_principle -> forall n, ~ purely_periodic_center_window n`,
       - Phase 2: the constructive cutoff-memory theorem, together with
@@ -22,8 +22,8 @@
 
     The three corollary layers are:
 
-      - Corollary 1: the external classical wrapper under faithful
-        semantics,
+      - Corollary 1: the external classical wrapper under the
+        Faithfulness Hypothesis,
       - Corollary 2: the center-real reduction and irrationality layer,
       - Corollary 3: the finite provenance / observation-only layer,
         including the center-strip-free shell question and the
@@ -223,11 +223,11 @@
           purely_periodic_center_window n ->
           finite_replay_problem n horizon
 
-    Combining that bridge with the compactness premise and the Fall / No
-    Progenitor Theorem yields the Phase 1 compactness corollary, while the
-    primary semantic interface is
-    the direct Phase 3 impossibility theorem together with its realizability
-    corollaries and the final faithful-semantics corollary wrapper.
+    Combining that bridge with the Replay Compactness premise and the
+    No Progenitor Theorem yields the Phase 1 compactness corollary,
+    while the primary semantic interface is the direct Phase 3
+    impossibility theorem together with its realizability corollaries
+    and the final Faithfulness Hypothesis corollary wrapper.
 
 
 2 - Public Compilation Surface
@@ -257,7 +257,8 @@
     │
     ├── R04__1st_Corollary.v
     │
-    │      First external corollary layer under faithful semantics.
+    │      First external corollary layer under the Faithfulness
+    │      Hypothesis.
     │
     ├── R05__2nd_Corollary.v
     │
@@ -267,8 +268,7 @@
     │      direct consequence of center-strip non-eventual-periodicity,
     │      proves that rational binary reals induce eventually periodic
     │      bit streams, and concludes that the common Rule 30 center
-    │      real is irrational under the external faithful-semantics
-    │      premise.
+    │      real is irrational under the Faithfulness Hypothesis.
     │
     ├── R06__3rd_Corollary.v
     │
@@ -285,10 +285,31 @@
     │      Audit-facing index for all three layers, including the strong
     │      semantic endpoint and the external classical corollary.
     │
-    └── T004__Extraction.v
-     
-           OCaml extraction surface for finite windows, seeded prefixes,
-           truncations, and assumption reporting.
+    ├── T004__Extraction.v
+    │
+    │      OCaml extraction surface for finite windows, seeded prefixes,
+    │      truncations, and assumption reporting.
+    │
+    └── appendix
+           ├── ObservedPeriodRefuter.ml
+           │
+           │      Extracted OCaml implementation of the finite observational
+           │      period refuter for centered canonical windows.
+           │
+           ├── ObservedPeriodRefuter.mli
+           │
+           │      Generated OCaml interface for the extracted period-refuter
+           │      surface.
+           │
+           ├── UniformTailWitnessChecker.ml
+           │
+           │      Extracted OCaml implementation of the bounded uniform-tail
+           │      witness checker for candidate periodic tails.
+           │
+           └── UniformTailWitnessChecker.mli
+
+                  Generated OCaml interface for the extracted witness-checker
+                  surface.
 
     The legacy split route has been consolidated into the eight public
     source files above, and `_CoqProject` now compiles exactly that
@@ -304,7 +325,7 @@
 
     (i)    A progenitor is a finitely supported predecessor.
 
-    (ii)   The Fall / No Progenitor Theorem does not say the seed has no
+    (ii)   The No Progenitor Theorem does not say the seed has no
            arbitrary predecessor. It says the seed has no finitely supported
            predecessor.
 
@@ -320,7 +341,8 @@
     (vi)   The classical step is explicit: periodicity yields the bounded
            replay problem at every horizon; if every such bounded problem is
            satisfiable, compactness yields admissibility; combined with
-           the Fall this gives a finite replay obstruction.
+           the No Progenitor Theorem this gives a finite replay
+           obstruction.
 
     (vii)  The Phase 2 unit carries both the closed cutoff-memory theorem
            `original_sin_theorem` and the auxiliary compact-trap /
@@ -332,7 +354,7 @@
     (ix)   The recommended semantic endpoint is not the Phase 1 compactness
            theorem but the direct uniform-tail impossibility theorem in
            Phase 3, together with its realizability corollaries and the
-           first faithful-semantics wrapper in R04__1st_Corollary.
+           Faithfulness Hypothesis wrapper in R04__1st_Corollary.
 
     (x)    The compactness language remains mathematically meaningful as a
            contrapositive packaging of finite replay obstruction; it is not

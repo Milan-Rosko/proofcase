@@ -61,7 +61,7 @@ corollary packages that conclusion in ordinary arithmetic form.
     (i) Main Constructive Framework:
         Phase 1
 
-        (a) Seed orbit, the No-Progenitor
+        (a) Seed orbit, the No Progenitor
             Theorem, and the local obstruction
             layer.
 
@@ -227,7 +227,7 @@ Definition audit_the_fall :
 (*                                                                       *)
 (*                                  QED                                  *)
 (*                                                                       *)
-(*                         No-Progenitor Theorem                         *)
+(*                        No Progenitor Theorem                          *)
 (*                                                                       *)
 (*                            PROOF IN STEPS                             *)
 (*                                                                       *)
@@ -497,9 +497,10 @@ Definition audit_observable_periodicity_plus_upward_admissibility_contradict :
 
 (*
   (15)
-    Under the compactness premise, the
-    Fall and classical nonadmissibility
-    yield a finite replay obstruction.
+    Under the Replay Compactness premise,
+    the No Progenitor Theorem and classical
+    nonadmissibility yield a finite replay
+    obstruction.
 *)
 
 Definition audit_the_fall_implies_finite_replay_obstruction :
@@ -548,7 +549,7 @@ Definition audit_center_strip_not_purely_periodic :
 (*    Step 3. Turn upward admissibility into a candidate row, hence      *)
 (*            into a finitely supported `progenitor` of the seed.        *)
 (*                                                                       *)
-(*    Step 4. Contradict “No-Progenitor Theorem”.                        *)
+(*    Step 4. Contradict the No Progenitor Theorem.                      *)
 (*                                                                       *)
 (*                             MECHANIZATION                             *)
 (*                                                                       *)
@@ -568,7 +569,7 @@ Definition audit_center_strip_not_purely_periodic :
 (*                                                                       *)
 (*    This   is  an  explicit  conditional  result  (on  compactness)    *)
 (*    assembled  inside  the  Phase 1 package from bounded replay and    *)
-(*    the  “No  Progenitor  Theorem”.  As stated, it is the complete     *)
+(*    the  No  Progenitor  Theorem.   As stated, it is the complete      *)
 (*    compactness-facing Phase 1 endpoint. Later files add distinct      *)
 (*    semantic and arithmetic corollaries above it; they do not alter    *)
 (*    the proof status of this theorem itself.                           *)
@@ -1569,7 +1570,8 @@ Definition audit_glitchprojection_opposite_sides_force_bilateral_on_smaller_widt
 (*
   (6)
     We record impossibility of the
-    compact Fall trap.
+    compact center trap (from the
+    No Progenitor Theorem).
 *)
 
 Definition audit_compact_fall_trap_impossible :
@@ -3083,7 +3085,7 @@ Definition audit_faithful_window_growth_iterates :
 (*
   (6)
     Faithful window growth induces the
-    BHK upgrade principle.
+    Uniform tail lift principle.
 
   In proof-theoretic terms, the growth
   law is the semantic engine that turns
@@ -3099,9 +3101,9 @@ Definition audit_faithful_window_growth_implies_bhk_window_upgrade :
 
 (*
   (7)
-    Once the BHK upgrade is available,
-    observational periodic tails
-    collapse.
+    Once the Uniform tail lift upgrade
+    is available, observational
+    periodic tails collapse.
 
   The point here is that observational
   periodicity is not ruled out directly;
@@ -3651,7 +3653,7 @@ Definition audit_fueled_center_real_is_not_rational_under_classical_semantics :
 (*            immediately.                                               *)
 (*                                                                       *)
 (*    Step 6. Apply the first corollary to exclude that eventual         *)
-(*            periodicity under `classical_semantic_faithfulness`.       *)
+(*            periodicity under the Faithfulness Hypothesis.             *)
 (*                                                                       *)
 (*                             MECHANIZATION                             *)
 (*                                                                       *)

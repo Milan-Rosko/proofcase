@@ -1,4 +1,4 @@
-(* T000_Extraction_Interface.v *)
+(* T000__Extraction_Interface.v *)
 
 From Coq Require Import Arith Bool Extraction List PeanoNat.
 Import ListNotations.

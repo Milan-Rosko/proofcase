@@ -1,4 +1,4 @@
-(* T004_Extraction_Interface.v *)
+(* T004__Extraction.v *)
 
 From Coq Require Import Arith Bool Extraction List ZArith.
 Import ListNotations.
@@ -478,8 +478,8 @@ Definition check_uniform_tail_witness_candidate
 
 End Extraction_Interface.
 
-Extraction Language OCaml.
 Set Extraction Output Directory "T004_Extraction".
+Extraction Language OCaml.
 
 Extraction "UniformTailWitnessChecker.ml"
   bit_to_nat
@@ -549,7 +549,7 @@ Print Assumptions realizable_uniform_periodic_tail_from_impossible.
 (*                                                                       *)
 (*                               ENDPOINT                                *)
 (*                                                                       *)
-(*  Under   the   external   semantic-faithfulness   premise,  eventual  *)
+(*  Under  the  Faithfulness  Hypothesis,  eventual                      *)
 (*  periodicity  of  centered windows is excluded. This is the cleanest  *)
 (*  assumption-isolating wrapper exported by the package.                *)
 (*                                                                       *)

@@ -12,7 +12,7 @@ Open Scope Z_scope.
 (*  Consolidated Phase 1 theory unit.  This file gathers the former      *)
 (*  R00__Base through R04__No_Pure_Periodicity developments so the       *)
 (*  public compile surface matches the audit synopsis exported by        *)
-(*  T004_Proof.                                                          *)
+(*  T004__Comprehension.                                                          *)
 (*                                                                       *)
 (*  The Phase 1 route has four layers.                                   *)
 (*                                                                       *)
@@ -26,7 +26,7 @@ Open Scope Z_scope.
 (*       We define the single-seed row, its forward orbit, centered      *)
 (*       windows, and the light-cone facts needed to control that orbit. *)
 (*                                                                       *)
-(*    3. The Fall / No Progenitor obstruction.                           *)
+(*    3. The No Progenitor Theorem.                                     *)
 (*                                                                       *)
 (*       The seed has no finitely supported predecessor.  This is the    *)
 (*       rigid local contradiction that all later Phase 1 arguments      *)
@@ -754,7 +754,7 @@ Proof.
 Qed.
 
 (*
-  The Fall / No Progenitor Theorem:
+  The No Progenitor Theorem (colloquially, "the Fall"):
   the seed admits no finitely supported predecessor.
 *)
 
@@ -762,7 +762,7 @@ Qed.
 (*                                                                       *)
 (*                                THEOREM                                *)
 (*                                                                       *)
-(*    The Fall / No Progenitor Theorem                                   *)
+(*    No Progenitor Theorem                                              *)
 (*                                                                       *)
 (*                              PROOF ROUTE                              *)
 (*                                                                       *)
@@ -1181,10 +1181,10 @@ End Periodicity.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Admissibility-to-Fall contradiction layer.                           *)
+(*  Admissibility contradiction layer.                                   *)
 (*                                                                       *)
 (*  Any admissible replay yields a candidate row above the seed, hence   *)
-(*  a progenitor, contradicting the Fall.  Combined with the bounded     *)
+(*  a progenitor, contradicting the No Progenitor Theorem.  Combined     *)
 (*  replay package, this section turns pure periodicity plus compactness *)
 (*  into the no-pure-periodicity endpoint.                               *)
 (*                                                                       *)
@@ -1667,7 +1667,7 @@ Qed.
 (*       admissibility above the seed.                                   *)
 (*                                                                       *)
 (*    D. Use the admissibility-to-progenitor route and contradict the    *)
-(*       Fall / No Progenitor Theorem.                                   *)
+(*       No Progenitor Theorem.                                          *)
 (*                                                                       *)
 (*                              REALIZATION                              *)
 (*                                                                       *)

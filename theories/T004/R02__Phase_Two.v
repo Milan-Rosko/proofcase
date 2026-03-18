@@ -40,7 +40,7 @@ Open Scope Z_scope.
 (*                                                                       *)
 (*************************************************************************)
 
-Section Glitch_Compactness.
+Section Replay_Compactness.
 
 Inductive glitch_side : Type :=
 | glitch_left
@@ -66,7 +66,7 @@ Definition local_seed_window_realization (R : nat) (u : row) : Prop :=
     step u x = seed_row x.
 
 (*
-  The compact center trap already visible inside “the Fall.”
+  The compact center trap already visible inside the No Progenitor Theorem.
 
   A seed-creation triplet is the local 3-cell configuration that forces a
   center output of true from two leading zeros.  Once the successor output is
@@ -1932,4 +1932,4 @@ Proof.
   apply compact_fall_trap_impossible.
 Qed.
 
-End Glitch_Compactness.
+End Replay_Compactness.

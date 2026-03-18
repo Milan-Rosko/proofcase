@@ -239,12 +239,56 @@
              GOOD:
 
              (*
-               2j - 1, with Nat.pred 0 = 0. 
+               2j - 1, with Nat.pred 0 = 0.
              *)
-             
+
              Definition two_j_minus1 (j : nat) := Nat.pred (two j).
 
+    7.4  QED boxes
 
+         We place a QED box immediately after the principal endpoint of
+         each major theorem in the Comprehension layer.  The box is a
+         73-character-wide block banner with fixed section headings:
+
+             (*****************************************************************)
+             (*                                                               *)
+             (*                                QED                            *)
+             (*                                                               *)
+             (*  Theorem Name                                                 *)
+             (*                                                               *)
+             (*                          PROOF IN STEPS                       *)
+             (*                                                               *)
+             (*  Step 1. ...                                                  *)
+             (*  Step 2. ...                                                  *)
+             (*                                                               *)
+             (*                           MECHANIZATION                       *)
+             (*                                                               *)
+             (*  formal statement                                             *)
+             (*                                                               *)
+             (*                              READING                          *)
+             (*                                                               *)
+             (*  Plain English reading of the result.                         *)
+             (*                                                               *)
+             (*                           QUALIFICATION                       *)
+             (*                                                               *)
+             (*  Status note on the theorem's role in the package.            *)
+             (*                                                               *)
+             (*****************************************************************)
+
+         The four sections are:
+
+         PROOF IN STEPS   Numbered summary of the proof route.
+         MECHANIZATION    The exact Rocq statement, centered.
+         READING          One paragraph restating the result in prose.
+         QUALIFICATION    Scope, closure status, or dependency remarks.
+
+         QUALIFICATION may be omitted when the theorem's role is
+         self-evident.
+
+         In working files (R## files) the same layout is used with
+         THEOREM in place of QED.  PROOF ROUTE may replace PROOF IN
+         STEPS and REALIZATION may replace MECHANIZATION.  These
+         lightweight variants do not require a QUALIFICATION section.
 
 
 8 - Proof Style
