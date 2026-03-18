@@ -3,235 +3,30 @@
 1 - Description
     -----------
 
-    T004 is the seeded Rule 30 package. Its final public structure is:
-
-      - Main Constructive Framework
-      - Corollary 1
-      - Corollary 2
-      - Corollary 3
-
-    The Main Constructive Framework consists of the first three phases:
-
-      - Phase 1: the seeded orbit, the No Progenitor Theorem,
-        and the compactness-facing replay scaffold for
-        `replay_compactness_principle -> forall n, ~ purely_periodic_center_window n`,
-      - Phase 2: the constructive cutoff-memory theorem, together with
-        the auxiliary compact-trap / hidden-support vocabulary,
-      - Phase 3: the mixed-periodicity transport layer and its direct
-        semantic impossibility theorem
-
-    The three corollary layers are:
-
-      - Corollary 1: the external classical wrapper under the
-        Faithfulness Hypothesis,
-      - Corollary 2: the center-real reduction and irrationality layer,
-      - Corollary 3: the finite provenance / observation-only layer,
-        including the center-strip-free shell question and the
-        observation-only tamper-checking impossibility theorem
-
-    This split is deliberate. The constructive core is not asked to prove
-    global eventual aperiodicity as a bare classical proposition. It proves
-    instead that no closed replay / transport / uniform witness of such a tail
-    can survive. Corollary 1 then states the explicit classical soundness
-    principle, and Corollary 2 packages the resulting classical conclusion in
-    the ordinary language of real arithmetic.
-
-    It separates:
-
-      - observable periodicity of the actual centered window,
-      - replay data witnessing that this observable package can be restated
-        as a closed periodic object,
-      - admissibility data above the seed,
-      - and the contradiction obtained once admissibility is present.
-
-    The present Phase 1 compactness corollary is:
-
-      no_pure_periodicity_of_centered_windows :
-        replay_compactness_principle ->
-        forall n, ~ purely_periodic_center_window n
-
-    The package also exposes the stronger direct semantic endpoint proved
-    in the mixed-periodicity layer:
-
-      uniformly_eventually_periodic_from_impossible :
-        forall R T P,
-          uniformly_eventually_periodic_from R T P ->
-          False
-
-    together with the packaged realizability corollary:
-
-      realizable_uniform_periodic_tail_from_impossible :
-        forall R, ~ realizable_uniform_periodic_tail_from R
-
-    and the external classical corollary:
-
-      classical_semantics_excludes_eventual_periodic_windows :
-        classical_semantic_faithfulness ->
-        forall R, ~ eventually_periodic_center_window R
-
-    This is the intended boundary. Phase 3 constructively rules out closed
-    uniform witnesses of periodicity; Corollary 1 is the explicit classical
-    step that turns that witness-level obstruction into eventual
-    non-periodicity of centered windows.
-
-    Corollary 2 then packages the center column as a binary real:
-
-      center_real : R
-
-    It also packages the finite growing-pyramid recipe:
-
-      fueled_center_real : R
-
-    and proves the presentation-independence statement:
-
-      fueled_center_real_eq_center_real :
-        fueled_center_real = center_real
-
-    The arithmetic reduction is also separated out explicitly:
-
-      center_real_irrational_if_center_strip_not_eventually_periodic :
-        ~ eventually_periodic_bits center_strip ->
-        ~ exists q : Q, center_real = Q2R q
-
-    The real reduction now also lands directly in the finite replay
-    language:
-
-      center_real_rational_implies_cutoff_replay_package :
-        forall q,
-          center_real = Q2R q ->
-          cutoff_replay_package 0
-
-      fueled_center_real_rational_implies_cutoff_replay_package :
-        forall q,
-          fueled_center_real = Q2R q ->
-          cutoff_replay_package 0
-
-    Here `cutoff_replay_package 0` means a replay package at radius `0`,
-    i.e. for the center column.
-
-    The move to `R` does not replace the Rule 30 argument by analysis. It is
-    there to package the already fixed center digits as one extensional
-    classical object. The philosophical payoff is that the finite
-    growing-pyramid recipe and the bi-infinite presentation define the same
-    real, and rationality of that real reduces back to a finite replay object
-    in the native Rule 30 language.
-
-    It then derives the irrationality consequence:
-
-      center_real_irrational_under_classical_semantics :
-        classical_semantic_faithfulness ->
-        ~ exists q : Q, center_real = Q2R q
-
-    together with the same conclusion for the finite recipe presentation:
-
-      fueled_center_real_irrational_under_classical_semantics :
-        classical_semantic_faithfulness ->
-        ~ exists q : Q, fueled_center_real = Q2R q
-
-    The finite interface between Phase 2 and Phase 3 is now also made
-    explicit:
-
-      local_target_window_realization_iff_pointwise :
-        forall R target u,
-          local_target_window_realization R target u <->
-          forall x,
-            Z.abs x <= Z.of_nat R ->
-            step u x = target x
-
-      local_target_window_realization_seed_iff :
-        forall R u,
-          local_target_window_realization R seed_row u <->
-          local_seed_window_realization R u
-
-    Phase 3 also packages any eventual centered tail as a concrete bounded
-    cutoff replay object:
-
-      cutoff_replay_package : nat -> Prop
-
-      eventual_periodicity_yields_cutoff_replay_package :
-        forall n,
-          eventually_periodic_center_window n ->
-          cutoff_replay_package n
-
-    So before any later contradiction argument is applied, the eventual-tail
-    hypothesis has already been converted into a finite replay package whose
-    target row is the canonical cutoff row itself, both in window form and in
-    bounded pointwise form.
-
-    The seed-cutoff specialization is also closed:
-
-      local_target_window_realization_of_seed_builds_phase2_memory_certificate :
-        forall N u,
-          local_target_window_realization (S (S N)) seed_row u ->
-          phase2_memory_certificate N u
-
-    and therefore any replay package already sitting at time cutoff `0`
-    feeds directly into the Original Sin memory layer.
-
-    The package also exposes the finite shell question:
-
-      manipulation_question_decidable_without_center_strip :
-        forall N u,
-          { center_strip_free_manipulated N u } +
-          { ~ center_strip_free_manipulated N u }
-
-    together with the Phase 2 consequence:
-
-      local_seed_window_realization_forces_center_strip_free_manipulation :
-        forall N u,
-          local_seed_window_realization (S N) u ->
-          center_strip_free_manipulated N u
-
-    and the stronger observation-only impossibility statement:
-
-      no_observation_only_tamper_checker :
-        forall R T checker,
-          ~ observation_only_tamper_checker R T checker
-
-    This is the recommended semantic reading of the package: no closed
-    uniform periodic tail exists for the seeded Rule 30 center, and in
-    particular no faithful realizer can package such a tail.
-
-    The compactness route is kept explicit:
-
-      observable periodicity
-        + upward admissibility
-        -> False
-
-    T004 also proves that the bare finite seed-window matching problem is
-    satisfiable at every radius.  So any future compactness obstruction must
-    include replay or closure equations, not merely one-step agreement with the
-    seed on a bounded interval.
-
-    For that reason the compactness-facing finite object is now:
-
-      finite_replay_problem n horizon
-
-    which keeps the replay equations together with a genuinely bounded
-    admissibility witness: the upward step legitimacy is required only on the
-    finite radius n + horizon.
-
-    The package also isolates the compactness step explicitly as a premise:
-
-      replay_compactness_principle :
-        Prop
-
-    It also proves the bounded periodicity bridge:
-
-      purely_periodic_implies_finite_replay_problem :
-        forall n horizon,
-          purely_periodic_center_window n ->
-          finite_replay_problem n horizon
-
-    Combining that bridge with the Replay Compactness premise and the
-    No Progenitor Theorem yields the Phase 1 compactness corollary,
-    while the primary semantic interface is the direct Phase 3
-    impossibility theorem together with its realizability corollaries
-    and the final Faithfulness Hypothesis corollary wrapper.
-
-
-2 - Public Compilation Surface
-    --------------------------
+    T004 provides a mechanized proof that the center column of the
+    canonical single-seed Rule 30 trajectory admits no closed uniform
+    eventual periodic tail.  The development relies on the standard
+    libraries Arith, Bool, List, and ZArith.  The proof factors into
+    three constructive phases and three corollary layers.
+
+    The constructive core consists of Phase 1 (the seeded orbit, the
+    No Progenitor Theorem, and the replay/compactness scaffold),
+    Phase 2 (bounded seed-window realizations and the Original Sin
+    Theorem), and Phase 3 (carrier transport and the direct uniform-tail
+    impossibility theorem).  Phase 3 is the recommended semantic
+    endpoint: it proves that no triple (R, T, P) with P > 0 can carry
+    a uniform eventual periodic tail.
+
+    The corollary sequence then packages that obstruction externally.
+    Corollary 1 isolates the Faithfulness Hypothesis and derives
+    eventual aperiodicity of centered windows.  Corollary 2 interprets
+    the center strip as a binary real and derives irrationality.
+    Corollary 3 classifies the finite reverse-predecessor-carrier
+    ambiguity and proves that no observation-only tamper checker exists.
+
+
+2 - Repository Tree
+    ---------------
 
     .
     ├── README
@@ -240,129 +35,70 @@
     │
     ├── R01__Phase_One.v
     │
-    │      Consolidated Phase 1 theory unit: base dynamics, the seed,
-    │      local lemmas, replay/admissibility data, and the
+    │      Phase 1 theory unit: base dynamics, the seed, the
+    │      No Progenitor Theorem, replay/admissibility data, and the
     │      compactness-conditional no-pure-periodicity route.
     │
     ├── R02__Phase_Two.v
     │
-    │      Consolidated Phase 2 theory unit: bounded seed-window
-    │      realizations, the Original Sin Theorem, and the auxiliary
-    │      reverse-side compact-trap / hidden-support vocabulary.
+    │      Phase 2 theory unit: bounded seed-window realizations, the
+    │      Original Sin Theorem, and the auxiliary compact-trap /
+    │      hidden-support vocabulary.
     │
     ├── R03__Phase_Three.v
     │
-    │      Consolidated Phase 3 theory unit: mixed-periodicity
-    │      impossibility and realizability-facing corollaries.
+    │      Phase 3 theory unit: mixed-periodicity impossibility,
+    │      carrier transport, and realizability-facing corollaries.
     │
     ├── R04__1st_Corollary.v
     │
-    │      First external corollary layer under the Faithfulness
-    │      Hypothesis.
+    │      First corollary layer under the Faithfulness Hypothesis.
     │
     ├── R05__2nd_Corollary.v
     │
     │      Second corollary layer.  It interprets the center strip as
-    │      a binary real, proves that the finite growing-pyramid
-    │      recipe yields the same real, isolates irrationality as a
-    │      direct consequence of center-strip non-eventual-periodicity,
-    │      proves that rational binary reals induce eventually periodic
-    │      bit streams, and concludes that the common Rule 30 center
-    │      real is irrational under the Faithfulness Hypothesis.
+    │      a binary real, proves presentation independence with the
+    │      finite growing-pyramid recipe, and derives irrationality
+    │      under the Faithfulness Hypothesis.
     │
     ├── R06__3rd_Corollary.v
     │
-    │      Third corollary layer.  It removes the center strip from
-    │      view, asks the residual four-bit syntactic question
-    │      "was this manipulated?", proves that question decidable,
-    │      classifies the finite reverse-predecessor-carrier ambiguity of the visible
-    │      canonical observation, and proves that no checker seeing only
-    │      that visible observation can decide canonical versus
-    │      tampered hidden predecessor carriers.
+    │      Third corollary layer.  It classifies the finite
+    │      reverse-predecessor-carrier ambiguity of the visible
+    │      canonical observation and proves that no observation-only
+    │      tamper checker exists.
     │
     ├── T004__Comprehension.v
     │
-    │      Audit-facing index for all three layers, including the strong
-    │      semantic endpoint and the external classical corollary.
+    │      Audit-facing proof index for the public T004 surface:
+    │      the three constructive phases, the three corollary layers,
+    │      and the principal semantic endpoints.
     │
     ├── T004__Extraction.v
     │
-    │      OCaml extraction surface for finite windows, seeded prefixes,
-    │      truncations, and assumption reporting.
+    │      OCaml extraction surface for finite windows, seeded
+    │      prefixes, truncations, and assumption reporting for the
+    │      principal theorems.
     │
     └── appendix
            ├── ObservedPeriodRefuter.ml
            │
-           │      Extracted OCaml implementation of the finite observational
-           │      period refuter for centered canonical windows.
+           │      Extracted OCaml implementation of the finite
+           │      observational period refuter for centered canonical
+           │      windows.
            │
            ├── ObservedPeriodRefuter.mli
            │
-           │      Generated OCaml interface for the extracted period-refuter
-           │      surface.
+           │      Generated OCaml interface for the extracted
+           │      period-refuter surface.
            │
            ├── UniformTailWitnessChecker.ml
            │
-           │      Extracted OCaml implementation of the bounded uniform-tail
-           │      witness checker for candidate periodic tails.
+           │      Extracted OCaml implementation of the bounded
+           │      uniform-tail witness checker for candidate periodic
+           │      tails.
            │
            └── UniformTailWitnessChecker.mli
 
-                  Generated OCaml interface for the extracted witness-checker
-                  surface.
-
-    The legacy split route has been consolidated into the eight public
-    source files above, and `_CoqProject` now compiles exactly that
-    surface.  `T004__Comprehension.v` audits the full public pipeline, with
-    `R01__Phase_One.v` through
-    `R03__Phase_Three.v` forming the constructive framework and
-    `R04__1st_Corollary.v` through `R06__3rd_Corollary.v` forming the
-    corollary sequence.
-
-
-3 - Notes
-    -----
-
-    (i)    A progenitor is a finitely supported predecessor.
-
-    (ii)   The No Progenitor Theorem does not say the seed has no
-           arbitrary predecessor. It says the seed has no finitely supported
-           predecessor.
-
-    (iii)  The audit layer exposes the full public structure explicitly:
-           the three constructive phases together with the corollary sequence.
-
-    (iv)   Bare finite seed-window matching is too weak: T004 proves it is
-           satisfiable for every radius.
-
-    (v)    The correct finite target for compactness is a bounded replay
-           problem, not the bare local predecessor window.
-
-    (vi)   The classical step is explicit: periodicity yields the bounded
-           replay problem at every horizon; if every such bounded problem is
-           satisfiable, compactness yields admissibility; combined with
-           the No Progenitor Theorem this gives a finite replay
-           obstruction.
-
-    (vii)  The Phase 2 unit carries both the closed cutoff-memory theorem
-           `original_sin_theorem` and the auxiliary compact-trap /
-           hidden-support vocabulary used to organize reverse-side descent
-           arguments.
-
-    (viii) T004__Comprehension.v is the audit entry point for the package.
-
-    (ix)   The recommended semantic endpoint is not the Phase 1 compactness
-           theorem but the direct uniform-tail impossibility theorem in
-           Phase 3, together with its realizability corollaries and the
-           Faithfulness Hypothesis wrapper in R04__1st_Corollary.
-
-    (x)    The compactness language remains mathematically meaningful as a
-           contrapositive packaging of finite replay obstruction; it is not
-           the only semantic reading carried by the package.
-
-    (xi)   `R06__3rd_Corollary.v` still does not settle full semantic
-           provenance.  It does, however, prove a stronger impossibility:
-           once tampering is phrased at the finite predecessor-syntax
-           level, no checker that only sees the visible canonical
-           observation can decide canonical versus tampered hidden
-           predecessor data.
+                  Generated OCaml interface for the extracted
+                  witness-checker surface.
