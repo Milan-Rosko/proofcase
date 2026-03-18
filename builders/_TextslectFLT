@@ -1,0 +1,7 @@
+theories/T004/R00__Base.v
+theories/T004/R01__Seed.v
+theories/T004/R02__Local_Lemmas.v
+theories/T004/R03__Periodicity.v
+theories/T004/R04__No_Pure_Periodicity.v
+theories/T004/R05__Glitch_Compactness.v
+theories/T004/T004_Proof.v

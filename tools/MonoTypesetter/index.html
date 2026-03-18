@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+      :root{color-scheme:light;--bg:#fff;--surface:#fff;--text:#000;--muted:#555;--border:#555;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
+        *{box-sizing:border-box;font:inherit}
+        body,html{min-height:100%}body{margin:0;background:var(--bg);color:var(--text)}.shell{width:min(1080px,calc(100% - 32px));margin:0 auto;padding:24px 0 32px}#example{font-size: xx-small;margin: 0 auto;};#style-select{background: var(--text);color: var(--bg);}.hero{margin-bottom:20px}.control span,.kicker,.lede,.panel span,.status{color:var(--muted)}.control span,.kicker,.panel span{display:block;margin-bottom:8px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}.hero h1{text-align:center;margin:0 0 8px;font-size:clamp(1.8rem, 4vw, 3rem);line-height:1}.lede{margin:0;max-width:38rem;line-height:1.5}.grid,.toolbar{display:grid;gap:12px}.toolbar{grid-template-columns:minmax(0,1fr) auto auto;align-items:end;margin-bottom:12px}.button,.panel,select,textarea{width:100%;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text)}.panel{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel-wide{grid-column:1/-1}.button,select{min-height:44px;padding:0 14px}textarea{min-height:220px;padding:14px;resize:vertical;line-height:1.45;white-space:pre-wrap}.button:focus,select:focus,textarea:focus{outline:2px solid var(--text);outline-offset:2px}.button{cursor:pointer}.status{margin-top:12px;min-height:1.2em}@media (max-width:760px){.shell{width:min(100% - 20px,1080px);padding-top:20px}.grid,.toolbar{grid-template-columns:1fr}.panel-wide{grid-column:auto}textarea{min-height:180px}}
+    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Proofcase ASCII Typesetter</title>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <h1>MonoTypesetter</h1>
+      </header>
+
+      <section class="toolbar" aria-label="Formatter controls">
+        <label class="control">
+          <span>Style</span>
+          <select id="style-select" aria-label="Style selector"></select>
+        </label>
+        <button id="load-example" class="button button-secondary" type="button" style="display: none;">Use example</button>
+      </section>
+
+      <section class="grid">
+        <label class="panel">
+          <span>Input</span>
+          <textarea
+            id="input"
+            spellcheck="false"
+            aria-label="Input text"
+            placeholder="Paste or type source text here."
+          ></textarea>
+        </label>
+
+        <label class="panel">
+          <span>Example</span>
+          <textarea
+            id="example"
+            readonly
+            spellcheck="false"
+            aria-label="Formatted example"
+          ></textarea>
+        </label>
+
+        <label class="panel panel-wide">
+          <span>Output</span>
+          <textarea
+            id="output"
+            readonly
+            spellcheck="false"
+            aria-label="Formatted output"
+          ></textarea>
+        </label>
+      </section>
+
+      <button id="copy-output" class="button" type="button" style="margin:1em 0 0 0">Copy output</button>
+    </main>
+  </body>
+</html>

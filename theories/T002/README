@@ -3,17 +3,39 @@
 1 - Description
     -----------
 
-    T002 provides a mechanized Rocq development of a Hilbert-style proof checker
-    and its reduction to a cubic polynomial satisfiability witness system. The
-    construction is built in layers: Fibonacci/Zeckendorf foundations,
-    syntactic proof verification, constraint assembly, and final reduction
-    interfaces.
+    T002 provides a mechanized Rocq development of a Hilbert-style proof
+    checker and its reduction to a cubic polynomial satisfiability witness
+    system.  The construction is organized into three audit-facing parts:
 
-    The coded-decider semantics used by Tier-2 is execution-based (`EvalRM`
-    transported by halting traces), exposed only through the R18/R19 API
-    boundary. R20 exposes an explicit aggregated-evaluator semantics for the
-    single cubic equation, and R21 proves `unpair_pair_P0` for the carryless
-    pairing instance used in code decoding.
+      (i) `A__SigmaReduction`
+
+          The constructive compiler side: Fibonacci/Zeckendorf foundations,
+          syntactic proof verification, constraint assembly, aggregation to a
+          single cubic equation, and the stable reduction APIs.
+
+      (ii) `B__ProofTheory`
+
+          The coded proof-theory side: concrete provability, substitution-code
+          infrastructure, diagonalization, toggle contradiction, and the
+          premise-free undecidability/certification endpoints.
+
+      (iii) `T002__Comprehension.v`
+
+          A proof-semantic synopsis layer collecting the stable semantics,
+          endpoint theorems, and audit aliases without introducing new
+          constructive content.
+
+      (iv) `T002__Extraction_Interface.v`
+
+          The sanctioned root-level OCaml extraction surface for the checker,
+          compiler, and carryless-pairing utilities.
+
+    The coded-decider semantics used by Tier 2 is execution-based through
+    `EvalRM`/`TotalRM`, exposed at the stable API boundary `R18`/`R19`.
+    `R20` adds an explicit aggregated-evaluator semantics for the single cubic
+    equation, `R21` proves `unpair_pair_P0` for the carryless-pairing instance
+    used by code decoding, and the sanctioned OCaml extraction surface now
+    lives in `T002__Extraction_Interface.v` at the package root.
 
     The `appendix/` directory contains extracted OCaml code and context/testing
     outputs generated from this development.
@@ -27,57 +49,18 @@
     │
     │      (This file.)
     │
-    ├── P__ProofTheory
-    │         │
-    │         ├── P00__Concrete_Provability.v
-    │         │
-    │         │      Concrete provability kernel: defines
-    │         │      `Concrete_Proof`/`ProvCode` directly from coded checker 
-    │         │      acceptance, and provides the substitution-code
-    │         │      infrastructure used by code-level diagonalization.
-    │         │
-    │         ├── P00__Provability_Interface.v
-    │         │
-    │         │      Stable proof-theory interface: exports `Prov`, `Thm`,
-    │         │      `CubicSat`, coded decider notions (`DeciderCode`,
-    │         │      `EvalCode`, `CorrectCode`), and bridge theorems
-    │         │      (`Prov_iff_Thm`, `sigma_reduction_for_prov`), including
-    │         │      halting-trace transport (`EvalCode_iff_halting_trace`).
-    │         │
-    │         ├── P01__HBL.v
-    │         │
-    │         │      Concrete derivability layer (axiom-free): witness 
-    │         │      extraction, checker-based MP internalization, and
-    │         │      substitution/representability lemmas used downstream by the
-    │         │      proof-theory path.
-    │         │
-    │         ├── P02__Diagonal.v
-    │         │
-    │         │      Code-level diagonal toolkit: template application,
-    │         │      admissibility, fixed-point construction, and close/unfold.
-    │         │
-    │         ├── P03__Undecidability.v
-    │         │
-    │         │      Tier-2 endpoint: premise-free coded undecidability theorem
-    │         │      `no_total_correct_code_CubicSat` and computable-function
-    │         │      corollary.
-    │         │
-    │         ├── P04__RA_Certification.v
-    │         │
-    │         │      Tier-3 certification corollary: section-parametric result
-    │         │      reducing RA-certified decider codes to the Tier-2
-    │         │      impossibility theorem.
-    │         │
-    │         ├── P05__Toggle_Contradiction.v
-    │         │
-    │         │      Toggle-witness contradiction core: source-point to witness
-    │         │      bridge and contradiction theorem collapsing `CorrectCode e`.
-    │         │
-    │         └── P06__SourceToggle_Generator.v
+    ├── T002__Comprehension.v
     │
-    │                Internal source-toggle diagonal generator.
+    │      Audit/comprehension layer for the whole package: re-exports stable
+    │      semantics and endpoints for the compilation, diagonal, and
+    │      impossibility routes.
     │
-    ├── R_SigmaReduction
+    ├── T002__Extraction_Interface.v
+    │
+    │      Root-level OCaml extraction interface exposing the checker,
+    │      compiler summaries, and P0-specialized carryless-pairing wrappers.
+    │
+    ├── A__SigmaReduction
     │         │
     │         ├── R00__Degree_Framework.v
     │         │
@@ -108,7 +91,7 @@
     │         │
     │         ├── R05__Verification_Hilbert_Checker.v
     │         │
-    │         │      Executable proof checker (`check`) with modus-ponens 
+    │         │      Executable proof checker (`check`) with modus-ponens
     │         │      witness search, line-by-line validation, and small
     │         │      `vm_compute` test cases.
     │         │
@@ -143,12 +126,13 @@
     │         │
     │         │      Aggregates polynomial obligations into one cubic equation
     │         │      and proves equivalence between checker acceptance and
-    │         │      Fibonacci-banded two-channel equality (Zeckendorf no-carry).
+    │         │      Fibonacci-banded two-channel equality (Zeckendorf
+    │         │      no-carry).
     │         │
     │         ├── R13__Kernel_API.v
     │         │
     │         │      Public kernel interface (`cubic_accepts`, `CubicWitness`)
-    │         │      with correctness theorem and exported degree-bound
+    │         │      with correctness theorems and exported degree-bound
     │         │      guarantees.
     │         │
     │         ├── R14__Reduction_Core.v
@@ -158,30 +142,33 @@
     │         │
     │         ├── R15__Code_Bridge.v
     │         │
-    │         │      Concrete coding bridge from `(proof, target)` objects to N
-    │         │      with equivalence theorem at the coded-instance boundary.
+    │         │      Concrete coding bridge from `(proof, target)` objects to
+    │         │      `nat`, with equivalence theorem at the coded-instance
+    │         │      boundary.
     │         │
     │         ├── R16__Sigma_Reduction.v
     │         │
-    │         │      Coded evaluator + reduction nucleus: defines
-    │         │      `EvalRM`/`TotalRM`, `HaltingTrace` and
-    │         │      `EvalRM <-> HaltingTrace`, recursion/fixed point theorem
-    │         │      over decider codes, theorems `sigma_reduction`,
+    │         │      Coded evaluator and reduction nucleus: defines
+    │         │      `EvalRM`/`TotalRM`, toggle/fixed-point machinery over
+    │         │      decider codes, and theorems `sigma_reduction`,
     │         │      `thm_reduces_to_cubic`, `compiler_primitive`.
     │         │
     │         ├── R17__Extraction_Interface.v
     │         │
-    │         │      emits OCaml artifacts for `cubic_accepts`
+    │         │      Deprecated historical slot.  The active extraction layer
+    │         │      now lives in `T002__Extraction_Interface.v` at the package
+    │         │      root.
     │         │
     │         ├── R18__Sigma_Reduction_API.v
     │         │
     │         │      Full reduction API boundary: re-exports stable definitions
-    │         │      from R16 and seals heavy internals via `Global Opaque`.
+    │         │      from R16, exposes aggregated-evaluator semantics, and
+    │         │      seals heavy internals via `Global Opaque`.
     │         │
     │         ├── R19__Sigma_Reduction_Minimal_API.v
     │         │
-    │         │      Deliberately excludes evaluator-shape internals such as
-    │         │      `code_output`-style collapse lemmas.
+    │         │      Minimal reduction API: retains only the stable source/target
+    │         │      predicates and fixed-point interface needed downstream.
     │         │
     │         ├── R20__Aggregated_Evaluator.v
     │         │
@@ -196,12 +183,63 @@
     │
     │                Channel-bound lemmas used by aggregation/capacity control.
     │
+    ├── B__ProofTheory
+    │         │
+    │         ├── P00__Concrete_Provability.v
+    │         │
+    │         │      Concrete provability kernel: defines
+    │         │      `Concrete_Proof`/`ProvCode` directly from coded checker
+    │         │      acceptance, and provides the substitution-code
+    │         │      infrastructure used by code-level diagonalization.
+    │         │
+    │         ├── P00__Provability_Interface.v
+    │         │
+    │         │      Stable proof-theory interface: exports `Prov`, `Thm`,
+    │         │      `CubicSat`, coded decider notions (`DeciderCode`,
+    │         │      `EvalCode`, `CorrectCode`), and bridge theorems
+    │         │      (`Prov_iff_Thm`, `sigma_reduction_for_prov`,
+    │         │      `source_toggle_point_exists`).
+    │         │
+    │         ├── P02__Diagonal.v
+    │         │
+    │         │      Code-level diagonal toolkit: template application,
+    │         │      admissibility, fixed-point construction, and
+    │         │      close/unfold machinery for substitution codes.
+    │         │
+    │         ├── P01__HBL.v
+    │         │
+    │         │      Concrete derivability layer: witness extraction,
+    │         │      checker-based MP internalization, and
+    │         │      substitution/representability lemmas used to read the
+    │         │      diagonal layer proof-theoretically.
+    │         │
+    │         ├── P05__Toggle_Contradiction.v
+    │         │
+    │         │      Toggle-witness contradiction core: source-point to witness
+    │         │      bridge and contradiction theorem collapsing `CorrectCode e`.
+    │         │
+    │         ├── P06__SourceToggle_Generator.v
+    │         │
+    │         │      Internal source-toggle diagonal generator.
+    │         │
+    │         ├── P03__Undecidability.v
+    │         │
+    │         │      Tier-2 endpoint: premise-free coded undecidability theorem
+    │         │      `no_total_correct_code_CubicSat` and computable-decider
+    │         │      corollaries.
+    │         │
+    │         └── P04__RA_Certification.v
+    │
+    │                Tier-3 certification corollary: section-parametric result
+    │                reducing RA-certified decider codes to the Tier-2
+    │                impossibility theorem.
+    │
     └── appendix
         │
         ├── carryless_pairing.ml
         │
         │      Extracted OCaml implementation of the carryless-pairing
-        │      foundations (Fibonacci, pairing, and unpairing utilities).
+        │      foundations together with P0-specialized wrapper functions.
         │
         ├── carryless_pairing.mli
         │
@@ -218,8 +256,9 @@
         │
         ├── cubic_compiler.ml
         │
-        │      Extracted OCaml compiler surface exposing `emit_cubic_system`
-        │      and `degree` for cubic-polynomial generation/inspection.
+        │      Extracted OCaml compiler surface exposing
+        │      `emit_cubic_system`, `emit_single_cubic`, `degree`, and
+        │      small summary helpers for compiled instances.
         │
         ├── cubic_compiler.mli
         │

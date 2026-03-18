@@ -1,4 +1,4 @@
-(* R04__First_Corollary.v *)
+(* R04__1st_Corollary.v *)
 
 From T004 Require Import R03__Phase_Three.
 
@@ -92,20 +92,6 @@ Theorem classical_semantics_excludes_any_eventual_periodic_window :
 Proof.
   intros Hfaith [R Hobs].
   exact (classical_semantics_excludes_eventual_periodic_windows Hfaith R Hobs).
-Qed.
-
-Theorem faithful_observational_realizers_already_impossible :
-  forall R,
-    ~ realizable_observational_periodic_tail_from R.
-Proof.
-  exact realizable_observational_periodic_tail_from_impossible.
-Qed.
-
-Theorem faithful_uniform_realizers_already_impossible :
-  forall R,
-    ~ realizable_uniform_periodic_tail_from R.
-Proof.
-  exact realizable_uniform_periodic_tail_from_impossible.
 Qed.
 
 End Classic_Semantics.

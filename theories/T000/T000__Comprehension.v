@@ -1,24 +1,35 @@
-(* `T000__Proof.v` *)
+(* T000__Comprehension.v *)
 
 From Coq Require Import Arith Bool List PeanoNat.
 Import ListNotations.
 
 From T000 Require Import
-  R00__Odd_Part
-  R01__Pigeonhole_Divisibility.
+  R01__Odd_Part
+  R02__Pigeonhole_Divisibility.
 
 (*************************************************************************)
+(*                                   .                                   *)
+(*                                  ___                                  *)
+(*                       `  .    .'     `.     .  ´                      *)
+(*                              /         \                              *)
+(*                             |           |                             *)
+(*                     _  .    |           |    .  _                     *)
+(*                              .  :~~~:  .                              *)
+(*                               `. \ / .'                               *)
+(*                           .     |_|_|     .                           *)
+(*                          ´      (===)      `                          *)
+(*                                  `-´                                  *)
 (*                                                                       *)
-(*   Proofcase / Pigeonhole Divisibility -- Audit Layer                  *)
+(*    Proofcase / T000 -- Comprehension Layer                            *)
 (*                                                                       *)
-(*   This file serves as the proof-theoretic synopsis of `T000`.  It     *)
-(*   introduces no new mathematical content.  Rather, it reorganizes     *)
-(*   the derivational spine of the template package and re-exports its   *)
-(*   principal arithmetic objects, its finite codomain control lemmas,   *)
-(*   its abstract combinatorial collision theorem, and its final         *)
-(*   divisibility endpoint in one place.                                 *)
+(*    This file serves as a proof-semantic synopsis and comprehension    *)
+(*    aid for project T000. It introduces no new constructive content    *)
+(*    or  derivations; but consolidates the core semantics (theorems,    *)
+(*    lemmas,  and corollaries, together with their endpoints) into a    *)
+(*    unified structure for readability and auditability.                *)
 (*                                                                       *)
 (*************************************************************************)
+
 
 Section Proof_Index.
 
@@ -30,26 +41,26 @@ Section Proof_Index.
   for small, closed Proofcase packages whose proofs factor into a clean sequence
   of explicit local lemmas and one final endpoint theorem.
 
-  (i) Main Result
+  (i) MAIN RESULT
 
-    (a) Arithmetic normal-form layer.
+    (a) ARITHMETIC NORMAL-FORM LAYER
 
         Every positive integer is decomposed into a power of two times an odd
         factor.  The odd factor is treated as the canonical invariant relevant
         to divisibility.
 
-    (b) Finite odd-codomain layer.
+    (b) FINITE ODD-CODOMAIN LAYER
 
         For inputs restricted to `{1, ..., 2n}`, the odd-part map lands inside
         the explicit n-element list `odd_range n` of odd values.
 
-    (c) Combinatorial collision layer.
+    (c) COMBINATORIAL COLLISION LAYER
 
         A generic list-based pigeonhole principle converts the cardinality gap
         `|A| = n + 1` versus `|odd_range n| = n` into a pair of distinct
         elements with equal odd part.
 
-    (d) Endpoint transfer.
+    (d) THEOREM
 
         Equality of odd parts is translated back into the divisibility
         conclusion by comparing the respective 2-adic exponents.
@@ -57,7 +68,7 @@ Section Proof_Index.
 
 (*************************************************************************)
 (*                                                                       *)
-(*                   ARITHMETIC NORMAL-FORM LAYER                        *)
+(*                              MAIN RESULT                              *)
 (*                                                                       *)
 (*************************************************************************)
 
@@ -136,9 +147,9 @@ Definition audit_odd_part_divides :
 
 (*
   (7)
-  Full decomposition theorem: every positive integer factors as a power
-  of `2` multiplied by its odd part.  This is the structural statement that
-  later turns equality of odd parts into a direct divisibility relation.
+  Full decomposition theorem: every positive integer factors as a power of `2`
+  multiplied by its odd part.  This is the structural statement that later turns
+  equality of odd parts into a direct divisibility relation.
 *)
 
 Definition audit_decomposition :
@@ -149,9 +160,9 @@ Definition audit_decomposition :
 
 (*
   (8)
-  Arithmetic comparison theorem.  If two positive integers share the same
-  odd part, then their difference lies entirely in the 2-adic exponent,
-  so one of them must divide the other.
+  Arithmetic comparison theorem. If two positive integers share the same odd 
+  part, then their difference lies entirely in the 2-adic exponent, so one of
+  them must divide the other.
 *)
 
 Definition audit_same_odd_part_divides :
@@ -162,12 +173,6 @@ Definition audit_same_odd_part_divides :
     Nat.divide a b \/ Nat.divide b a :=
   same_odd_part_divides.
 
-(*************************************************************************)
-(*                                                                       *)
-(*                    FINITE ODD-CODOMAIN LAYER                          *)
-(*                                                                       *)
-(*************************************************************************)
-
 (*
   (b)
   FINITE ODD-CODOMAIN LAYER
@@ -175,9 +180,9 @@ Definition audit_same_odd_part_divides :
 
 (*
   (1)
-  Explicit finite codomain for the odd-part map on `{1, ..., 2n}`: the list
-  of the first n positive odd numbers.  This is the concrete carrier of
-  the pigeonholes used in the main theorem.
+  Explicit finite codomain for the odd-part map on `{1, ..., 2n}`: the list of
+  the first n positive odd numbers.  This is the concrete carrier of the
+  pigeonholes used in the main theorem.
 *)
 
 Definition audit_odd_range : nat -> list nat :=
@@ -209,11 +214,11 @@ Definition audit_odd_range_in_iff :
 
 (*
   (4)
-  The codomain list is duplicate-free.  This ensures that `odd_range n`
-  behaves as a genuine finite family of n distinct categories rather than
-  merely as a list with repeated labels.  In particular, the subsequent
-  cardinality comparison is mathematically honest at the level of distinct
-  values and not just list length.
+  The codomain list is duplicate-free. This ensures that `odd_range n` behaves
+  as a genuine finite family of n distinct categories rather than merely as a
+  list with repeated labels. In particular, the subsequent cardinality
+  comparison is mathematically honest at the level of distinct values and not
+  just list length.
 *)
 
 Definition audit_odd_range_NoDup :
@@ -236,12 +241,6 @@ Definition audit_odd_part_in_range :
     In (audit_odd_part a) (audit_odd_range n) :=
   odd_part_in_range.
 
-(*************************************************************************)
-(*                                                                       *)
-(*                  COMBINATORIAL COLLISION LAYER                        *)
-(*                                                                       *)
-(*************************************************************************)
-
 (*
   (c)
   COMBINATORIAL COLLISION LAYER
@@ -249,12 +248,11 @@ Definition audit_odd_part_in_range :
 
 (*
   (1)
-  Generic list-based pigeonhole principle.  It is phrased abstractly so
-  that the combinatorial collision mechanism is cleanly separated from
-  the number-theoretic content of odd parts and divisibility.  This
-  separation is part of the template discipline: the combinatorial engine
-  should remain reusable, while arithmetic meaning enters only through the
-  choice of the map and the target category list.
+  Generic list-based pigeonhole principle. It is phrased abstractly so that the
+  combinatorial collision mechanism is cleanly separated from the theoretic
+  content of odd parts and divisibility. This separation is the template: The
+  combinatorial engine should remain reusable, while arithmetic meaning enters
+  only through the choice of the map and the target category list.
 *)
 
 Definition audit_pigeonhole :
@@ -269,21 +267,15 @@ Definition audit_pigeonhole :
       f a = f b :=
   pigeonhole.
 
-(*************************************************************************)
-(*                                                                       *)
-(*                        ENDPOINT TRANSFER                              *)
-(*                                                                       *)
-(*************************************************************************)
-
 (*
   (d)
-  ENDPOINT TRANSFER
+  THEOREM
 *)
 
 (*
   (1)
-  Principal `T000` endpoint.  The abstract collision theorem is applied to
-  the odd-part map on a duplicate-free list `A` of length `n + 1` contained in
+  Principal `T000` endpoint. The abstract collision theorem is applied to the
+  odd-part map on a duplicate-free list `A` of length `n + 1` contained in
   `{1, ..., 2n}`; the resulting same-odd-part pair is then discharged by the
   arithmetic comparison theorem to obtain a divisibility pair.
 *)
@@ -302,10 +294,10 @@ Definition audit_pigeonhole_divisibility :
 
 (*
   (2)
-  Canonical public alias for the package endpoint.  This gives downstream
-  readers a stable theorem name inside the audit layer without changing the
-  mathematical content.  In audit-facing reading, this is the preferred
-  symbol under which the entire `T000` route may be cited.
+  Canonical public alias for the package endpoint. This gives downstream readers
+  a stable theorem name inside the audit layer without changing the mathematical
+  content. In audit-facing reading, this is the preferred symbol under which the
+  entire `T000` route may be cited.
 *)
 
 Definition audit_template_endpoint :
@@ -322,17 +314,18 @@ Definition audit_template_endpoint :
 
 (*************************************************************************)
 (*                                                                       *)
-(*                                THEOREM                                *)
+(*                                  QED                                  *)
 (*                                                                       *)
-(*    Pigeonhole Divisibility                                            *)
+(*                        Pigeonhole Divisibility                        *)
 (*                                                                       *)
-(*                            PROOF IN STEPS                             *)
+(*                                 PROOF                                 *)
 (*                                                                       *)
 (*    Step 1. Normalize each admissible input `a` by passing to          *)
 (*            `odd_part a`.                                              *)
 (*                                                                       *)
-(*    Step 2. Show that all such normalized values lie in `odd_range n`, *)
-(*            an explicit n-element family of odd numbers.               *)
+(*    Step 2. Show that all such normalized values lie in                *)
+(*            `odd_range n`,  an explicit n-element family of odd        *)
+(*            numbers.                                                   *)
 (*                                                                       *)
 (*    Step 3. Apply the abstract pigeonhole theorem to the `n + 1`       *)
 (*            source elements and the `n` target categories to obtain    *)
@@ -341,40 +334,36 @@ Definition audit_template_endpoint :
 (*    Step 4. Convert that collision back into divisibility using the    *)
 (*            decomposition `a = 2^(val2 a) * odd_part a`.               *)
 (*                                                                       *)
-(*                              REALIZATION                              *)
+(*                             MECHANIZATION                             *)
 (*                                                                       *)
-(*    `forall n A,`                                                      *)
-(*    `  (forall a, In a A -> 1 <= a /\ a <= 2 * n) ->`                  *)
-(*    `  NoDup A ->`                                                     *)
-(*    `  length A = n + 1 ->`                                            *)
-(*    `  exists a b,`                                                    *)
-(*    `    In a A /\ In b A /\ a <> b /\`                                *)
-(*    `    (Nat.divide a b \/ Nat.divide b a)`                           *)
+(*    forall n A,                                                        *)
+(*     (forall a, In a A -> 1 <= a /\ a <= 2 * n) ->                     *)
+(*       NoDup A ->                                                      *)
+(*       length A = n + 1 ->                                             *)
+(*       exists a b,                                                     *)
+(*         In a A /\ In b A /\ a <> b /\                                 *)
+(*         (Nat.divide a b \/ Nat.divide b a)                            *)
 (*                                                                       *)
 (*                                READING                                *)
 (*                                                                       *)
-(*    Any list `A` of `n + 1` pairwise distinct naturals drawn from the  *)
-(*    interval `{1, ..., 2n}` contains two distinct elements such that   *)
-(*    one divides the other.  The proof proceeds by sending each         *)
-(*    element of `A` to its odd part, observing that these images all lie*)
-(*    in the explicit n-element odd list `odd_range n`, invoking the     *)
-(*    pigeonhole principle to obtain two distinct source elements with   *)
-(*    the same odd part, and finally comparing their 2-adic valuations   *)
-(*    to conclude divisibility in one direction or the other.  In this   *)
-(*    sense, the theorem is an interplay between a finite counting       *)
-(*    argument and a canonical arithmetic normal form.                   *)
+(*    Any  list  `A of n + 1` pairwise distinct natural numbers drawn    *)
+(*    from  the  interval {1, ..., 2n} contains two distinct elements    *)
+(*    such  that one divides the other. The proof proceeds by mapping    *)
+(*    each  element  of  `A`  to  its  odd part, noting that all such    *)
+(*    images  lie within the explicit `n`-element set `odd_range(n)`.    *)
+(*    By  the  pigeonhole  principle,  there  must exist two distinct    *)
+(*    elements  of  `A`  whose  odd  parts  coincide. Comparing their    *)
+(*    `2-adic` valuations then shows that one divides the other.         *)
 (*                                                                       *)
 (*                             QUALIFICATION                             *)
 (*                                                                       *)
-(*    This theorem is closed in the ambient context and carries no       *)
-(*    non-constructive assumptions.  It is therefore not merely the      *)
-(*    final claim of `T000` but also the model example of the Proofcase  *)
-(*    design principle that a package should expose its conceptual       *)
-(*    route explicitly: arithmetic normalization, finite codomain        *)
-(*    control, abstract combinatorics, and terminal discharge.  The      *)
-(*    present file is intended to make that route legible to a reader    *)
-(*    who wants the proof architecture before descending into the        *)
-(*    implementation details of the source lemmas.                       *)
+(*    This  result  (famously appearing in an anecdote of Paul Erdős)    *)
+(*    is  “Closed  within  its  ambient  context”  and relies only on    *)
+(*    effective  assumptions.  It thus serves not merely as the final    *)
+(*    claim  of  T000, but also as a model example of the “Proofcase”    *)
+(*    design  principle:  each  package should make its logical route    *)
+(*    explicit,  progressing through arithmetic normalization, finite    *)
+(*    codomain control, abstract combinatorics, and final discharge.     *)
 (*                                                                       *)
 (*************************************************************************)
 

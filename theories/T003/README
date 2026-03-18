@@ -29,6 +29,10 @@
     witness is the uniform compiler family as bounds scale, not a claim that
     one fixed bounded instance is already RE-complete.
 
+    `T003__Comprehension.v` packages the pinned metadata, certification gates,
+    packaged artifact records, effectivity checks, and bounded endpoint theorem
+    into one audit-facing synopsis layer.
+
 2 - On Python
     ---------
     
@@ -48,6 +52,11 @@
     ├── README
     │
     │      (This file.)
+    │
+    ├── T003__Comprehension.v
+    │
+    │      Audit/comprehension layer for the bounded cubic artifact and its
+    │      endpoint theorem.
     │
     ├── Chunks
     │       │

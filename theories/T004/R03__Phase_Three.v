@@ -3,7 +3,7 @@
 From Coq Require Import Arith Bool Classical_Prop Lia List ZArith.
 Import ListNotations.
 
-From T004 Require Import R01__Phase_One.
+From T004 Require Import R01__Phase_One R02__Phase_Two.
 
 Open Scope Z_scope.
 
@@ -1128,6 +1128,29 @@ Proof.
   apply row_window_canonical_row.
 Qed.
 
+Theorem cutoff_predecessor_realizes_cutoff_target_window_pointwise :
+  forall n T P m,
+    (0 < P)%nat ->
+    (forall t,
+      center_window n (T + t + P)%nat =
+      center_window n (T + t)%nat) ->
+    forall x,
+      (Z.abs x <= Z.of_nat n)%Z ->
+      step (cutoff_predecessor T P m) x = canonical_row T x.
+Proof.
+  intros n T P m HP Hperiod x Hx.
+  pose proof
+    (cutoff_predecessor_realizes_cutoff_target_window n T P m HP Hperiod)
+    as Hwindow.
+  pose proof
+    (row_window_eq_implies_same_on_interval
+      n (step (cutoff_predecessor T P m)) (canonical_row T) Hwindow)
+    as Hsame.
+  apply Hsame.
+  unfold in_interval.
+  lia.
+Qed.
+
 Theorem eventual_periodicity_yields_repeated_cutoff_predecessors :
   forall n,
     eventually_periodic_center_window n ->
@@ -1144,6 +1167,68 @@ Proof.
   - intro m.
     exact
       (cutoff_predecessor_realizes_cutoff_target_window n T P m HP Hperiod).
+Qed.
+
+Theorem eventual_periodicity_yields_repeated_cutoff_predecessors_pointwise :
+  forall n,
+    eventually_periodic_center_window n ->
+    exists T P,
+      (0 < P)%nat /\
+      forall m x,
+        (Z.abs x <= Z.of_nat n)%Z ->
+        step (cutoff_predecessor T P m) x = canonical_row T x.
+Proof.
+  intros n Heventual.
+  destruct
+    (eventual_periodicity_yields_repeated_cutoff_predecessors n Heventual)
+    as [T [P [HP Hpred]]].
+  exists T, P.
+  split.
+  - exact HP.
+  - intros m x Hx.
+    pose proof (Hpred m) as Hwindow.
+    pose proof
+      (row_window_eq_implies_same_on_interval
+        n (step (cutoff_predecessor T P m)) (canonical_row T) Hwindow)
+      as Hsame.
+    apply Hsame.
+    unfold in_interval.
+    lia.
+Qed.
+
+Definition cutoff_replay_package (n : nat) : Prop :=
+  exists T P,
+    (0 < P)%nat /\
+    (forall m,
+      local_target_window_realization n (canonical_row T)
+        (cutoff_predecessor T P m)) /\
+    (forall m x,
+      (Z.abs x <= Z.of_nat n)%Z ->
+      step (cutoff_predecessor T P m) x = canonical_row T x).
+
+Theorem eventual_periodicity_yields_cutoff_replay_package :
+  forall n,
+    eventually_periodic_center_window n ->
+    cutoff_replay_package n.
+Proof.
+  intros n Heventual.
+  destruct
+    (eventual_periodicity_yields_repeated_cutoff_predecessors n Heventual)
+    as [T [P [HP Hpred]]].
+  exists T, P.
+  split.
+  - exact HP.
+  - split.
+    + exact Hpred.
+    + intros m x Hx.
+      pose proof (Hpred m) as Hwindow.
+      pose proof
+        (row_window_eq_implies_same_on_interval
+          n (step (cutoff_predecessor T P m)) (canonical_row T) Hwindow)
+        as Hsame.
+      apply Hsame.
+      unfold in_interval.
+      lia.
 Qed.
 
 Lemma finite_periodic_orbit_tail_trim :
@@ -1574,6 +1659,67 @@ Proof.
   unfold local_target_window_realization.
   rewrite rule30_window_on_centered_carrier.
   tauto.
+Qed.
+
+Theorem local_target_window_realization_iff_pointwise :
+  forall R target u,
+    local_target_window_realization R target u <->
+    forall x,
+      (Z.abs x <= Z.of_nat R)%Z ->
+      step u x = target x.
+Proof.
+  intros R target u.
+  unfold local_target_window_realization.
+  split.
+  - intros Hwindow x Hx.
+    pose proof (row_window_eq_implies_same_on_interval R (step u) target Hwindow)
+      as Hsame.
+    apply Hsame.
+    unfold in_interval.
+    lia.
+  - intros Hpoint.
+    apply same_on_interval_implies_row_window_eq.
+    intros x Hx.
+    apply Hpoint.
+    apply Z.abs_le.
+    unfold in_interval in Hx.
+    lia.
+Qed.
+
+Theorem local_target_window_realization_seed_iff :
+  forall R u,
+    local_target_window_realization R seed_row u <->
+    local_seed_window_realization R u.
+Proof.
+  intros R u.
+  rewrite local_target_window_realization_iff_pointwise.
+  unfold local_seed_window_realization.
+  tauto.
+Qed.
+
+Theorem local_target_window_realization_of_seed_builds_phase2_memory_certificate :
+  forall N u,
+    local_target_window_realization (S (S N)) seed_row u ->
+    phase2_memory_certificate N u.
+Proof.
+  intros N u Hreal.
+  rewrite local_target_window_realization_seed_iff in Hreal.
+  exact (original_sin_theorem N u Hreal).
+Qed.
+
+Theorem repeated_seed_cutoff_predecessors_build_phase2_memory_certificates :
+  forall N P,
+    (0 < P)%nat ->
+    (forall m,
+      local_target_window_realization (S (S N)) (canonical_row 0%nat)
+        (cutoff_predecessor 0%nat P m)) ->
+    forall m,
+      phase2_memory_certificate N (cutoff_predecessor 0%nat P m).
+Proof.
+  intros N P HP Hreplay m.
+  rewrite canonical_row_zero in Hreplay.
+  apply local_target_window_realization_of_seed_builds_phase2_memory_certificate.
+  exact (Hreplay m).
 Qed.
 
 Theorem local_target_window_realization_respects_predecessor_carrier :

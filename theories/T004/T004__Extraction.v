@@ -7,18 +7,36 @@ From T004 Require Import
   R01__Phase_One
   R02__Phase_Two
   R03__Phase_Three
-  R04__First_Corollary.
+  R04__1st_Corollary.
 
 Open Scope Z_scope.
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Proofcase / Rule 30 -- OCaml Extraction Interface                    *)
 (*                                                                       *)
-(*  Theorems  erase under extraction, so this file exposes the concrete  *)
-(*  computational  surface  of  T004:  finite centered windows,  seeded  *)
-(*  prefixes,   truncations,   and  small  numeric  views  that  remain  *)
-(*  practical to inspect from OCaml.                                     *)
+(*                            _                                          *)
+(*                        --'  |                                         *)
+(*                       (___^ |     .--.                                *)
+(*                          )  |   /      \                              *)
+(*                         /   |  /        '                             *)
+(*                        |    '-'    /     \                            *)
+(*                         \         |      |\                           *)
+(*                          \    /   \      /\|                          *)
+(*                           \  /'____`\   /                             *)
+(*                           | ||      \ \ |                             *)
+(*                           ( (|       ( (|                             *)
+(*                           | ||       | ||                             *)
+(*                          / /_(      / /_(                             *)
+(*                                                                       *)
+(*                                                                       *)
+(*    Proofcase / T004 -- OCaml Extraction Interface                     *)
+(*                                                                       *)
+(*    This  file  specifies  the  extraction  of the development into    *)
+(*    OCaml.  It  records  how  executable code is generated from the    *)
+(*    definitions  with  computational  content, while proof-specific    *)
+(*    material  is erased during extraction. The resulting OCaml code    *)
+(*    can then be inspected or executed independently of the original    *)
+(*    proofs.                                                            *)
 (*                                                                       *)
 (*************************************************************************)
 

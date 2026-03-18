@@ -11,7 +11,7 @@
 
 theories/T000/R01__Odd_Part.v
 theories/T000/R02__Pigeonhole_Divisibility.v
-theories/T000/T000__Proof.v
+theories/T000/T000__Comprehension.v
 theories/T000/T000__Extraction_Interface.v
 
 
@@ -23,45 +23,48 @@ theories/T000/T000__Extraction_Interface.v
 theories/T001/R01__Carryless_Pairing_Definitions.v
 theories/T001/R02__Carryless_Pairing_Correctness.v
 theories/T001/R03__Carryless_Pairing_Examples.v
-theories/T001/R04__Carryless_Pairing_Export.v
+theories/T001/T001__Comprehension.v
+theories/T001/T001__Extraction_Interface.v
 
 
 # Cubic Diophantine Solver Impossibility
 
--Q theories/T002/R_SigmaReduction T002
--Q theories/T002/P__ProofTheory T002
+-Q theories/T002/A__SigmaReduction T002
+-Q theories/T002/B__ProofTheory T002
 
-theories/T002/R_SigmaReduction/R00__Degree_Framework.v
-theories/T002/R_SigmaReduction/R01__Foundation_Fibonacci.v
-theories/T002/R_SigmaReduction/R02__Foundation_Zeckendorf.v
-theories/T002/R_SigmaReduction/R03__Carryless_Sequence_Indexing.v
-theories/T002/R_SigmaReduction/R04__Verification_Hilbert_Syntax.v
-theories/T002/R_SigmaReduction/R05__Verification_Hilbert_Checker.v
-theories/T002/R_SigmaReduction/R06__Encoding_Formula_Coding.v
-theories/T002/R_SigmaReduction/R08__Constraints_Axiom.v
-theories/T002/R_SigmaReduction/R09__Constraints_MP.v
-theories/T002/R_SigmaReduction/R10__Constraints_Target.v
-theories/T002/R_SigmaReduction/R11__Constraints_Assembly.v
-theories/T002/R_SigmaReduction/R12__Aggregation_Fib_Banded_Equality.v
-theories/T002/R_SigmaReduction/R13__Kernel_API.v
-theories/T002/R_SigmaReduction/R14__Reduction_Core.v
-theories/T002/R_SigmaReduction/R15__Code_Bridge.v
-theories/T002/R_SigmaReduction/R16__Sigma_Reduction.v
-theories/T002/R_SigmaReduction/R17__Extraction_Interface.v
-theories/T002/R_SigmaReduction/R22__Channel_Bounds.v
-theories/T002/R_SigmaReduction/R20__Aggregated_Evaluator.v
-theories/T002/R_SigmaReduction/R21__Pairing_Correctness_P0.v
-theories/T002/R_SigmaReduction/R18__Sigma_Reduction_API.v
-theories/T002/R_SigmaReduction/R19__Sigma_Reduction_Minimal_API.v
+theories/T002/A__SigmaReduction/R00__Degree_Framework.v
+theories/T002/A__SigmaReduction/R01__Foundation_Fibonacci.v
+theories/T002/A__SigmaReduction/R02__Foundation_Zeckendorf.v
+theories/T002/A__SigmaReduction/R03__Carryless_Sequence_Indexing.v
+theories/T002/A__SigmaReduction/R04__Verification_Hilbert_Syntax.v
+theories/T002/A__SigmaReduction/R05__Verification_Hilbert_Checker.v
+theories/T002/A__SigmaReduction/R06__Encoding_Formula_Coding.v
+theories/T002/A__SigmaReduction/R08__Constraints_Axiom.v
+theories/T002/A__SigmaReduction/R09__Constraints_MP.v
+theories/T002/A__SigmaReduction/R10__Constraints_Target.v
+theories/T002/A__SigmaReduction/R11__Constraints_Assembly.v
+theories/T002/A__SigmaReduction/R12__Aggregation_Fib_Banded_Equality.v
+theories/T002/A__SigmaReduction/R13__Kernel_API.v
+theories/T002/A__SigmaReduction/R14__Reduction_Core.v
+theories/T002/A__SigmaReduction/R15__Code_Bridge.v
+theories/T002/A__SigmaReduction/R16__Sigma_Reduction.v
+theories/T002/A__SigmaReduction/R17__Extraction_Interface.v
+theories/T002/A__SigmaReduction/R22__Channel_Bounds.v
+theories/T002/A__SigmaReduction/R20__Aggregated_Evaluator.v
+theories/T002/A__SigmaReduction/R21__Pairing_Correctness_P0.v
+theories/T002/A__SigmaReduction/R18__Sigma_Reduction_API.v
+theories/T002/A__SigmaReduction/R19__Sigma_Reduction_Minimal_API.v
 
-theories/T002/P__ProofTheory/P00__Concrete_Provability.v
-theories/T002/P__ProofTheory/P00__Provability_Interface.v
-theories/T002/P__ProofTheory/P02__Diagonal.v
-theories/T002/P__ProofTheory/P01__HBL.v
-theories/T002/P__ProofTheory/P05__Toggle_Contradiction.v
-theories/T002/P__ProofTheory/P06__SourceToggle_Generator.v
-theories/T002/P__ProofTheory/P03__Undecidability.v
-theories/T002/P__ProofTheory/P04__RA_Certification.v
+theories/T002/B__ProofTheory/P00__Concrete_Provability.v
+theories/T002/B__ProofTheory/P00__Provability_Interface.v
+theories/T002/B__ProofTheory/P02__Diagonal.v
+theories/T002/B__ProofTheory/P01__HBL.v
+theories/T002/B__ProofTheory/P05__Toggle_Contradiction.v
+theories/T002/B__ProofTheory/P06__SourceToggle_Generator.v
+theories/T002/B__ProofTheory/P03__Undecidability.v
+theories/T002/B__ProofTheory/P04__RA_Certification.v
+theories/T002/T002__Comprehension.v
+theories/T002/T002__Extraction_Interface.v
 
 
 # Cubic aggregated polynomial certificate
@@ -96,6 +99,7 @@ theories/T003/R07__Table_Inspection.v
 theories/T003/R04__Universal.v
 theories/T003/R08__Bounded_Universality.v
 theories/T003/R05__Effectivity.v
+theories/T003/T003__Comprehension.v
 
 # T004 Rule 30 finite obstruction
 
@@ -104,7 +108,8 @@ theories/T003/R05__Effectivity.v
 theories/T004/R01__Phase_One.v
 theories/T004/R02__Phase_Two.v
 theories/T004/R03__Phase_Three.v
-theories/T004/R04__First_Corollary.v
-theories/T004/R05__Second_Corollary.v
-theories/T004/T004__Proof.v
-theories/T004/T004__Extraction_Interface.v
+theories/T004/R04__1st_Corollary.v
+theories/T004/R05__2nd_Corollary.v
+theories/T004/R06__3rd_Corollary.v
+theories/T004/T004__Comprehension.v
+theories/T004/T004__Extraction.v

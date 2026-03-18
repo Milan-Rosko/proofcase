@@ -8,6 +8,7 @@
       - Main Constructive Framework
       - Corollary 1
       - Corollary 2
+      - Corollary 3
 
     The Main Constructive Framework consists of the first three phases:
 
@@ -19,13 +20,21 @@
       - Phase 3: the mixed-periodicity transport layer and its direct
         semantic impossibility theorem
 
-    The two corollary layers are:
+    The three corollary layers are:
 
       - Corollary 1: the external classical wrapper under faithful
         semantics,
-      - Corollary 2: the finite provenance / observation-only layer,
+      - Corollary 2: the center-real reduction and irrationality layer,
+      - Corollary 3: the finite provenance / observation-only layer,
         including the center-strip-free shell question and the
         observation-only tamper-checking impossibility theorem
+
+    This split is deliberate. The constructive core is not asked to prove
+    global eventual aperiodicity as a bare classical proposition. It proves
+    instead that no closed replay / transport / uniform witness of such a tail
+    can survive. Corollary 1 then states the explicit classical soundness
+    principle, and Corollary 2 packages the resulting classical conclusion in
+    the ordinary language of real arithmetic.
 
     It separates:
 
@@ -59,6 +68,105 @@
       classical_semantics_excludes_eventual_periodic_windows :
         classical_semantic_faithfulness ->
         forall R, ~ eventually_periodic_center_window R
+
+    This is the intended boundary. Phase 3 constructively rules out closed
+    uniform witnesses of periodicity; Corollary 1 is the explicit classical
+    step that turns that witness-level obstruction into eventual
+    non-periodicity of centered windows.
+
+    Corollary 2 then packages the center column as a binary real:
+
+      center_real : R
+
+    It also packages the finite growing-pyramid recipe:
+
+      fueled_center_real : R
+
+    and proves the presentation-independence statement:
+
+      fueled_center_real_eq_center_real :
+        fueled_center_real = center_real
+
+    The arithmetic reduction is also separated out explicitly:
+
+      center_real_irrational_if_center_strip_not_eventually_periodic :
+        ~ eventually_periodic_bits center_strip ->
+        ~ exists q : Q, center_real = Q2R q
+
+    The real reduction now also lands directly in the finite replay
+    language:
+
+      center_real_rational_implies_cutoff_replay_package :
+        forall q,
+          center_real = Q2R q ->
+          cutoff_replay_package 0
+
+      fueled_center_real_rational_implies_cutoff_replay_package :
+        forall q,
+          fueled_center_real = Q2R q ->
+          cutoff_replay_package 0
+
+    Here `cutoff_replay_package 0` means a replay package at radius `0`,
+    i.e. for the center column.
+
+    The move to `R` does not replace the Rule 30 argument by analysis. It is
+    there to package the already fixed center digits as one extensional
+    classical object. The philosophical payoff is that the finite
+    growing-pyramid recipe and the bi-infinite presentation define the same
+    real, and rationality of that real reduces back to a finite replay object
+    in the native Rule 30 language.
+
+    It then derives the irrationality consequence:
+
+      center_real_irrational_under_classical_semantics :
+        classical_semantic_faithfulness ->
+        ~ exists q : Q, center_real = Q2R q
+
+    together with the same conclusion for the finite recipe presentation:
+
+      fueled_center_real_irrational_under_classical_semantics :
+        classical_semantic_faithfulness ->
+        ~ exists q : Q, fueled_center_real = Q2R q
+
+    The finite interface between Phase 2 and Phase 3 is now also made
+    explicit:
+
+      local_target_window_realization_iff_pointwise :
+        forall R target u,
+          local_target_window_realization R target u <->
+          forall x,
+            Z.abs x <= Z.of_nat R ->
+            step u x = target x
+
+      local_target_window_realization_seed_iff :
+        forall R u,
+          local_target_window_realization R seed_row u <->
+          local_seed_window_realization R u
+
+    Phase 3 also packages any eventual centered tail as a concrete bounded
+    cutoff replay object:
+
+      cutoff_replay_package : nat -> Prop
+
+      eventual_periodicity_yields_cutoff_replay_package :
+        forall n,
+          eventually_periodic_center_window n ->
+          cutoff_replay_package n
+
+    So before any later contradiction argument is applied, the eventual-tail
+    hypothesis has already been converted into a finite replay package whose
+    target row is the canonical cutoff row itself, both in window form and in
+    bounded pointwise form.
+
+    The seed-cutoff specialization is also closed:
+
+      local_target_window_realization_of_seed_builds_phase2_memory_certificate :
+        forall N u,
+          local_target_window_realization (S (S N)) seed_row u ->
+          phase2_memory_certificate N u
+
+    and therefore any replay package already sitting at time cutoff `0`
+    feeds directly into the Original Sin memory layer.
 
     The package also exposes the finite shell question:
 
@@ -147,40 +255,51 @@
     │      Consolidated Phase 3 theory unit: mixed-periodicity
     │      impossibility and realizability-facing corollaries.
     │
-    ├── R04__First_Corollary.v
+    ├── R04__1st_Corollary.v
     │
     │      First external corollary layer under faithful semantics.
     │
-    ├── R05__Second_Corollary.v
+    ├── R05__2nd_Corollary.v
     │
-    │      Second corollary layer.  It removes the center strip from
+    │      Second corollary layer.  It interprets the center strip as
+    │      a binary real, proves that the finite growing-pyramid
+    │      recipe yields the same real, isolates irrationality as a
+    │      direct consequence of center-strip non-eventual-periodicity,
+    │      proves that rational binary reals induce eventually periodic
+    │      bit streams, and concludes that the common Rule 30 center
+    │      real is irrational under the external faithful-semantics
+    │      premise.
+    │
+    ├── R06__3rd_Corollary.v
+    │
+    │      Third corollary layer.  It removes the center strip from
     │      view, asks the residual four-bit syntactic question
     │      "was this manipulated?", proves that question decidable,
-    │      classifies the finite reverse ambiguity of the visible
+    │      classifies the finite reverse-predecessor-carrier ambiguity of the visible
     │      canonical observation, and proves that no checker seeing only
     │      that visible observation can decide canonical versus
-    │      tampered predecessor syntax.
+    │      tampered hidden predecessor carriers.
     │
-    ├── T004_Proof.v
+    ├── T004__Comprehension.v
     │
     │      Audit-facing index for all three layers, including the strong
     │      semantic endpoint and the external classical corollary.
     │
-    └── T004_Extraction_Interface.v
+    └── T004__Extraction.v
      
            OCaml extraction surface for finite windows, seeded prefixes,
            truncations, and assumption reporting.
 
-    The legacy split files `R00__Base.v` through `R07__Classic_Semantics.v`
-    remain in the directory as reference components, but `_CoqProject`
-    now compiles the five public units above.  `T004_Proof.v` audits the
-    full public pipeline, with `R01__Phase_One.v` through
+    The legacy split route has been consolidated into the eight public
+    source files above, and `_CoqProject` now compiles exactly that
+    surface.  `T004__Comprehension.v` audits the full public pipeline, with
+    `R01__Phase_One.v` through
     `R03__Phase_Three.v` forming the constructive framework and
-    `R04__First_Corollary.v` plus `R05__Second_Corollary.v` forming the
-    two corollary layers.
+    `R04__1st_Corollary.v` through `R06__3rd_Corollary.v` forming the
+    corollary sequence.
 
 
-5 - Notes
+3 - Notes
     -----
 
     (i)    A progenitor is a finitely supported predecessor.
@@ -190,7 +309,7 @@
            predecessor.
 
     (iii)  The audit layer exposes the full public structure explicitly:
-           the three constructive phases together with both corollaries.
+           the three constructive phases together with the corollary sequence.
 
     (iv)   Bare finite seed-window matching is too weak: T004 proves it is
            satisfiable for every radius.
@@ -208,18 +327,18 @@
            hidden-support vocabulary used to organize reverse-side descent
            arguments.
 
-    (viii) T004_Proof.v is the audit entry point for the package.
+    (viii) T004__Comprehension.v is the audit entry point for the package.
 
     (ix)   The recommended semantic endpoint is not the Phase 1 compactness
            theorem but the direct uniform-tail impossibility theorem in
            Phase 3, together with its realizability corollaries and the
-           first faithful-semantics wrapper in R04__First_Corollary.
+           first faithful-semantics wrapper in R04__1st_Corollary.
 
     (x)    The compactness language remains mathematically meaningful as a
            contrapositive packaging of finite replay obstruction; it is not
            the only semantic reading carried by the package.
 
-    (xi)   `R05__Second_Corollary.v` still does not settle full semantic
+    (xi)   `R06__3rd_Corollary.v` still does not settle full semantic
            provenance.  It does, however, prove a stronger impossibility:
            once tampering is phrased at the finite predecessor-syntax
            level, no checker that only sees the visible canonical

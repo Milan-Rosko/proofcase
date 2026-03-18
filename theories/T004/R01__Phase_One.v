@@ -355,6 +355,16 @@ Definition finitely_supported (r : row) : Prop :=
       r x = false.
 
 (*
+  Finite-support truncation to the centered interval [-N, N].
+*)
+
+Definition truncate (N : nat) (u : row) : row :=
+  fun x =>
+    if Z.leb (- Z.of_nat N) x && Z.leb x (Z.of_nat N)
+    then u x
+    else false.
+
+(*
   A progenitor is a finitely supported predecessor under one global step.
 *)
 
@@ -369,6 +379,25 @@ Definition progenitor (u v : row) : Prop :=
 
 Definition canonical_row (t : nat) : row :=
   iter_row t seed_row.
+
+(*
+  Fuelled finite-support Rule 30 run.
+
+  At stage fuel, we evolve one step and then cut back to the natural
+  light-cone radius fuel.
+*)
+
+Fixpoint fueled_rule30_row (fuel : nat) : row :=
+  match fuel with
+  | 0%nat => seed_row
+  | S fuel' => truncate (S fuel') (step (fueled_rule30_row fuel'))
+  end.
+
+Definition fueled_rule30_trajectory (fuel : nat) : space_time :=
+  fun t =>
+    if Nat.leb t fuel
+    then fueled_rule30_row t
+    else fun _ => false.
 
 End Seed_Definitions.
 
@@ -527,6 +556,81 @@ Proof.
   intro t.
   exists t.
   intros x Hx.
+  apply canonical_row_outside_light_cone.
+  destruct Hx as [Hx | Hx];
+  destruct (Zabs_spec x) as [[Hnonneg Habs] | [Hneg Habs]];
+    rewrite Habs;
+    lia.
+Qed.
+
+Lemma truncate_outside_radius :
+  forall N u x,
+    (Z.of_nat N < Z.abs x)%Z ->
+    truncate N u x = false.
+Proof.
+  intros N u x Hout.
+  unfold truncate.
+  destruct (Z.leb (- Z.of_nat N) x && Z.leb x (Z.of_nat N)) eqn:Hinside.
+  - apply andb_true_iff in Hinside.
+    destruct Hinside as [Hlb Hub].
+    apply Z.leb_le in Hlb.
+    apply Z.leb_le in Hub.
+    destruct (Zabs_spec x) as [[Hnonneg Habs] | [Hneg Habs]];
+      rewrite Habs in Hout;
+      lia.
+  - reflexivity.
+Qed.
+
+Lemma truncate_inside_radius :
+  forall N u x,
+    (Z.abs x <= Z.of_nat N)%Z ->
+    truncate N u x = u x.
+Proof.
+  intros N u x Hin.
+  unfold truncate.
+  assert (Hlb : (- Z.of_nat N <= x)%Z) by lia.
+  assert (Hub : (x <= Z.of_nat N)%Z) by lia.
+  assert (Hlb_bool : Z.leb (- Z.of_nat N) x = true).
+  {
+    apply Z.leb_le.
+    exact Hlb.
+  }
+  assert (Hub_bool : Z.leb x (Z.of_nat N) = true).
+  {
+    apply Z.leb_le.
+    exact Hub.
+  }
+  rewrite Hlb_bool, Hub_bool.
+  reflexivity.
+Qed.
+
+Theorem fueled_rule30_row_matches_canonical :
+  forall fuel x,
+    fueled_rule30_row fuel x = canonical_row fuel x.
+Proof.
+  induction fuel as [|fuel IH]; intro x.
+  - reflexivity.
+  - simpl.
+    destruct (Z_le_gt_dec (Z.abs x) (Z.of_nat (S fuel))) as [Hin | Hout].
+    + rewrite truncate_inside_radius by exact Hin.
+      rewrite canonical_row_step.
+      unfold step, step_row.
+      rewrite (IH (x - 1)%Z), (IH x), (IH (x + 1)%Z).
+      reflexivity.
+    + rewrite truncate_outside_radius by lia.
+      symmetry.
+      apply canonical_row_outside_light_cone.
+      lia.
+Qed.
+
+Lemma fueled_rule30_row_finitely_supported :
+  forall fuel,
+    finitely_supported (fueled_rule30_row fuel).
+Proof.
+  intro fuel.
+  exists fuel.
+  intros x Hx.
+  rewrite fueled_rule30_row_matches_canonical.
   apply canonical_row_outside_light_cone.
   destruct Hx as [Hx | Hx];
   destruct (Zabs_spec x) as [[Hnonneg Habs] | [Hneg Habs]];
@@ -854,6 +958,15 @@ Proof.
   reflexivity.
 Qed.
 
+Theorem fueled_rule30_center_strip_matches :
+  forall fuel,
+    fueled_rule30_row fuel 0%Z = center_strip fuel.
+Proof.
+  intro fuel.
+  unfold center_strip.
+  apply fueled_rule30_row_matches_canonical.
+Qed.
+
 End Local_Lemmas.
 
 
@@ -868,6 +981,32 @@ Section Periodicity.
 
 Definition window_data (u : space_time) (n t : nat) : list bit :=
   map (u t) (centered_coords n).
+
+Theorem fueled_rule30_trajectory_matches_canonical_prefix :
+  forall fuel t x,
+    (t <= fuel)%nat ->
+    fueled_rule30_trajectory fuel t x = canonical_row t x.
+Proof.
+  intros fuel t x Htf.
+  unfold fueled_rule30_trajectory.
+  destruct (Nat.leb t fuel) eqn:Hle.
+  - apply fueled_rule30_row_matches_canonical.
+  - apply Nat.leb_gt in Hle.
+    lia.
+Qed.
+
+Theorem fueled_rule30_window_matches_canonical_prefix :
+  forall fuel n t,
+    (t <= fuel)%nat ->
+    window_data (fueled_rule30_trajectory fuel) n t = center_window n t.
+Proof.
+  intros fuel n t Htf.
+  unfold window_data, center_window.
+  apply map_ext.
+  intro x.
+  apply fueled_rule30_trajectory_matches_canonical_prefix.
+  exact Htf.
+Qed.
 
 (*
   Observable pure periodicity of the actual seeded run.

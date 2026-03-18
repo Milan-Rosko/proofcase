@@ -384,11 +384,10 @@
 
      (i)    File numbering starts at R01, not R00.
 
-     (ii)   The README lists RX__Carryless_Pairing_Export.v but the file on
-            disk is R04__Carryless_Pairing_Export.v.
+     (ii)   The extraction interface has since been normalized to the
+            root-level name T001__Extraction_Interface.v.
 
-     (iii)  The header comment in R04 reads (* RX__Carryless_Pairing_Export.v *)
-            instead of (* R04__Carryless_Pairing_Export.v *).
+     (iii)  The old numbered export file no longer exists in the live tree.
 
      (iv)   R02 uses { } braces for sub-goals instead of bullets.
 

@@ -1,4 +1,4 @@
-(* R05__Second_Corollary.v *)
+(* R06__3rd_Corollary.v *)
 
 From Coq Require Import Arith Bool List.
 Import ListNotations.
@@ -10,7 +10,7 @@ From T004 Require Import
 
 (*************************************************************************)
 (*                                                                       *)
-(*  Proofcase / Rule 30 Second Corollary                                 *)
+(*  Proofcase / Rule 30 3rd Corollary                                    *)
 (*                                                                       *)
 (*  Finite provenance / observation-only corollary layer.                *)
 (*                                                                       *)
@@ -35,7 +35,7 @@ From T004 Require Import
 (*                                                                       *)
 (*************************************************************************)
 
-Section Second_Corollary.
+Section Third_Corollary.
 
 Definition shell_signature_unmanipulated : list bit :=
   [false; false; false; false].
@@ -168,7 +168,7 @@ Proof.
       N u Hreal).
 Qed.
 
-End Second_Corollary.
+End Third_Corollary.
 
 Section Observation_Only_Impossibility.
 
@@ -410,11 +410,12 @@ Qed.
 (*                                READING                                *)
 (*                                                                       *)
 (*    The visible canonical window does not hide one unknown reverse     *)
-(*    carrier but an exact four-way boundary-indexed ambiguity class.    *)
+(*    predecessor carrier but an exact four-way boundary-indexed         *)
+(*    ambiguity class.                                                   *)
 (*                                                                       *)
 (*************************************************************************)
 
-Theorem canonical_observation_has_exactly_four_reverse_predecessors :
+Theorem canonical_observation_has_exactly_four_reverse_predecessor_carriers :
   forall R T,
     length (canonical_reverse_predecessor_family R T) = 4%nat /\
     NoDup (canonical_reverse_predecessor_family R T) /\
@@ -485,8 +486,8 @@ Qed.
 (*                                READING                                *)
 (*                                                                       *)
 (*    No decision procedure that sees only the visible canonical window  *)
-(*    can distinguish canonical hidden predecessor syntax from           *)
-(*    tampered hidden predecessor syntax.                                *)
+(*    can distinguish canonical hidden predecessor carriers from         *)
+(*    tampered hidden predecessor carriers.                              *)
 (*                                                                       *)
 (*************************************************************************)
 

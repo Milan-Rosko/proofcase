@@ -1,0 +1,13 @@
+(* R17__Extraction_Interface.v *)
+
+(*************************************************************************)
+(*                                                                       *)
+(*  DEPRECATED                                                           *)
+(*                                                                       *)
+(*  The sanctioned extraction surface for T002 now lives at the package  *)
+(*  root in `T002__Extraction_Interface.v`, alongside the comprehension  *)
+(*  layer.  This numbered file is retained only as a historical marker   *)
+(*  inside the sigma-reduction chain and intentionally exports no        *)
+(*  extraction commands or executable surface.                           *)
+(*                                                                       *)
+(*************************************************************************)

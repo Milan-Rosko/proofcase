@@ -7,6 +7,14 @@
     Rocq. The development relies on the standard libraries Arith, List, Bool,
     and PeanoNat.
 
+    `T001__Comprehension.v` packages the core definitions, the abstract
+    correctness theorem, and the concrete `P0` realizations into one
+    audit-facing synopsis layer.
+
+    `T001__Extraction_Interface.v` exposes the root-level OCaml extraction
+    surface for the concrete `P0` realization and the core carryless pairing
+    operations.
+
     The `appendix/` directory contains the proof-erasure outputs generated from
     the development.
 
@@ -18,6 +26,15 @@
     ├── README
     │
     │      (This file.)
+    │
+    ├── T001__Comprehension.v
+    │
+    │      Audit/comprehension layer for the carryless pairing package.
+    │
+    ├── T001__Extraction_Interface.v
+    │
+    │      Root extraction interface exposing the executable `P0` pairing
+    │      surface and the OCaml export directives.
     │
     ├── R01__Carryless_Pairing_Definitions.v
     │
@@ -35,11 +52,6 @@
     │
     │      Concrete realizations and computational examples, including a greedy
     │      Zeckendorf construction and `vm_compute` evaluations.
-    │
-    ├── R04__Carryless_Pairing_Export.v
-    │
-    │      Extraction directives for OCaml generation and reporting of logical
-    │      assumptions for the main theorems.
     │
     └── appendix
            ├── Carryless_Pairing.ml

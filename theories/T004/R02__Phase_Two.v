@@ -65,12 +65,6 @@ Definition local_seed_window_realization (R : nat) (u : row) : Prop :=
     (Z.abs x <= Z.of_nat R)%Z ->
     step u x = seed_row x.
 
-Definition truncate (N : nat) (u : row) : row :=
-  fun x =>
-    if Z.leb (- Z.of_nat N) x && Z.leb x (Z.of_nat N)
-    then u x
-    else false.
-
 (*
   The compact center trap already visible inside “the Fall.”
 
@@ -219,47 +213,6 @@ Proof.
     (local_seed_window_realization_ext R (truncate N u) u
       (truncate_agrees R N u HN))).
   exact Hreal.
-Qed.
-
-Lemma truncate_outside_radius :
-  forall N u x,
-    (Z.of_nat N < Z.abs x)%Z ->
-    truncate N u x = false.
-Proof.
-  intros N u x Hout.
-  unfold truncate.
-  destruct (Z.leb (- Z.of_nat N) x && Z.leb x (Z.of_nat N)) eqn:Hinside.
-  - apply andb_true_iff in Hinside.
-    destruct Hinside as [Hlb Hub].
-    apply Z.leb_le in Hlb.
-    apply Z.leb_le in Hub.
-    destruct (Zabs_spec x) as [[Hnonneg Habs] | [Hneg Habs]];
-      rewrite Habs in Hout;
-      lia.
-  - reflexivity.
-Qed.
-
-Lemma truncate_inside_radius :
-  forall N u x,
-    (Z.abs x <= Z.of_nat N)%Z ->
-    truncate N u x = u x.
-Proof.
-  intros N u x Hin.
-  unfold truncate.
-  assert (Hlb : (- Z.of_nat N <= x)%Z) by lia.
-  assert (Hub : (x <= Z.of_nat N)%Z) by lia.
-  assert (Hlb_bool : Z.leb (- Z.of_nat N) x = true).
-  {
-    apply Z.leb_le.
-    exact Hlb.
-  }
-  assert (Hub_bool : Z.leb x (Z.of_nat N) = true).
-  {
-    apply Z.leb_le.
-    exact Hub.
-  }
-  rewrite Hlb_bool, Hub_bool.
-  reflexivity.
 Qed.
 
 Lemma step_false_outside_support :
@@ -1673,6 +1626,232 @@ Proof.
   - reflexivity.
 Qed.
 
+Lemma hidden_support_at_dec :
+  forall r c x,
+    { hidden_support_at r c x } + { ~ hidden_support_at r c x }.
+Proof.
+  intros r c x.
+  unfold hidden_support_at.
+  destruct (Z.eq_dec x (c - 1)%Z) as [Heq_left | Hneq_left].
+  - right.
+    intro Hhidden.
+    destruct Hhidden as [Hneq _].
+    exact (Hneq Heq_left).
+  - destruct (Z.eq_dec x c) as [Heq_mid | Hneq_mid].
+    + right.
+      intro Hhidden.
+      destruct Hhidden as [_ [Hneq _]].
+      exact (Hneq Heq_mid).
+    + destruct (Z.eq_dec x (c + 1)%Z) as [Heq_right | Hneq_right].
+      * right.
+        intro Hhidden.
+        destruct Hhidden as [_ [_ [Hneq _]]].
+        exact (Hneq Heq_right).
+      * destruct (r x) eqn:Hbit.
+        -- left.
+           repeat split; auto.
+        -- right.
+           intro Hhidden.
+           destruct Hhidden as [_ [_ [_ Htrue]]].
+           discriminate.
+Qed.
+
+Lemma hidden_support_on_fragment_dec :
+  forall n P H (F : bounded_periodic_replay_fragment n P H) g x,
+    { hidden_support_on_fragment n P H F g x } +
+    { ~ hidden_support_on_fragment n P H F g x }.
+Proof.
+  intros n P H F g x.
+  unfold hidden_support_on_fragment.
+  apply hidden_support_at_dec.
+Qed.
+
+Lemma causally_relevant_hidden_support_dec :
+  forall n P H (F : bounded_periodic_replay_fragment n P H) g x,
+    { causally_relevant_hidden_support n P H F g x } +
+    { ~ causally_relevant_hidden_support n P H F g x }.
+Proof.
+  intros n P H F g x.
+  unfold causally_relevant_hidden_support.
+  destruct (hidden_support_on_fragment_dec n P H F g x)
+    as [Hhidden | Hnot_hidden].
+  - destruct (Z_le_gt_dec (Z.abs (x - gs_center g)) (Z.of_nat P))
+      as [Hbound | Hbound].
+    + left.
+      split; assumption.
+    + right.
+      intros [_ Hle].
+      lia.
+  - right.
+    intros [Hhidden _].
+    exact (Hnot_hidden Hhidden).
+Qed.
+
+Lemma absolute_distance_endpoint_cases :
+  forall c x d,
+    Z.to_nat (Z.abs (x - c)) = d ->
+    x = (c - Z.of_nat d)%Z \/ x = (c + Z.of_nat d)%Z.
+Proof.
+  intros c x d Hdist.
+  assert (Habs : Z.abs (x - c) = Z.of_nat d).
+  {
+    rewrite <- Hdist.
+    rewrite Z2Nat.id by apply Z.abs_nonneg.
+    reflexivity.
+  }
+  destruct (Zabs_spec (x - c)) as [[Hnonneg Hspec] | [Hneg Hspec]];
+    rewrite Hspec in Habs;
+    lia.
+Qed.
+
+Lemma relevant_hidden_support_distance_dec :
+  forall n P H (F : bounded_periodic_replay_fragment n P H) g d,
+    { relevant_hidden_support_distance n P H F g d } +
+    { ~ relevant_hidden_support_distance n P H F g d }.
+Proof.
+  intros n P H F g d.
+  destruct
+    (causally_relevant_hidden_support_dec
+      n P H F g (gs_center g - Z.of_nat d)%Z)
+    as [Hleft | Hnot_left].
+  - left.
+    exists (gs_center g - Z.of_nat d)%Z.
+    split.
+    + exact Hleft.
+    + replace
+        ((gs_center g - Z.of_nat d - gs_center g)%Z)
+        with (- Z.of_nat d)%Z by lia.
+      replace (Z.abs (- Z.of_nat d)) with (Z.of_nat d) by lia.
+      apply Nat2Z.id.
+  - destruct
+      (causally_relevant_hidden_support_dec
+        n P H F g (gs_center g + Z.of_nat d)%Z)
+      as [Hright | Hnot_right].
+    + left.
+      exists (gs_center g + Z.of_nat d)%Z.
+      split.
+      * exact Hright.
+      * replace
+          ((gs_center g + Z.of_nat d - gs_center g)%Z)
+          with (Z.of_nat d)%Z by lia.
+        replace (Z.abs (Z.of_nat d)) with (Z.of_nat d) by lia.
+        apply Nat2Z.id.
+    + right.
+      intros [x [Hrelevant Hdist]].
+      destruct (absolute_distance_endpoint_cases (gs_center g) x d Hdist)
+        as [Hx | Hx].
+      * apply Hnot_left.
+        subst x.
+        exact Hrelevant.
+      * apply Hnot_right.
+        subst x.
+        exact Hrelevant.
+Qed.
+
+Fixpoint find_relevant_hidden_support_distance
+    (n P H : nat) (F : bounded_periodic_replay_fragment n P H)
+    (g : glitch_site) (bound : nat) : option nat :=
+  match bound with
+  | 0%nat =>
+      match relevant_hidden_support_distance_dec n P H F g 0%nat with
+      | left _ => Some 0%nat
+      | right _ => None
+      end
+  | S bound' =>
+      match find_relevant_hidden_support_distance n P H F g bound' with
+      | Some d => Some d
+      | None =>
+          match relevant_hidden_support_distance_dec n P H F g (S bound') with
+          | left _ => Some (S bound')
+          | right _ => None
+          end
+      end
+  end.
+
+Lemma find_relevant_hidden_support_distance_none :
+  forall n P H (F : bounded_periodic_replay_fragment n P H) g bound,
+    find_relevant_hidden_support_distance n P H F g bound = None ->
+    forall d,
+      (d <= bound)%nat ->
+      ~ relevant_hidden_support_distance n P H F g d.
+Proof.
+  intros n P H F g bound.
+  induction bound as [|bound IH]; intros Hfind d Hd.
+  - assert (Hd0 : d = 0%nat) by lia.
+    subst d.
+    simpl in Hfind.
+    destruct (relevant_hidden_support_distance_dec n P H F g 0%nat)
+      as [Hrel | Hrel].
+    + discriminate.
+    + exact Hrel.
+  - simpl in Hfind.
+    destruct (find_relevant_hidden_support_distance n P H F g bound)
+      eqn:Hprev.
+    + discriminate.
+    + destruct (relevant_hidden_support_distance_dec n P H F g (S bound))
+        as [Hrel_top | Hrel_top].
+      * discriminate.
+      * destruct (Nat.eq_dec d (S bound)) as [Heq | Hneq].
+        -- subst d.
+           exact Hrel_top.
+        -- apply (IH eq_refl d).
+           lia.
+Qed.
+
+Lemma find_relevant_hidden_support_distance_sound :
+  forall n P H (F : bounded_periodic_replay_fragment n P H) g bound d,
+    find_relevant_hidden_support_distance n P H F g bound = Some d ->
+    relevant_hidden_support_distance n P H F g d /\
+    forall d',
+      (d' < d)%nat ->
+      ~ relevant_hidden_support_distance n P H F g d'.
+Proof.
+  intros n P H F g bound.
+  induction bound as [|bound IH]; intros d Hfind.
+  - simpl in Hfind.
+    destruct (relevant_hidden_support_distance_dec n P H F g 0%nat)
+      as [Hrel | Hrel].
+    + inversion Hfind; subst d.
+      split.
+      * exact Hrel.
+      * intros d' Hd'.
+        lia.
+    + discriminate.
+  - simpl in Hfind.
+    destruct (find_relevant_hidden_support_distance n P H F g bound)
+      eqn:Hprev.
+    + inversion Hfind; subst d.
+      exact (IH n0 eq_refl).
+    + destruct (relevant_hidden_support_distance_dec n P H F g (S bound))
+        as [Hrel_top | Hrel_top].
+      * inversion Hfind; subst d.
+        split.
+        -- exact Hrel_top.
+        -- intros d' Hd' Hrel'.
+           apply (find_relevant_hidden_support_distance_none
+             n P H F g bound Hprev d').
+           ++ lia.
+           ++ exact Hrel'.
+      * discriminate.
+Qed.
+
+Lemma find_relevant_hidden_support_distance_complete :
+  forall n P H (F : bounded_periodic_replay_fragment n P H) g bound d,
+    (d <= bound)%nat ->
+    relevant_hidden_support_distance n P H F g d ->
+    exists d',
+      find_relevant_hidden_support_distance n P H F g bound = Some d'.
+Proof.
+  intros n P H F g bound d Hdle Hrel.
+  destruct (find_relevant_hidden_support_distance n P H F g bound)
+    as [d' |] eqn:Hfind.
+  - exists d'.
+    reflexivity.
+  - exfalso.
+    apply (find_relevant_hidden_support_distance_none
+      n P H F g bound Hfind d Hdle Hrel).
+Qed.
+
 Lemma relevant_hidden_support_distance_has_minimal :
   forall n P H (F : bounded_periodic_replay_fragment n P H) g d,
     relevant_hidden_support_distance n P H F g d ->
@@ -1680,32 +1859,25 @@ Lemma relevant_hidden_support_distance_has_minimal :
       minimal_relevant_hidden_support_distance n P H F g d'.
 Proof.
   intros n P H F g d Hd.
-  revert d Hd.
-  apply (well_founded_induction
-    lt_wf
-    (fun m =>
-      relevant_hidden_support_distance n P H F g m ->
-      exists d',
-        minimal_relevant_hidden_support_distance n P H F g d')).
-  intros m IH Hm.
-  destruct (classic
-    (exists d',
-      relevant_hidden_support_distance n P H F g d' /\
-      (d' < m)%nat)) as [Hsmaller | Hminimal].
-  - destruct Hsmaller as [d' [Hd' Hd'lt]].
-    exact (IH d' Hd'lt Hd').
-  - exists m.
+  destruct
+    (find_relevant_hidden_support_distance_complete n P H F g d d)
+    as [d' Hfind].
+  - lia.
+  - exact Hd.
+  - exists d'.
     split.
-    + exact Hm.
-    + intros d' Hd'.
-      destruct (le_lt_dec m d') as [Hle | Hlt].
+    + exact (proj1
+        (find_relevant_hidden_support_distance_sound
+          n P H F g d d' Hfind)).
+    + intros d'' Hd''.
+      destruct (le_lt_dec d' d'') as [Hle | Hlt].
       * exact Hle.
       * exfalso.
-        apply Hminimal.
-        exists d'.
-        split.
-        -- exact Hd'.
-        -- exact Hlt.
+        exact
+          ((proj2
+            (find_relevant_hidden_support_distance_sound
+              n P H F g d d' Hfind))
+             d'' Hlt Hd'').
 Qed.
 
 Lemma causally_relevant_hidden_support_has_minimal_distance :

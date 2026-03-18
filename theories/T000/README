@@ -30,7 +30,7 @@
     │
     │      (This file.)
     │
-    ├── R00__Odd_Part.v
+    ├── R01__Odd_Part.v
     │
     │      Odd-part decomposition of positive integers.  We define the
     │      odd_part and val2 functions, prove that odd_part is odd, divides
@@ -39,21 +39,21 @@
     │      odd numbers in {1, ..., 2n}, and show it has length n and
     │      receives every odd_part image from that interval.
     │
-    ├── R01__Pigeonhole_Divisibility.v
+    ├── R02__Pigeonhole_Divisibility.v
     │
     │      Main theorem.  We state a list-based pigeonhole principle and
     │      apply it with the odd-part map to conclude that any
     │      (n+1)-element subset of {1, ..., 2n} contains a divisibility
     │      pair.
     │
-    ├── T000__Proof.v
+    ├── T000__Comprehension.v
     │
     │      Audit-facing proof index for the public T000 surface:
     │      arithmetic normalization, finite odd-codomain control, the
     │      abstract pigeonhole principle, and the final divisibility
     │      endpoint.
     │
-    ├── T000_Extraction_Interface.v
+    ├── T000__Extraction_Interface.v
     │
     │      OCaml extraction surface for odd-part computations, odd-range
     │      inspection, finite witness search, and assumption reporting for

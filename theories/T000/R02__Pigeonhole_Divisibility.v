@@ -3,7 +3,7 @@
 From Coq Require Import Arith Bool Lia List PeanoNat.
 Import ListNotations.
 
-From T000 Require Import R00__Odd_Part.
+From T000 Require Import R01__Odd_Part.
 
 (*************************************************************************)
 (*                                                                       *)
@@ -21,7 +21,7 @@ From T000 Require Import R00__Odd_Part.
 (*    (ii)  We apply it to the odd-part map on the elements of A, whose  *)
 (*          codomain is the n odd numbers in {1, ..., 2n}.               *)
 (*                                                                       *)
-(*    (iii) We invoke same_odd_part_divides from R00 to conclude.        *)
+(*    (iii) We invoke same_odd_part_divides from R01 to conclude.        *)
 (*                                                                       *)
 (*************************************************************************)
 
