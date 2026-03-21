@@ -37,15 +37,3 @@
             Pinned bounded universal cubic polynomial, generated from a
             Python constructor pipeline. Coefficient table, degree certificates,
             digest gate, and bounded universality endpoint.
-
-    T004    Logical Constraints in Cellular Automata
-
-            Mechanized FOL proof that no centered finite strip of the canonical
-            single-seed Rule 30 trajectory is eventually periodic.  The
-            argument reduces any periodicity hypothesis to a bounded Boolean
-            constraint system inside the backward light cone, then refutes        
-            every candidate witness by exhaustive branch analysis.  Includes
-            base dynamics, seed construction, cone locality, period/witness       
-            extraction, branch refutation, strip induction, packed compression,
-            marker anti-periodicity, and OCaml extraction.  The sole classical
-            dependency (LEM) appears at the end.
